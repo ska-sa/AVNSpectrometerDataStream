@@ -2,6 +2,7 @@
 //System includes
 #include <string>
 #include <sstream>
+#include <iostream>
 
 //Library includes
 
@@ -10,9 +11,14 @@
 #include "SpetrometerDefinitions.h"
 #include "../../AVNUtilLibs/Timestamp/Timestamp.h"
 
-cSpectrometerHeader::cSpectrometerHeader(const char*)
+cSpectrometerHeader::cSpectrometerHeader(const char* pcData)
 {
+    deserialise(pcData);
+}
 
+cSpectrometerHeader::cSpectrometerHeader(const std::vector<char> &vcData)
+{
+    deserialise(vcData);
 }
 
 cSpectrometerHeader::cSpectrometerHeader():
@@ -22,9 +28,8 @@ cSpectrometerHeader::cSpectrometerHeader():
     m_u8NSubframes(0),
     m_u16DigitiserType(0xffff),
     m_bNoiseDiodeOn(false),
-    m_bIsBigEndian(true)
+    m_bFlipEndianess(true) //Assume true by default Roach is big endian, most PCs are little endian.
 {
-
 }
 
 cSpectrometerHeader::~cSpectrometerHeader()
@@ -45,11 +50,11 @@ std::string cSpectrometerHeader::toString()
     return oSS.str();
 }
 
-void cSpectrometerHeader::deserialise(const char* pcData)
+bool cSpectrometerHeader::deserialise(const char* pcData)
 {
     if(*(uint32_t*)pcData == AVN::Spectrometer::SYNC_WORD)
     {
-        m_bIsBigEndian = false;
+        m_bFlipEndianess = false;
     }
 #ifdef _WIN32
     else if(_byteswap_ulong( *(uint32_t*)pcData ) == AVN::Spectrometer::SYNC_WORD)
@@ -57,23 +62,16 @@ void cSpectrometerHeader::deserialise(const char* pcData)
     else if(__builtin_bswap32( *(uint32_t*)pcData ) == AVN::Spectrometer::SYNC_WORD)
 #endif
     {
-        m_bIsBigEndian = true;
+        m_bFlipEndianess = true;
     }
     else
     {
         //SYNC Error
+        m_bValid = false;
+        return false;
     }
 
-    if(m_bIsBigEndian)
-    {
-        m_u32SyncWord = *(uint32_t*)(pcData);
-        m_i64tTimestamp_us = *(int64_t*)(pcData + 4);
-        m_u8SubframeNumber = *(uint8_t*)(pcData + 12);
-        m_u8NSubframes = *(uint8_t*)(pcData + 13);
-        m_u16DigitiserType = 0b0000000000001111 & *(uint16_t*)(pcData + 14);
-        m_bNoiseDiodeOn = ( 0b1000000000000000 & *(uint16_t*)(pcData + 14) ) >> 15;
-    }
-    else
+    if(m_bFlipEndianess)
     {
 #ifdef _WIN32
         m_u32SyncWord = _byteswap_ulong( *(uint32_t*)(pcData) );
@@ -83,19 +81,46 @@ void cSpectrometerHeader::deserialise(const char* pcData)
         m_u16DigitiserType = 0b0000000000001111 & _byteswap_ushort( *(uint16_t*)(pcData + 14) );
         m_bNoiseDiodeOn = ( 0b1000000000000000 & _byteswap_ushort( *(uint16_t*)(pcData + 14) ) ) >> 15;
 #else
-        m_u32SyncWord = __builtin_bswap32( *(uint32_t*)(pcData) );
-        m_i64tTimestamp_us = __builtin_bswap64( *(int64_t*)(pcData + 4) );
+        m_u32SyncWord = (uint32_t)( __builtin_bswap32( *(uint32_t*)(pcData) ) );
+        m_i64tTimestamp_us = (int64_t)( __builtin_bswap64( *(int64_t*)(pcData + 4) ) );
         m_u8SubframeNumber = *(uint8_t*)(pcData + 12);
         m_u8NSubframes = *(uint8_t*)(pcData + 13);
-        m_u16DigitiserType = 0b0000000000001111 & __builtin_bswap16( *(uint16_t*)(pcData + 14) );
-        m_bNoiseDiodeOn = ( 0b1000000000000000 & __builtin_bswap16( *(uint16_t*)(pcData + 14) ) ) >> 15;
+        m_u16DigitiserType = 0b0000000000001111 & (uint16_t)( __builtin_bswap16( *(uint16_t*)(pcData + 14) ) );
+        m_bNoiseDiodeOn = ( 0b1000000000000000 & (uint16_t)(__builtin_bswap16( *(uint16_t*)(pcData + 14) ) ) ) >> 15;
 #endif
     }
+    else
+    {
+        m_u32SyncWord = *(uint32_t*)(pcData);
+        m_i64tTimestamp_us = *(int64_t*)(pcData + 4);
+        m_u8SubframeNumber = *(uint8_t*)(pcData + 12);
+        m_u8NSubframes = *(uint8_t*)(pcData + 13);
+        m_u16DigitiserType = 0b0000000000001111 & *(uint16_t*)(pcData + 14);
+        m_bNoiseDiodeOn = ( 0b1000000000000000 & *(uint16_t*)(pcData + 14) ) >> 15;
+    }
+
+    m_bValid = true;
+    return true;
 }
 
-std::vector<char>   cSpectrometerHeader::serialise()
+bool cSpectrometerHeader::deserialise(const std::vector<char> &vcData)
 {
+    //Here we can check for size
+    if(vcData.size() < AVN::Spectrometer::HEADER_SIZE_B)
+    {
+        std::cout << "cSpectrometerHeader::deserialise() Error provided vector is shorter that AVN::Spectrometer head size of " << AVN::Spectrometer::HEADER_SIZE_B << " bytes" << std::endl;
+        std::cout << "Got length: " << vcData.size() << " bytes. Returning." << std::endl;
+        return false;
 
+        //In future this should also throw an exception
+    }
+
+    return deserialise(&vcData.front());
+}
+
+std::vector<char> cSpectrometerHeader::serialise()
+{
+    //Todo
 }
 
 //Accessors
@@ -160,7 +185,12 @@ void cSpectrometerHeader::setNoiseDiodeOn(bool bNoiseDiodeOn)
     m_bNoiseDiodeOn = bNoiseDiodeOn;
 }
 
-bool cSpectrometerHeader::isBigEndian()
+bool cSpectrometerHeader::requiresEndianessFlip()
 {
-    return m_bIsBigEndian;
+    return m_bFlipEndianess;
+}
+
+bool cSpectrometerHeader::isValid()
+{
+    return m_bValid;
 }

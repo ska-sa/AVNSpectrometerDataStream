@@ -14,11 +14,13 @@ class cSpectrometerHeader
 {
 public:
     cSpectrometerHeader(const char* pcData);
+    cSpectrometerHeader(const std::vector<char> &vcData);
     cSpectrometerHeader();
     ~cSpectrometerHeader();
 
     std::string         toString();
-    void                deserialise(const char* pcData);
+    bool                deserialise(const char* pcData);
+    bool                deserialise(const std::vector<char> &vcData);
     std::vector<char>   serialise();
 
     //Accessors
@@ -37,7 +39,9 @@ public:
     void                setDigitiserType(uint16_t u16DigitiserType);
     void                setNoiseDiodeOn(bool bNoiseDiodeOn);
 
-    bool                isBigEndian();
+    bool                requiresEndianessFlip();
+
+    bool                isValid();
 
 private:
     uint32_t            m_u32SyncWord;
@@ -47,7 +51,9 @@ private:
     uint16_t            m_u16DigitiserType;
     bool                m_bNoiseDiodeOn;
 
-    bool                m_bIsBigEndian;
+    bool                m_bFlipEndianess;
+
+    bool                m_bValid;
 };
 
 #endif //SPECTROMETER_HEADER
