@@ -8,8 +8,9 @@
 
 //Local includes
 #include "SpectrometerHeader.h"
-#include "SpetrometerDefinitions.h"
+#include "SpectrometerDefinitions.h"
 #include "../../AVNUtilLibs/Timestamp/Timestamp.h"
+#include "ByteSwap.h" //For old versions of GCC there are some byte swap functions missing
 
 cSpectrometerHeader::cSpectrometerHeader(const char* pcData)
 {
@@ -34,7 +35,6 @@ cSpectrometerHeader::cSpectrometerHeader():
 
 cSpectrometerHeader::~cSpectrometerHeader()
 {
-
 }
 
 std::string cSpectrometerHeader::toString()

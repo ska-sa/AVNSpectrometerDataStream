@@ -29,57 +29,80 @@ typedef unsigned __int64 uint64_t;
 #include "SpectrometerHeader.h"
 #include "../../AVNAppLibs/SocketStreamers/SocketReceiverBase.h"
 
-class cSpectrometerDataStreamInterpreter
+class cSpectrometerDataStreamInterpreter : public cSocketReceiverBase::cCallbackInterface
 {
 public:
+    class cCallbackInterface
+    {
+    public:
+        virtual void getNextFrame_callback(const std::vector<int> &vi32Chan0, const std::vector<int> &vi32Chan1, const std::vector<int> &vi32Chan2, std::vector<int> &vi32Chan3,
+                                           const cSpectrometerHeader &oHeader) = 0;
+    };
+
     cSpectrometerDataStreamInterpreter(boost::shared_ptr<cSocketReceiverBase>  pSocketReceiver);
+    cSpectrometerDataStreamInterpreter();
     ~cSpectrometerDataStreamInterpreter();
 
-    void                                    setUpdateRate(uint32_t u32UpdateRate_ms);
+    void                                                setUpdateRate(uint32_t u32UpdateRate_ms);
 
-    bool                                    synchronise();
-    bool                                    getNextFrame(float *pfChan0, float *pfChan1, float *pfChan2, float *pfChan3, uint32_t u32AllocateSize_nElements);
-    bool                                    getNextFrame(int32_t *pi32Chan0, int32_t *pi32Chan1, int32_t *pi32Chan2, int32_t *pi32Chan3, uint32_t u32AllocateSize_nElements);
+    bool                                                synchronise();
+    bool                                                getNextFrame(float *pfChan0, float *pfChan1, float *pfChan2, float *pfChan3, uint32_t u32AllocateSize_nElements);
+    bool                                                getNextFrame(int32_t *pi32Chan0, int32_t *pi32Chan1, int32_t *pi32Chan2, int32_t *pi32Chan3, uint32_t u32AllocateSize_nElements);
 
-    const cSpectrometerHeader               &getLastHeader();
+    const cSpectrometerHeader                           &getLastHeader();
 
-    uint32_t                                getNValuesPerChannelPerFrame();
+    uint32_t                                            getNValuesPerChannelPerFrame();
 
-    bool                                    isRunning();
-    void                                    setIsRunning(bool bIsRunning);
+    bool                                                isRunning();
+    void                                                setIsRunning(bool bIsRunning);
 
-private:
-    boost::shared_ptr<cSocketReceiverBase>  m_pSocketReceiver;
+    void                                                registerCallbackHandler(boost::shared_ptr<cCallbackInterface> pNewHandler);
+    void                                                deregisterCallbackHandler(boost::shared_ptr<cCallbackInterface> pHandler);
 
-    cSpectrometerHeader                     m_oCurrentHeader;
-    cSpectrometerHeader                     m_oPreviousHeader;
+    virtual void                                        offloadData_callback(char* pcData, uint32_t u32Size_B);
 
-    bool                                    m_bIsRunning;
+protected:
+    boost::shared_ptr<cSocketReceiverBase>              m_pSocketReceiver;
 
-    boost::shared_mutex                     m_oMutex;
+    cSpectrometerHeader                                 m_oCurrentHeader;
+    cSpectrometerHeader                                 m_oPreviousHeader;
+
+    bool                                                m_bIsRunning;
+
+    boost::shared_mutex                                 m_oMutex;
 
     //Update frame rate. Output a frame every so many milliseconds.
     //Results in some data being discarded. 0 (default) implies no discarding
-    uint32_t                                m_u32UpdateRate_ms;
+    uint32_t                                            m_u32UpdateRate_ms;
 
     //Variables and vectors used interpretting:
-    vector<char>                            m_vcPacket;
+    vector<char>                                        m_vcPacket;
 
-    uint32_t                                m_u32PacketSize_B;
-    uint32_t                                m_u32NValuesPerFrame;
-    uint32_t                                m_u32NValuesPerPacket;
-    int64_t                                 m_i64LastUsedTimestamp_us;
+    uint32_t                                            m_u32PacketSize_B;
+    uint32_t                                            m_u32NValuesPerFrame;
+    uint32_t                                            m_u32NValuesPerPacket;
+    int64_t                                             m_i64LastUsedTimestamp_us;
+    uint8_t                                             m_u8ExpectedSubframeIndex;
 
-    bool                                    m_bSkipFrame;
+    bool                                                m_bSkipFrame;
+
+    //Variables used for callback function mode
+    std::vector< std::vector<int> >                     m_vviChannelData;
+
+    bool                                                m_bSynchronised;
+
+    std::vector<boost::shared_ptr<cCallbackInterface> > m_vpCallbackHandlers;
+    boost::shared_mutex                                 m_oCallbackHandlersMutex;
+
 
     //Inline functions
 
-    inline bool                             headerConsistencyCheck(uint8_t u8ExpectedSubframeIndex)
+    inline bool headerConsistencyCheck()
     {
         //Some more consistency checks
-        if(m_oCurrentHeader.getSubframeNumber() != u8ExpectedSubframeIndex)
+        if(m_oCurrentHeader.getSubframeNumber() != m_u8ExpectedSubframeIndex)
         {
-            std::cout << "Expected packet index " << (uint32_t)u8ExpectedSubframeIndex << ", got " << (uint32_t)m_oCurrentHeader.getSubframeNumber() << ". Resynchronising." << std::endl;
+            std::cout << "Expected packet index " << (uint32_t)m_u8ExpectedSubframeIndex << ", got " << (uint32_t)m_oCurrentHeader.getSubframeNumber() << ". Resynchronising." << std::endl;
             return false;
         }
 
@@ -98,6 +121,68 @@ private:
         m_oPreviousHeader = m_oCurrentHeader;
 
         return true;
+    }
+
+    inline void deinterleaveInt32ToInt32(int32_t* pi32Data, int32_t *&pi32Chan0, int32_t *&pi32Chan1, int32_t *&pi32Chan2, int32_t *&pi32Chan3, uint32_t u32NValuesPerChan, bool bFlipEndianess)
+    {
+        if(bFlipEndianess)
+        {
+            for(uint32_t u32ValueNo = 0; u32ValueNo < u32NValuesPerChan; u32ValueNo++)
+            {
+#ifdef _WIN32
+                *pi32Chan0++ = (int32_t)( _byteswap_long( *pi32Data++ ) );
+                *pi32Chan1++ = (int32_t)( _byteswap_long( *pi32Data++ ) );
+                *pi32Chan2++ = (int32_t)( _byteswap_long( *pi32Data++ ) );
+                *pi32Chan3++ = (int32_t)( _byteswap_long( *pi32Data++ ) );
+#else
+                *pi32Chan0++ = (int32_t)( __builtin_bswap32( *pi32Data++ ) );
+                *pi32Chan1++ = (int32_t)( __builtin_bswap32( *pi32Data++ ) );
+                *pi32Chan2++ = (int32_t)( __builtin_bswap32( *pi32Data++ ) );
+                *pi32Chan3++ = (int32_t)( __builtin_bswap32( *pi32Data++ ) );
+#endif
+            }
+        }
+        else
+        {
+            for(uint32_t u32ValueNo = 0; u32ValueNo < u32NValuesPerChan; u32ValueNo++)
+            {
+                *pi32Chan0++ =  (int32_t)( *pi32Data++ );
+                *pi32Chan1++ =  (int32_t)( *pi32Data++ );
+                *pi32Chan2++ =  (int32_t)( *pi32Data++ );
+                *pi32Chan3++ =  (int32_t)( *pi32Data++ );
+            }
+        }
+    }
+
+    inline void deinterleaveInt32ToFloat(int32_t* pi32Data, float *&pfChan0, float *&pfChan1, float *&pfChan2, float *&pfChan3, uint32_t u32NValuesPerChan, bool bFlipEndianess)
+    {
+        if(bFlipEndianess)
+        {
+            for(uint32_t u32ValueNo = 0; u32ValueNo < u32NValuesPerChan; u32ValueNo++)
+            {
+#ifdef _WIN32
+                *pfChan0++ = (int32_t)( _byteswap_long( *pi32Data++ ) );
+                *pfChan1++ = (int32_t)( _byteswap_long( *pi32Data++ ) );
+                *pfChan2++ = (int32_t)( _byteswap_long( *pi32Data++ ) );
+                *pfChan3++ = (int32_t)( _byteswap_long( *pi32Data++ ) );
+#else
+                *pfChan0++ = (int32_t)( __builtin_bswap32( *pi32Data++ ) );
+                *pfChan1++ = (int32_t)( __builtin_bswap32( *pi32Data++ ) );
+                *pfChan2++ = (int32_t)( __builtin_bswap32( *pi32Data++ ) );
+                *pfChan3++ = (int32_t)( __builtin_bswap32( *pi32Data++ ) );
+#endif
+            }
+        }
+        else
+        {
+            for(uint32_t u32ValueNo = 0; u32ValueNo < u32NValuesPerChan; u32ValueNo++)
+            {
+                *pfChan0++ = (int32_t)( *pi32Data++ );
+                *pfChan1++ = (int32_t)( *pi32Data++ );
+                *pfChan2++ = (int32_t)( *pi32Data++ );
+                *pfChan3++ = (int32_t)( *pi32Data++ );
+            }
+        }
     }
 };
 

@@ -15,8 +15,24 @@ cSpectrometerDataStreamInterpreter::cSpectrometerDataStreamInterpreter(boost::sh
     m_u32NValuesPerFrame(0),
     m_u32NValuesPerPacket(0),
     m_i64LastUsedTimestamp_us(0),
-    m_bSkipFrame(false)
+    m_bSkipFrame(false),
+    m_vviChannelData(4),
+    m_bSynchronised(false)
 {
+}
+
+cSpectrometerDataStreamInterpreter::cSpectrometerDataStreamInterpreter() :
+    m_bIsRunning(true),
+    m_u32UpdateRate_ms(0),
+    m_u32PacketSize_B(0),
+    m_u32NValuesPerFrame(0),
+    m_u32NValuesPerPacket(0),
+    m_i64LastUsedTimestamp_us(0),
+    m_bSkipFrame(false),
+    m_vviChannelData(4),
+    m_bSynchronised(false)
+{
+    m_pSocketReceiver.reset(); //Not used
 }
 
 cSpectrometerDataStreamInterpreter::~cSpectrometerDataStreamInterpreter()
@@ -96,7 +112,7 @@ bool cSpectrometerDataStreamInterpreter::synchronise()
     //Keep going until the next subframe will be subframe #0
     while(m_oCurrentHeader.getSubframeNumber() != m_oCurrentHeader.getNSubframes() - 1);
 
-    cout << "cSpectrometerDataStreamInterpreter::getNextFrame(): Synchronisation successful. Now aquiring data for plotting..." << endl;
+    cout << "cSpectrometerDataStreamInterpreter::getNextFrame(): Synchronisation successful." << endl;
 
     m_u32NValuesPerPacket = (i32NextPacketSize_B - AVN::Spectrometer::HEADER_SIZE_B) / sizeof(int32_t);
     m_u32NValuesPerFrame = m_u32NValuesPerPacket * m_oCurrentHeader.getNSubframes();
@@ -124,7 +140,7 @@ bool cSpectrometerDataStreamInterpreter::getNextFrame(int32_t *pi32Chan0, int32_
 
     //Read the data
 
-    for(uint8_t u8ExpectedSubframeIndex = 0; u8ExpectedSubframeIndex < m_oCurrentHeader.getNSubframes(); u8ExpectedSubframeIndex++)
+    for(m_u8ExpectedSubframeIndex = 0; m_u8ExpectedSubframeIndex < m_oCurrentHeader.getNSubframes(); m_u8ExpectedSubframeIndex++)
     {
 
         do
@@ -150,7 +166,7 @@ bool cSpectrometerDataStreamInterpreter::getNextFrame(int32_t *pi32Chan0, int32_
         }
 
         //Check for data consistency
-        if(!headerConsistencyCheck(u8ExpectedSubframeIndex))
+        if(!headerConsistencyCheck())
             return false;
 
         if(!m_oCurrentHeader.deserialise(m_vcPacket))
@@ -162,7 +178,7 @@ bool cSpectrometerDataStreamInterpreter::getNextFrame(int32_t *pi32Chan0, int32_
 
 
         //Get timestamp on the first subframe
-        if(!u8ExpectedSubframeIndex)
+        if(!m_u8ExpectedSubframeIndex)
         {
             //Attempt to reach 30 frames per second.
             boost::upgrade_lock<boost::shared_mutex>  oLock(m_oMutex); //For for update rate variable
@@ -175,36 +191,10 @@ bool cSpectrometerDataStreamInterpreter::getNextFrame(int32_t *pi32Chan0, int32_
             continue;
         }
 
-        pi32Data = (int32_t*)(&m_vcPacket.front() + AVN::Spectrometer::HEADER_SIZE_B); //Go to offset of first sample (header is 16 bytes).
+        pi32Data = (int32_t*)((char*)(&m_vcPacket.front()) + AVN::Spectrometer::HEADER_SIZE_B); //Go to offset of first sample (header is 16 bytes).
 
-        //Deinterleave data to output channels of type int32
-        if(m_oCurrentHeader.requiresEndianessFlip())
-        {
-            for(uint32_t u32ValueNo = 0; u32ValueNo < m_u32NValuesPerPacket / 4; u32ValueNo++)
-            {
-#ifdef _WIN32
-                *pi32Chan0++ = (int32_t)( _byteswap_long( *pi32Data++ ) );
-                *pi32Chan1++ = (int32_t)( _byteswap_long( *pi32Data++ ) );
-                *pi32Chan2++ = (int32_t)( _byteswap_long( *pi32Data++ ) );
-                *pi32Chan3++ = (int32_t)( _byteswap_long( *pi32Data++ ) );
-#else
-                *pi32Chan0++ = (int32_t)( __builtin_bswap32( *pi32Data++ ) );
-                *pi32Chan1++ = (int32_t)( __builtin_bswap32( *pi32Data++ ) );
-                *pi32Chan2++ = (int32_t)( __builtin_bswap32( *pi32Data++ ) );
-                *pi32Chan3++ = (int32_t)( __builtin_bswap32( *pi32Data++ ) );
-#endif
-            }
-        }
-        else
-        {
-            for(uint32_t u32ValueNo = 0; u32ValueNo < m_u32NValuesPerPacket / 4; u32ValueNo++)
-            {
-                *pi32Chan0++ =  (int32_t)( *pi32Data++ );
-                *pi32Chan1++ =  (int32_t)( *pi32Data++ );
-                *pi32Chan2++ =  (int32_t)( *pi32Data++ );
-                *pi32Chan3++ =  (int32_t)( *pi32Data++ );
-            }
-        }
+        //Deinterleave data to output channels of type float
+        deinterleaveInt32ToInt32(pi32Data, pi32Chan0, pi32Chan1, pi32Chan2, pi32Chan3, m_u32NValuesPerPacket / 4, m_oCurrentHeader.requiresEndianessFlip());
     }
 
     m_i64LastUsedTimestamp_us = m_oCurrentHeader.getTimestamp_us();
@@ -229,7 +219,7 @@ bool cSpectrometerDataStreamInterpreter::getNextFrame(float *pfChan0, float *pfC
 
     //Read the data
 
-    for(uint8_t u8ExpectedSubframeIndex = 0; u8ExpectedSubframeIndex < m_oCurrentHeader.getNSubframes(); u8ExpectedSubframeIndex++)
+    for(m_u8ExpectedSubframeIndex = 0; m_u8ExpectedSubframeIndex < m_oCurrentHeader.getNSubframes(); m_u8ExpectedSubframeIndex++)
     {
 
         do
@@ -262,11 +252,11 @@ bool cSpectrometerDataStreamInterpreter::getNextFrame(float *pfChan0, float *pfC
         }
 
         //Check for data consistency
-        if(!headerConsistencyCheck(u8ExpectedSubframeIndex))
+        if(!headerConsistencyCheck())
             return false;
 
         //Get timestamp on the first subframe
-        if(!u8ExpectedSubframeIndex)
+        if(!m_u8ExpectedSubframeIndex)
         {
             //Attempt to reach 30 frames per second.
             boost::upgrade_lock<boost::shared_mutex>  oLock(m_oMutex); //For for update rate variable
@@ -279,36 +269,11 @@ bool cSpectrometerDataStreamInterpreter::getNextFrame(float *pfChan0, float *pfC
             continue;
         }
 
-        pi32Data = (int32_t*)(&m_vcPacket.front() + AVN::Spectrometer::HEADER_SIZE_B); //Go to offset of first sample (header is 16 bytes).
+
+        pi32Data = (int32_t*)((char*)(&m_vcPacket.front()) + AVN::Spectrometer::HEADER_SIZE_B); //Go to offset of first sample (header is 16 bytes). (NB: Note cast to char before adding bytes to pointer.)
 
         //Deinterleave data to output channels of type float
-        if(m_oCurrentHeader.requiresEndianessFlip())
-        {
-            for(uint32_t u32ValueNo = 0; u32ValueNo < m_u32NValuesPerPacket / 4; u32ValueNo++)
-            {
-#ifdef _WIN32
-                *pfChan0++ = (int32_t)( _byteswap_long( *pi32Data++ ) );
-                *pfChan1++ = (int32_t)( _byteswap_long( *pi32Data++ ) );
-                *pfChan2++ = (int32_t)( _byteswap_long( *pi32Data++ ) );
-                *pfChan3++ = (int32_t)( _byteswap_long( *pi32Data++ ) );
-#else
-                *pfChan0++ = (int32_t)( __builtin_bswap32( *pi32Data++ ) );
-                *pfChan1++ = (int32_t)( __builtin_bswap32( *pi32Data++ ) );
-                *pfChan2++ = (int32_t)( __builtin_bswap32( *pi32Data++ ) );
-                *pfChan3++ = (int32_t)( __builtin_bswap32( *pi32Data++ ) );
-#endif
-            }
-        }
-        else
-        {
-            for(uint32_t u32ValueNo = 0; u32ValueNo < m_u32NValuesPerPacket / 4; u32ValueNo++)
-            {
-                *pfChan0++ =  (int32_t)( *pi32Data++ );
-                *pfChan1++ =  (int32_t)( *pi32Data++ );
-                *pfChan2++ =  (int32_t)( *pi32Data++ );
-                *pfChan3++ =  (int32_t)( *pi32Data++ );
-            }
-        }
+        deinterleaveInt32ToFloat(pi32Data, pfChan0, pfChan1, pfChan2, pfChan3, m_u32NValuesPerPacket / 4, m_oCurrentHeader.requiresEndianessFlip());
     }
 
     m_i64LastUsedTimestamp_us = m_oCurrentHeader.getTimestamp_us();
@@ -324,4 +289,169 @@ const cSpectrometerHeader &cSpectrometerDataStreamInterpreter::getLastHeader()
 uint32_t cSpectrometerDataStreamInterpreter::getNValuesPerChannelPerFrame()
 {
     return m_u32NValuesPerFrame / 4;
+}
+
+void cSpectrometerDataStreamInterpreter::offloadData_callback(char* pcData, uint32_t u32Size_B)
+{
+    int32_t *pi32Chan0 = NULL;
+    int32_t *pi32Chan1 = NULL;
+    int32_t *pi32Chan2 = NULL;
+    int32_t *pi32Chan3 = NULL;
+    int32_t *pi32Data = NULL;
+
+    if(!m_bSynchronised)
+    {
+
+        //Synchronise: Find the last packet of the frame
+        cout << "Resynchronising to frame border." << endl;
+        do
+        {
+            if(!isRunning())
+                return;
+
+            //Check that data is large enough for at least the header
+            if(u32Size_B < AVN::Spectrometer::HEADER_SIZE_B)
+            {
+                cout << "cSpectrometerDataStreamInterpreter::offloadData_callback(): Warning got packet size of " << u32Size_B << "which is smaller than AVN spectrometer header size." << endl;
+                return;
+            }
+
+            //Check that we synced to the stream correctly
+            if(!m_oCurrentHeader.deserialise(pcData))
+            {
+                cout << "cSpectrometerDataStreamInterpreter::getNextFrame(): Warning got wrong magic no: "
+                     << std::hex << m_oCurrentHeader.getSyncWord() << ". Expected " << AVN::Spectrometer::SYNC_WORD << std::dec << endl;
+
+                return;
+            }
+
+            cout << "cSpectrometerDataStreamInterpreter::getNextFrame(): Synchronising: Got packet " << (uint32_t)m_oCurrentHeader.getSubframeNumber()
+                 << " of " << (uint32_t)m_oCurrentHeader.getNSubframes() << endl;
+        }
+        //Keep going until the next subframe will be subframe #0
+        while(m_oCurrentHeader.getSubframeNumber() != m_oCurrentHeader.getNSubframes() - 1);
+
+        cout << "cSpectrometerDataStreamInterpreter::offloadData_callback(): Synchronisation successful." << endl;
+
+        m_u32NValuesPerPacket = (u32Size_B - AVN::Spectrometer::HEADER_SIZE_B) / sizeof(int32_t);
+        m_u32NValuesPerFrame = m_u32NValuesPerPacket * m_oCurrentHeader.getNSubframes();
+
+        //Store current header
+        m_oPreviousHeader = m_oCurrentHeader;
+
+        m_bSynchronised = true;
+
+        //Resize channel vectors as necessary
+        if((uint32_t)m_vviChannelData[0].size() != m_u32NValuesPerFrame / 4)
+        {
+            for(uint32_t ui = 0; ui <  m_vviChannelData.size(); ui++)
+            {
+                m_vviChannelData[ui].resize(m_u32NValuesPerFrame / 4);
+            }
+        }
+
+        m_u8ExpectedSubframeIndex = 0;
+    }
+
+    //Check packet size
+    if(u32Size_B != m_u32PacketSize_B)
+    {
+        cout << "cPlotsWidget::getDataThreadFunction(): Got different packet size, resynchronising." << endl;
+        m_bSynchronised = false;
+        return;
+    }
+
+    if(!m_oCurrentHeader.deserialise(m_vcPacket))
+    {
+        cout << "cSpectrometerDataStreamInterpreter::getNextFrame(): Warning got wrong magic no: "
+             << std::hex << m_oCurrentHeader.getSyncWord() << ". Expected " << AVN::Spectrometer::SYNC_WORD << std::dec << endl;
+
+        m_bSynchronised = false;
+        return;
+    }
+
+    //Check for data consistency
+    if(!headerConsistencyCheck())
+    {
+        m_bSynchronised = false;
+        return;
+    }
+
+    //Get timestamp on the first subframe
+    if(!m_u8ExpectedSubframeIndex)
+    {
+        //Attempt to reach 30 frames per second.
+        boost::upgrade_lock<boost::shared_mutex>  oLock(m_oMutex); //For for update rate variable
+
+        m_bSkipFrame = (m_oCurrentHeader.getTimestamp_us() - m_i64LastUsedTimestamp_us) < m_u32UpdateRate_ms;
+
+        //Also the the pointers to the beginning of the deinterleaved channel data
+        pi32Chan0 = &m_vviChannelData[0].front();
+        pi32Chan1 = &m_vviChannelData[1].front();
+        pi32Chan2 = &m_vviChannelData[2].front();
+        pi32Chan3 = &m_vviChannelData[3].front();
+    }
+
+    m_u8ExpectedSubframeIndex++;
+
+    if(m_bSkipFrame)
+    {
+        return;
+    }
+
+    pi32Data = (int32_t*)(pcData + AVN::Spectrometer::HEADER_SIZE_B); //Go to offset of first sample (header is 16 bytes).
+
+    //Deinterleave data to output channels of type float
+    deinterleaveInt32ToInt32(pi32Data, pi32Chan0, pi32Chan1, pi32Chan2, pi32Chan3, m_u32NValuesPerPacket / 4, m_oCurrentHeader.requiresEndianessFlip());
+
+    m_i64LastUsedTimestamp_us = m_oCurrentHeader.getTimestamp_us();
+
+    //If all data has been received for this data frame pass on to the callback handler(s)
+    if(m_oCurrentHeader.getSubframeNumber() == m_oCurrentHeader.getNSubframes() - 1)
+    {
+        boost::unique_lock<boost::shared_mutex> oLock(m_oCallbackHandlersMutex);
+        for(uint32_t ui = 0; ui < m_vpCallbackHandlers.size();)
+        {
+            m_vpCallbackHandlers[ui]->getNextFrame_callback(m_vviChannelData[0],  m_vviChannelData[1], m_vviChannelData[2], m_vviChannelData[3], m_oCurrentHeader);
+        }
+
+        //The next subframe will then be the first of the new complete data frame
+        m_u8ExpectedSubframeIndex = 0;
+    }
+}
+
+void cSpectrometerDataStreamInterpreter::registerCallbackHandler(boost::shared_ptr<cCallbackInterface> pNewHandler)
+{
+    boost::unique_lock<boost::shared_mutex> oLock(m_oCallbackHandlersMutex);
+
+    m_vpCallbackHandlers.push_back(pNewHandler);
+
+    cout << "cSpectrometerDataStreamInterpreter::registerCallbackHandler(): Successfully registered callback handler: " << pNewHandler.get() << endl;
+}
+
+void cSpectrometerDataStreamInterpreter::deregisterCallbackHandler(boost::shared_ptr<cCallbackInterface> pHandler)
+{
+    boost::unique_lock<boost::shared_mutex> oLock(m_oCallbackHandlersMutex);
+    bool bSuccess = false;
+
+    //Search for matching pointer values and erase
+    for(uint32_t ui = 0; ui < m_vpCallbackHandlers.size();)
+    {
+        if(m_vpCallbackHandlers[ui].get() == pHandler.get())
+        {
+            m_vpCallbackHandlers.erase(m_vpCallbackHandlers.begin() + ui);
+
+            cout << "cSpectrometerDataStreamInterpreter::deregisterCallbackHandler(): Deregistered callback handler: " << pHandler.get() << endl;
+            bSuccess = true;
+        }
+        else
+        {
+            ui++;
+        }
+    }
+
+    if(!bSuccess)
+    {
+        cout << "cSpectrometerDataStreamInterpreter::deregisterCallbackHandler(): Warning: Deregistering callback handler: " << pHandler.get() << " failed. Object instance not found." << endl;
+    }
 }

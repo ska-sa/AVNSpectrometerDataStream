@@ -8,7 +8,7 @@
 //Library includes
 
 //Local includes
-#include "SpetrometerDefinitions.h"
+#include "SpectrometerDefinitions.h"
 
 class cSpectrometerHeader
 {
