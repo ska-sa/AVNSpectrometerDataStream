@@ -89,6 +89,11 @@ protected:
     //Variables used for callback function mode
     std::vector< std::vector<int> >                     m_vviChannelData;
 
+    int32_t                                             *m_pi32Chan0;
+    int32_t                                             *m_pi32Chan1;
+    int32_t                                             *m_pi32Chan2;
+    int32_t                                             *m_pi32Chan3;
+
     bool                                                m_bSynchronised;
 
     std::vector<boost::shared_ptr<cCallbackInterface> > m_vpCallbackHandlers;

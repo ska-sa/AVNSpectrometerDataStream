@@ -154,7 +154,7 @@ bool cSpectrometerDataStreamInterpreter::getNextFrame(int32_t *pi32Chan0, int32_
 
         if((unsigned)i32NextPacketSize_B != m_u32PacketSize_B)
         {
-            cout << "cPlotsWidget::getDataThreadFunction(): Got different packet size, resynchronising." << endl;
+            cout << "cSpectrometerDataStreamInterpreter::getNextFrame(): Got different packet size, resynchronising." << endl;
             return false;
         }
 
@@ -233,7 +233,7 @@ bool cSpectrometerDataStreamInterpreter::getNextFrame(float *pfChan0, float *pfC
 
         if((unsigned)i32NextPacketSize_B != m_u32PacketSize_B)
         {
-            cout << "cPlotsWidget::getDataThreadFunction(): Got different packet size, resynchronising." << endl;
+            cout << "cSpectrometerDataStreamInterpreter::getNextFrame(): Got different packet size, resynchronising." << endl;
             return false;
         }
 
@@ -292,11 +292,7 @@ uint32_t cSpectrometerDataStreamInterpreter::getNValuesPerChannelPerFrame()
 }
 
 void cSpectrometerDataStreamInterpreter::offloadData_callback(char* pcData, uint32_t u32Size_B)
-{
-    int32_t *pi32Chan0 = NULL;
-    int32_t *pi32Chan1 = NULL;
-    int32_t *pi32Chan2 = NULL;
-    int32_t *pi32Chan3 = NULL;
+{    
     int32_t *pi32Data = NULL;
 
     if(!m_bSynchronised)
@@ -319,13 +315,13 @@ void cSpectrometerDataStreamInterpreter::offloadData_callback(char* pcData, uint
             //Check that we synced to the stream correctly
             if(!m_oCurrentHeader.deserialise(pcData))
             {
-                cout << "cSpectrometerDataStreamInterpreter::getNextFrame(): Warning got wrong magic no: "
+                cout << "cSpectrometerDataStreamInterpreter::offloadData_callback(): Warning got wrong magic no: "
                      << std::hex << m_oCurrentHeader.getSyncWord() << ". Expected " << AVN::Spectrometer::SYNC_WORD << std::dec << endl;
 
                 return;
             }
 
-            cout << "cSpectrometerDataStreamInterpreter::getNextFrame(): Synchronising: Got packet " << (uint32_t)m_oCurrentHeader.getSubframeNumber()
+            cout << "cSpectrometerDataStreamInterpreter::offloadData_callback(): Synchronising: Got packet " << (uint32_t)m_oCurrentHeader.getSubframeNumber()
                  << " of " << (uint32_t)m_oCurrentHeader.getNSubframes() << endl;
         }
         //Keep going until the next subframe will be subframe #0
@@ -335,6 +331,7 @@ void cSpectrometerDataStreamInterpreter::offloadData_callback(char* pcData, uint
 
         m_u32NValuesPerPacket = (u32Size_B - AVN::Spectrometer::HEADER_SIZE_B) / sizeof(int32_t);
         m_u32NValuesPerFrame = m_u32NValuesPerPacket * m_oCurrentHeader.getNSubframes();
+        m_u32PacketSize_B = u32Size_B;
 
         //Store current header
         m_oPreviousHeader = m_oCurrentHeader;
@@ -351,17 +348,20 @@ void cSpectrometerDataStreamInterpreter::offloadData_callback(char* pcData, uint
         }
 
         m_u8ExpectedSubframeIndex = 0;
+
+        return;
     }
 
     //Check packet size
     if(u32Size_B != m_u32PacketSize_B)
     {
-        cout << "cPlotsWidget::getDataThreadFunction(): Got different packet size, resynchronising." << endl;
+        cout << "cSpectrometerDataStreamInterpreter::offloadData_callback(): Got different packet size, resynchronising." << endl;
         m_bSynchronised = false;
         return;
     }
 
-    if(!m_oCurrentHeader.deserialise(m_vcPacket))
+    //Unpack and check this frames header
+    if(!m_oCurrentHeader.deserialise(pcData))
     {
         cout << "cSpectrometerDataStreamInterpreter::getNextFrame(): Warning got wrong magic no: "
              << std::hex << m_oCurrentHeader.getSyncWord() << ". Expected " << AVN::Spectrometer::SYNC_WORD << std::dec << endl;
@@ -386,10 +386,10 @@ void cSpectrometerDataStreamInterpreter::offloadData_callback(char* pcData, uint
         m_bSkipFrame = (m_oCurrentHeader.getTimestamp_us() - m_i64LastUsedTimestamp_us) < m_u32UpdateRate_ms;
 
         //Also the the pointers to the beginning of the deinterleaved channel data
-        pi32Chan0 = &m_vviChannelData[0].front();
-        pi32Chan1 = &m_vviChannelData[1].front();
-        pi32Chan2 = &m_vviChannelData[2].front();
-        pi32Chan3 = &m_vviChannelData[3].front();
+        m_pi32Chan0 = &(m_vviChannelData[0].front());
+        m_pi32Chan1 = &(m_vviChannelData[1].front());
+        m_pi32Chan2 = &(m_vviChannelData[2].front());
+        m_pi32Chan3 = &(m_vviChannelData[3].front());
     }
 
     m_u8ExpectedSubframeIndex++;
@@ -402,15 +402,15 @@ void cSpectrometerDataStreamInterpreter::offloadData_callback(char* pcData, uint
     pi32Data = (int32_t*)(pcData + AVN::Spectrometer::HEADER_SIZE_B); //Go to offset of first sample (header is 16 bytes).
 
     //Deinterleave data to output channels of type float
-    deinterleaveInt32ToInt32(pi32Data, pi32Chan0, pi32Chan1, pi32Chan2, pi32Chan3, m_u32NValuesPerPacket / 4, m_oCurrentHeader.requiresEndianessFlip());
+    deinterleaveInt32ToInt32(pi32Data, m_pi32Chan0, m_pi32Chan1, m_pi32Chan2, m_pi32Chan3, m_u32NValuesPerPacket / 4, m_oCurrentHeader.requiresEndianessFlip());
 
     m_i64LastUsedTimestamp_us = m_oCurrentHeader.getTimestamp_us();
 
     //If all data has been received for this data frame pass on to the callback handler(s)
     if(m_oCurrentHeader.getSubframeNumber() == m_oCurrentHeader.getNSubframes() - 1)
     {
-        boost::unique_lock<boost::shared_mutex> oLock(m_oCallbackHandlersMutex);
-        for(uint32_t ui = 0; ui < m_vpCallbackHandlers.size();)
+        boost::shared_lock<boost::shared_mutex> oLock(m_oCallbackHandlersMutex);
+        for(uint32_t ui = 0; ui < m_vpCallbackHandlers.size(); ui++)
         {
             m_vpCallbackHandlers[ui]->getNextFrame_callback(m_vviChannelData[0],  m_vviChannelData[1], m_vviChannelData[2], m_vviChannelData[3], m_oCurrentHeader);
         }

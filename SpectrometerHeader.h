@@ -1,5 +1,5 @@
 #ifndef SPECTROMETER_HEADER
-#define SPECTORMETER_HEADER
+#define SPECTROMETER_HEADER
 
 //System includes
 #include <string>

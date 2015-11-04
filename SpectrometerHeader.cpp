@@ -120,7 +120,10 @@ bool cSpectrometerHeader::deserialise(const std::vector<char> &vcData)
 
 std::vector<char> cSpectrometerHeader::serialise()
 {
-    //Todo
+    //TODO: Place holder. Implement on demand
+
+    std::vector<char> vcSerialisedHeader;
+    return vcSerialisedHeader;
 }
 
 //Accessors
