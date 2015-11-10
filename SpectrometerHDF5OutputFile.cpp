@@ -60,24 +60,28 @@ cSpectrometerHDF5OutputFile::cSpectrometerHDF5OutputFile(const std::string &strF
 
     if(m_iH5Channel0Dataset == H5I_INVALID_HID || m_iH5Channel1Dataset == H5I_INVALID_HID || m_iH5Channel2Dataset == H5I_INVALID_HID || m_iH5Channel3Dataset == H5I_INVALID_HID)
     {
-        cout << "Error: Opening HDF5 packet tables failed." << endl;
+        cout << "Error: Creating HDF5 datasets failed." << endl;
     }
     else
     {
-        cout << "Successfully created packet tables." << endl;
+        cout << "Successfully created HDF5 datasets." << endl;
     }
 
-    H5Dclose(dataSpace0);
-    H5Dclose(dataSpace1);
-    H5Dclose(dataSpace2);
-    H5Dclose(dataSpace3);
+    H5Sclose(dataSpace0);
+    H5Sclose(dataSpace1);
+    H5Sclose(dataSpace2);
+    H5Sclose(dataSpace3);
     H5Pclose(datasetProperties);
 }
 
 cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
 {
+    cout << "cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile(): Got close request, writing accumulated data to end of HDF5 file... " << endl;
+
     writeTimestamps();
     writeChannelAverages();
+
+    cout << "cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile(): Done writing accumulated data." << endl;
 
     //Close and free all HDF5 structures
     H5Dclose(m_iH5Channel0Dataset);
@@ -170,11 +174,11 @@ void cSpectrometerHDF5OutputFile::writeTimestamps()
 
     if(err < 0)
     {
-        cout << "cSpectrometerHDF5OutputFile::writeTimestamps() HDF5 make dataset error" << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeTimestamps(): HDF5 make dataset error" << endl;
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeTimestamps() Wrote " << m_vi64Timestamps_us.size() << " timestamps to dataset." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeTimestamps(): Wrote " << m_vi64Timestamps_us.size() << " timestamps to dataset." << endl;
     }
 }
 
@@ -194,11 +198,11 @@ void cSpectrometerHDF5OutputFile::writeChannelAverages()
 
         if(err < 0)
         {
-            cout << "cSpectrometerHDF5OutputFile::writeChannelAverages() HDF5 make dataset error for channel " << ui << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeChannelAverages(): HDF5 make dataset error for channel " << ui << endl;
         }
         else
         {
-            cout << "Wrote " << m_vvfChannelAverages[ui].size() << " times averages to dataset." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeChannelAverages(): Wrote " << m_vvfChannelAverages[ui].size() << " time averages to dataset for channel " << ui << "." << endl;
         }
     }
 }

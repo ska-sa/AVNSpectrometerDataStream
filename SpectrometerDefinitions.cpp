@@ -51,8 +51,8 @@ string AVN::Spectrometer::getDigitiserChannelName(uint16_t u16DigitiserType, uin
         {
         case 0: strDigitiserChannelName = std::string("Left Power"); break;
         case 1: strDigitiserChannelName = std::string("Right Power"); break;
-        case 2: strDigitiserChannelName = std::string("Stoke Q"); break;
-        case 3: strDigitiserChannelName = std::string("Stoke U"); break;
+        case 2: strDigitiserChannelName = std::string("Stokes Q"); break;
+        case 3: strDigitiserChannelName = std::string("Stokes U"); break;
         default: strDigitiserChannelName = std::string("Undefined"); break;
         }
         break;
