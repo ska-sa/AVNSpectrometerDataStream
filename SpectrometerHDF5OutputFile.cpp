@@ -31,34 +31,39 @@ cSpectrometerHDF5OutputFile::cSpectrometerHDF5OutputFile(const std::string &strF
 
     m_iH5DataGroupHandle = H5Gcreate2(m_iH5FileHandle, "/Data", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
+    //Note data dimensions are [ time x frequency bin x data channel ]
+
     m_aChannelDatasetDims[0] = 1;
     m_aChannelDatasetDims[1] = 1024;
+    m_aChannelDatasetDims[2] = 4;
 
     m_aChannelDatasetExtensionDims[0] = 1;
-    m_aChannelDatasetExtensionDims[1] = 1024;
+    m_aChannelDatasetExtensionDims[1] = m_aChannelDatasetDims[1];
+    m_aChannelDatasetExtensionDims[2] = m_aChannelDatasetDims[2];
+
+    m_aMemspaceSize[0] = 1;
+    m_aMemspaceSize[1] = m_aChannelDatasetExtensionDims[1];
+    m_aMemspaceSize[2] = 1;
 
     m_aChannelDataOffset[0] = 0;
     m_aChannelDataOffset[1] = 0;
+    m_aChannelDataOffset[2] = 0;
 
-    hsize_t maxDims[2] = {H5S_UNLIMITED, H5S_UNLIMITED};
+    hsize_t maxDims[3] = {H5S_UNLIMITED, H5S_UNLIMITED, H5S_UNLIMITED};
 
     // Create a dataset creation property list and set it to use chunking
     hid_t datasetProperties = H5Pcreate(H5P_DATASET_CREATE);
-    H5Pset_chunk(datasetProperties, 2, m_aChannelDatasetDims);
+    H5Pset_chunk(datasetProperties, 3, m_aChannelDatasetDims);
 
     /* Create the dataspace and the chunked dataset */
-    hid_t dataSpace0 = H5Screate_simple(2, m_aChannelDatasetDims, maxDims);
-    hid_t dataSpace1 = H5Screate_simple(2, m_aChannelDatasetDims, maxDims);
-    hid_t dataSpace2 = H5Screate_simple(2, m_aChannelDatasetDims, maxDims);
-    hid_t dataSpace3 = H5Screate_simple(2, m_aChannelDatasetDims, maxDims);
-
-    m_iH5Channel0Dataset = H5Dcreate1(m_iH5DataGroupHandle, AVN::Spectrometer::getDigitiserChannelName(eDigitiserType, 0).c_str(), H5T_NATIVE_INT, dataSpace0, datasetProperties);
-    m_iH5Channel1Dataset = H5Dcreate1(m_iH5DataGroupHandle, AVN::Spectrometer::getDigitiserChannelName(eDigitiserType, 1).c_str(), H5T_NATIVE_INT, dataSpace1, datasetProperties);
-    m_iH5Channel2Dataset = H5Dcreate1(m_iH5DataGroupHandle, AVN::Spectrometer::getDigitiserChannelName(eDigitiserType, 2).c_str(), H5T_NATIVE_INT, dataSpace2, datasetProperties);
-    m_iH5Channel3Dataset = H5Dcreate1(m_iH5DataGroupHandle, AVN::Spectrometer::getDigitiserChannelName(eDigitiserType, 3).c_str(), H5T_NATIVE_INT, dataSpace3, datasetProperties);
+    hid_t dataSpace = H5Screate_simple(3, m_aChannelDatasetDims, maxDims);
 
 
-    if(m_iH5Channel0Dataset == H5I_INVALID_HID || m_iH5Channel1Dataset == H5I_INVALID_HID || m_iH5Channel2Dataset == H5I_INVALID_HID || m_iH5Channel3Dataset == H5I_INVALID_HID)
+    m_iH5Dataset = H5Dcreate1(m_iH5DataGroupHandle, "SingleDishData", H5T_NATIVE_INT, dataSpace, datasetProperties);
+
+
+
+    if(m_iH5Dataset == H5I_INVALID_HID)
     {
         cout << "Error: Creating HDF5 datasets failed." << endl;
     }
@@ -67,10 +72,7 @@ cSpectrometerHDF5OutputFile::cSpectrometerHDF5OutputFile(const std::string &strF
         cout << "Successfully created HDF5 datasets." << endl;
     }
 
-    H5Sclose(dataSpace0);
-    H5Sclose(dataSpace1);
-    H5Sclose(dataSpace2);
-    H5Sclose(dataSpace3);
+    H5Sclose(dataSpace);
     H5Pclose(datasetProperties);
 }
 
@@ -84,10 +86,7 @@ cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
     cout << "cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile(): Done writing accumulated data." << endl;
 
     //Close and free all HDF5 structures
-    H5Dclose(m_iH5Channel0Dataset);
-    H5Dclose(m_iH5Channel1Dataset);
-    H5Dclose(m_iH5Channel2Dataset);
-    H5Dclose(m_iH5Channel3Dataset);
+    H5Dclose(m_iH5Dataset);
 
     H5Gclose(m_iH5DataGroupHandle);
 
@@ -97,48 +96,46 @@ cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
 void cSpectrometerHDF5OutputFile::addFrame(const std::vector<int> &vi32Chan0, const std::vector<int> &vi32Chan1, const std::vector<int> &vi32Chan2, std::vector<int> &vi32Chan3,
                                            const cSpectrometerHeader &oHeader)
 {
-    m_aChannelDatasetDims[0] += m_aChannelDatasetExtensionDims[0]; //Extend in the row dimension
-    m_aChannelDatasetDims[1] = m_aChannelDatasetDims[1];
+    m_aChannelDatasetDims[0] += m_aChannelDatasetExtensionDims[0]; //Extend in the time dimension
 
-    H5Dset_extent(m_iH5Channel0Dataset, m_aChannelDatasetDims);
-    hid_t filespace0 = H5Dget_space(m_iH5Channel0Dataset);
-    H5Sselect_hyperslab (filespace0, H5S_SELECT_SET, m_aChannelDataOffset, NULL, m_aChannelDatasetExtensionDims, NULL);
-    hid_t memspace0 = H5Screate_simple (2, m_aChannelDatasetExtensionDims, NULL);
+    H5Dset_extent(m_iH5Dataset, m_aChannelDatasetDims);
+    hid_t filespace = H5Dget_space(m_iH5Dataset);
 
-    herr_t err0 = H5Dwrite(m_iH5Channel0Dataset, H5T_NATIVE_INT, memspace0, filespace0, H5P_DEFAULT, &vi32Chan0.front());
+    m_aChannelDataOffset[2] = 0;
+    H5Sselect_hyperslab (filespace, H5S_SELECT_SET, m_aChannelDataOffset, NULL, m_aMemspaceSize, NULL);
+    hid_t memspace0 = H5Screate_simple (3, m_aMemspaceSize, NULL);
+
+    herr_t err0 = H5Dwrite(m_iH5Dataset, H5T_NATIVE_INT, memspace0, filespace, H5P_DEFAULT, &vi32Chan0.front());
     if(err0 < 0)
     {
         cout << "HDF5 chunk extend error on 1st channel: " << err0 << endl;
     }
 
-    H5Dset_extent(m_iH5Channel1Dataset, m_aChannelDatasetDims);
-    hid_t filespace1 = H5Dget_space(m_iH5Channel1Dataset);
-    H5Sselect_hyperslab (filespace1, H5S_SELECT_SET, m_aChannelDataOffset, NULL, m_aChannelDatasetExtensionDims, NULL);
-    hid_t memspace1 = H5Screate_simple (2, m_aChannelDatasetExtensionDims, NULL);
+    m_aChannelDataOffset[2] = 1;
+    H5Sselect_hyperslab (filespace, H5S_SELECT_SET, m_aChannelDataOffset, NULL, m_aMemspaceSize, NULL);
+    hid_t memspace1 = H5Screate_simple (3, m_aMemspaceSize, NULL);
 
-    herr_t err1 = H5Dwrite(m_iH5Channel1Dataset, H5T_NATIVE_INT, memspace1, filespace1, H5P_DEFAULT, &vi32Chan1.front());
+    herr_t err1 = H5Dwrite(m_iH5Dataset, H5T_NATIVE_INT, memspace1, filespace, H5P_DEFAULT, &vi32Chan1.front());
     if(err1 < 0)
     {
         cout << "HDF5 chunk extend error on 2nd channel: " << err1 << endl;
     }
 
-    H5Dset_extent(m_iH5Channel2Dataset, m_aChannelDatasetDims);
-    hid_t filespace2 = H5Dget_space(m_iH5Channel2Dataset);
-    H5Sselect_hyperslab (filespace2, H5S_SELECT_SET, m_aChannelDataOffset, NULL, m_aChannelDatasetExtensionDims, NULL);
-    hid_t memspace2 = H5Screate_simple (2, m_aChannelDatasetExtensionDims, NULL);
+    m_aChannelDataOffset[2] = 2;
+    H5Sselect_hyperslab (filespace, H5S_SELECT_SET, m_aChannelDataOffset, NULL, m_aMemspaceSize, NULL);
+    hid_t memspace2 = H5Screate_simple (3, m_aMemspaceSize, NULL);
 
-    herr_t err2 = H5Dwrite(m_iH5Channel2Dataset, H5T_NATIVE_INT, memspace2, filespace2, H5P_DEFAULT, &vi32Chan2.front());
+    herr_t err2 = H5Dwrite(m_iH5Dataset, H5T_NATIVE_INT, memspace2, filespace, H5P_DEFAULT, &vi32Chan2.front());
     if(err2 < 0)
     {
         cout << "HDF5 chunk extend error on 3rd channel: " << err2 << endl;
     }
 
-    H5Dset_extent(m_iH5Channel3Dataset, m_aChannelDatasetDims);
-    hid_t filespace3 = H5Dget_space(m_iH5Channel3Dataset);
-    H5Sselect_hyperslab (filespace3, H5S_SELECT_SET, m_aChannelDataOffset, NULL, m_aChannelDatasetExtensionDims, NULL);
-    hid_t memspace3 = H5Screate_simple (2, m_aChannelDatasetExtensionDims, NULL);
+    m_aChannelDataOffset[2] = 3;
+    H5Sselect_hyperslab (filespace, H5S_SELECT_SET, m_aChannelDataOffset, NULL, m_aMemspaceSize, NULL);
+    hid_t memspace3 = H5Screate_simple (3, m_aMemspaceSize, NULL);
 
-    herr_t err3 = H5Dwrite(m_iH5Channel3Dataset, H5T_NATIVE_INT, memspace3, filespace3, H5P_DEFAULT, &vi32Chan3.front());
+    herr_t err3 = H5Dwrite(m_iH5Dataset, H5T_NATIVE_INT, memspace3, filespace, H5P_DEFAULT, &vi32Chan3.front());
     if(err3 < 0)
     {
         cout << "HDF5 chunk extend error on 4th channel: " << err3 << endl;
@@ -149,13 +146,11 @@ void cSpectrometerHDF5OutputFile::addFrame(const std::vector<int> &vi32Chan0, co
     H5Sclose (memspace2);
     H5Sclose (memspace3);
 
-    H5Sclose (filespace0);
-    H5Sclose (filespace1);
-    H5Sclose (filespace2);
-    H5Sclose (filespace3);
+    H5Sclose (filespace);
 
     //Store values to be written after channel data in memory
-    m_vi64Timestamps_us.push_back(oHeader.getTimestamp_us());
+    m_vdTimestamps_s.push_back((double)oHeader.getTimestamp_us() / 1e6); //As per KAT7 data: Seconds since Unix Epoch stored as double.
+
     m_vvfChannelAverages[0].push_back( calculateFrameAverage(vi32Chan0, (AVN::Spectrometer::digitiserType)oHeader.getDigitiserType()) );
     m_vvfChannelAverages[1].push_back( calculateFrameAverage(vi32Chan1, (AVN::Spectrometer::digitiserType)oHeader.getDigitiserType()) );
     m_vvfChannelAverages[2].push_back( calculateFrameAverage(vi32Chan2, (AVN::Spectrometer::digitiserType)oHeader.getDigitiserType()) );
@@ -169,8 +164,8 @@ void cSpectrometerHDF5OutputFile::addFrame(const std::vector<int> &vi32Chan0, co
 
 void cSpectrometerHDF5OutputFile::writeTimestamps()
 {
-    hsize_t dimension = m_vi64Timestamps_us.size();
-    herr_t err = H5LTmake_dataset(m_iH5DataGroupHandle, "Timestamps_us", 1, &dimension, H5T_NATIVE_LLONG, &m_vi64Timestamps_us.front());
+    hsize_t dimension = m_vdTimestamps_s.size();
+    herr_t err = H5LTmake_dataset(m_iH5DataGroupHandle, "Timestamps_us", 1, &dimension, H5T_NATIVE_DOUBLE, &m_vdTimestamps_s.front());
 
     if(err < 0)
     {
@@ -178,7 +173,7 @@ void cSpectrometerHDF5OutputFile::writeTimestamps()
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeTimestamps(): Wrote " << m_vi64Timestamps_us.size() << " timestamps to dataset." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeTimestamps(): Wrote " << m_vdTimestamps_s.size() << " timestamps to dataset." << endl;
     }
 }
 

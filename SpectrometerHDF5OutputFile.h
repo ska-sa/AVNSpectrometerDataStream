@@ -50,16 +50,14 @@ private:
     hid_t                               m_iH5FileProperties;
     hid_t                               m_iH5DataGroupHandle;
 
-    hid_t                               m_iH5Channel0Dataset;
-    hid_t                               m_iH5Channel1Dataset;
-    hid_t                               m_iH5Channel2Dataset;
-    hid_t                               m_iH5Channel3Dataset;
+    hid_t                               m_iH5Dataset;
 
-    hsize_t                             m_aChannelDatasetDims[2];
-    hsize_t                             m_aChannelDatasetExtensionDims[2];
-    hsize_t                             m_aChannelDataOffset[2];
+    hsize_t                             m_aChannelDatasetDims[3];
+    hsize_t                             m_aChannelDatasetExtensionDims[3];
+    hsize_t                             m_aChannelDataOffset[3];
+    hsize_t                             m_aMemspaceSize[3];
 
-    std::vector<int64_t>                m_vi64Timestamps_us;
+    std::vector<double>                 m_vdTimestamps_s;
     std::vector<std::vector<float> >    m_vvfChannelAverages;
 
     cSpectrometerHeader                 m_oLastHeader;
