@@ -43,8 +43,7 @@ cSpectrometerDataStreamInterpreter::~cSpectrometerDataStreamInterpreter()
 void cSpectrometerDataStreamInterpreter::setUpdateRate(uint32_t u32UpdateRate_ms)
 {
     //Thread safe mutator
-    boost::upgrade_lock<boost::shared_mutex>  oLock(m_oMutex);
-    boost::upgrade_to_unique_lock<boost::shared_mutex>  oUniqueLock(oLock);
+    boost::unique_lock<boost::shared_mutex>  oLock(m_oMutex);
 
     m_u32UpdateRate_ms = u32UpdateRate_ms;
 }
@@ -52,7 +51,7 @@ void cSpectrometerDataStreamInterpreter::setUpdateRate(uint32_t u32UpdateRate_ms
 bool cSpectrometerDataStreamInterpreter::isRunning()
 {
     //Thread safe accessor
-    boost::upgrade_lock<boost::shared_mutex>  oLock(m_oMutex);
+    boost::shared_lock<boost::shared_mutex>  oLock(m_oMutex);
 
     return m_bIsRunning;
 }
@@ -60,8 +59,7 @@ bool cSpectrometerDataStreamInterpreter::isRunning()
 void cSpectrometerDataStreamInterpreter::setIsRunning(bool bIsRunning)
 {
     //Thread safe flag mutator
-    boost::upgrade_lock<boost::shared_mutex>  oLock(m_oMutex);
-    boost::upgrade_to_unique_lock<boost::shared_mutex>  oUniqueLock(oLock);
+    boost::unique_lock<boost::shared_mutex>  oLock(m_oMutex);
 
     m_bIsRunning = bIsRunning;
 }
@@ -100,7 +98,7 @@ bool cSpectrometerDataStreamInterpreter::synchronise()
         //Check that we synced to the stream correctly
         if(!m_oCurrentHeader.deserialise(m_vcPacket))
         {
-             cout << "cSpectrometerDataStreamInterpreter::synchronise(): Deserialising header failed, resynchronising." << endl;
+            cout << "cSpectrometerDataStreamInterpreter::synchronise(): Deserialising header failed, resynchronising." << endl;
 
             return false;
         }
@@ -289,61 +287,59 @@ uint32_t cSpectrometerDataStreamInterpreter::getNValuesPerChannelPerFrame()
 }
 
 void cSpectrometerDataStreamInterpreter::offloadData_callback(char* pcData, uint32_t u32Size_B)
-{    
+{
     int32_t *pi32Data = NULL;
 
     if(!m_bSynchronised)
     {
-
         //Synchronise: Find the last packet of the frame
-        cout << "Resynchronising to frame border." << endl;
-        do
+
+        if(!isRunning())
+            return;
+
+        //Check that data is large enough for at least the header
+        if(u32Size_B < AVN::Spectrometer::HEADER_SIZE_B)
         {
-            if(!isRunning())
-                return;
-
-            //Check that data is large enough for at least the header
-            if(u32Size_B < AVN::Spectrometer::HEADER_SIZE_B)
-            {
-                cout << "cSpectrometerDataStreamInterpreter::offloadData_callback(): Warning got packet size of " << u32Size_B << "which is smaller than AVN spectrometer header size." << endl;
-                return;
-            }
-
-            //Check that we synced to the stream correctly
-            if(!m_oCurrentHeader.deserialise(pcData))
-            {
-                cout << "cSpectrometerDataStreamInterpreter::offloadData_callback(): Deserialising header failed, resynchronising." << endl;
-
-                return;
-            }
-
-            cout << "cSpectrometerDataStreamInterpreter::offloadData_callback(): Synchronising: Got packet " << (uint32_t)m_oCurrentHeader.getSubframeNumber()
-                 << " of " << (uint32_t)m_oCurrentHeader.getNSubframes() << endl;
-        }
-        //Keep going until the next subframe will be subframe #0
-        while(m_oCurrentHeader.getSubframeNumber() != m_oCurrentHeader.getNSubframes() - 1);
-
-        cout << "cSpectrometerDataStreamInterpreter::offloadData_callback(): Synchronisation successful." << endl;
-
-        m_u32NValuesPerPacket = (u32Size_B - AVN::Spectrometer::HEADER_SIZE_B) / sizeof(int32_t);
-        m_u32NValuesPerFrame = m_u32NValuesPerPacket * m_oCurrentHeader.getNSubframes();
-        m_u32PacketSize_B = u32Size_B;
-
-        //Store current header
-        m_oPreviousHeader = m_oCurrentHeader;
-
-        m_bSynchronised = true;
-
-        //Resize channel vectors as necessary
-        if((uint32_t)m_vviChannelData[0].size() != m_u32NValuesPerFrame / 4)
-        {
-            for(uint32_t ui = 0; ui <  m_vviChannelData.size(); ui++)
-            {
-                m_vviChannelData[ui].resize(m_u32NValuesPerFrame / 4);
-            }
+            cout << "cSpectrometerDataStreamInterpreter::offloadData_callback(): Warning got packet size of " << u32Size_B << "which is smaller than AVN spectrometer header size." << endl;
+            return;
         }
 
-        m_u8ExpectedSubframeIndex = 0;
+        //Check that we synced to the stream correctly
+        if(!m_oCurrentHeader.deserialise(pcData))
+        {
+            cout << "cSpectrometerDataStreamInterpreter::offloadData_callback(): Deserialising header failed, attempting resynchronising." << endl;
+            return;
+        }
+
+        cout << "cSpectrometerDataStreamInterpreter::offloadData_callback(): Synchronising: Got packet " << (uint32_t)m_oCurrentHeader.getSubframeNumber()
+             << " of " << (uint32_t)m_oCurrentHeader.getNSubframes() << endl;
+
+        if(m_oCurrentHeader.getSubframeNumber() == m_oCurrentHeader.getNSubframes() - 1)
+        {
+            cout << "cSpectrometerDataStreamInterpreter::offloadData_callback(): Synchronisation successful." << endl;
+
+            m_u32NValuesPerPacket = (u32Size_B - AVN::Spectrometer::HEADER_SIZE_B) / sizeof(int32_t);
+            m_u32NValuesPerFrame = m_u32NValuesPerPacket * m_oCurrentHeader.getNSubframes();
+            m_u32PacketSize_B = u32Size_B;
+
+            //Store current header
+            m_oPreviousHeader = m_oCurrentHeader;
+
+            m_bSynchronised = true;
+
+            //Resize channel vectors as necessary
+            if((uint32_t)m_vviChannelData[0].size() != m_u32NValuesPerFrame / 4)
+            {
+                for(uint32_t ui = 0; ui <  m_vviChannelData.size(); ui++)
+                {
+                    m_vviChannelData[ui].resize(m_u32NValuesPerFrame / 4);
+                }
+            }
+
+            m_u8ExpectedSubframeIndex = 0;
+
+            //The next packet should then be first in the next frame
+        }
 
         return;
     }
@@ -359,7 +355,7 @@ void cSpectrometerDataStreamInterpreter::offloadData_callback(char* pcData, uint
     //Unpack and check this frames header
     if(!m_oCurrentHeader.deserialise(pcData))
     {
-         cout << "cSpectrometerDataStreamInterpreter::offloadData_callback(): Deserialising header failed, resynchronising." << endl;
+        cout << "cSpectrometerDataStreamInterpreter::offloadData_callback(): Deserialising header failed, attempting resynchronising." << endl;
 
         m_bSynchronised = false;
         return;
@@ -410,6 +406,11 @@ void cSpectrometerDataStreamInterpreter::offloadData_callback(char* pcData, uint
             m_vpCallbackHandlers[ui]->getNextFrame_callback(m_vviChannelData[0],  m_vviChannelData[1], m_vviChannelData[2], m_vviChannelData[3], m_oCurrentHeader);
         }
 
+        for(uint32_t ui = 0; ui < m_vpCallbackHandlers_shared.size(); ui++)
+        {
+            m_vpCallbackHandlers_shared[ui]->getNextFrame_callback(m_vviChannelData[0],  m_vviChannelData[1], m_vviChannelData[2], m_vviChannelData[3], m_oCurrentHeader);
+        }
+
         //The next subframe will then be the first of the new complete data frame
         m_u8ExpectedSubframeIndex = 0;
     }
@@ -419,9 +420,45 @@ void cSpectrometerDataStreamInterpreter::registerCallbackHandler(boost::shared_p
 {
     boost::unique_lock<boost::shared_mutex> oLock(m_oCallbackHandlersMutex);
 
-    m_vpCallbackHandlers.push_back(pNewHandler);
+    m_vpCallbackHandlers_shared.push_back(pNewHandler);
 
     cout << "cSpectrometerDataStreamInterpreter::registerCallbackHandler(): Successfully registered callback handler: " << pNewHandler.get() << endl;
+}
+
+void cSpectrometerDataStreamInterpreter::registerCallbackHandler(cCallbackInterface* pNewHandler)
+{
+    boost::unique_lock<boost::shared_mutex> oLock(m_oCallbackHandlersMutex);
+
+    m_vpCallbackHandlers.push_back(pNewHandler);
+
+    cout << "cSpectrometerDataStreamInterpreter::registerCallbackHandler(): Successfully registered callback handler: " << pNewHandler << endl;
+}
+
+void cSpectrometerDataStreamInterpreter::deregisterCallbackHandler(cCallbackInterface* pHandler)
+{
+    boost::unique_lock<boost::shared_mutex> oLock(m_oCallbackHandlersMutex);
+    bool bSuccess = false;
+
+    //Search for matching pointer values and erase
+    for(uint32_t ui = 0; ui < m_vpCallbackHandlers.size();)
+    {
+        if(m_vpCallbackHandlers[ui] == pHandler)
+        {
+            m_vpCallbackHandlers.erase(m_vpCallbackHandlers.begin() + ui);
+
+            cout << "cSpectrometerDataStreamInterpreter::deregisterCallbackHandler(): Deregistered callback handler: " << pHandler << endl;
+            bSuccess = true;
+        }
+        else
+        {
+            ui++;
+        }
+    }
+
+    if(!bSuccess)
+    {
+        cout << "cSpectrometerDataStreamInterpreter::deregisterCallbackHandler(): Warning: Deregistering callback handler: " << pHandler << " failed. Object instance not found." << endl;
+    }
 }
 
 void cSpectrometerDataStreamInterpreter::deregisterCallbackHandler(boost::shared_ptr<cCallbackInterface> pHandler)
@@ -430,11 +467,11 @@ void cSpectrometerDataStreamInterpreter::deregisterCallbackHandler(boost::shared
     bool bSuccess = false;
 
     //Search for matching pointer values and erase
-    for(uint32_t ui = 0; ui < m_vpCallbackHandlers.size();)
+    for(uint32_t ui = 0; ui < m_vpCallbackHandlers_shared.size();)
     {
-        if(m_vpCallbackHandlers[ui].get() == pHandler.get())
+        if(m_vpCallbackHandlers_shared[ui].get() == pHandler.get())
         {
-            m_vpCallbackHandlers.erase(m_vpCallbackHandlers.begin() + ui);
+            m_vpCallbackHandlers_shared.erase(m_vpCallbackHandlers_shared.begin() + ui);
 
             cout << "cSpectrometerDataStreamInterpreter::deregisterCallbackHandler(): Deregistered callback handler: " << pHandler.get() << endl;
             bSuccess = true;
