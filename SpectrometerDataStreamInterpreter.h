@@ -29,7 +29,7 @@ typedef unsigned __int64 uint64_t;
 #include "SpectrometerHeader.h"
 #include "../../AVNAppLibs/SocketStreamers/SocketReceiverBase.h"
 
-class cSpectrometerDataStreamInterpreter : public cSocketReceiverBase::cCallbackInterface
+class cSpectrometerDataStreamInterpreter : public cSocketReceiverBase::cDataCallbackInterface
 {
 public:
     class cCallbackInterface

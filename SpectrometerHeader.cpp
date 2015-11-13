@@ -68,6 +68,10 @@ bool cSpectrometerHeader::deserialise(const char* pcData)
     {
         //SYNC Error
         m_bValid = false;
+
+        std::cout << "cSpectrometerHeader::deserialise(): Warning got wrong magic no: "
+             << std::hex << *(uint32_t*)pcData << ". Expected " << AVN::Spectrometer::SYNC_WORD << std::dec << std::endl;
+
         return false;
     }
 

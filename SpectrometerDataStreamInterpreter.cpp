@@ -100,19 +100,18 @@ bool cSpectrometerDataStreamInterpreter::synchronise()
         //Check that we synced to the stream correctly
         if(!m_oCurrentHeader.deserialise(m_vcPacket))
         {
-            cout << "cSpectrometerDataStreamInterpreter::getNextFrame(): Warning got wrong magic no: "
-                 << std::hex << m_oCurrentHeader.getSyncWord() << ". Expected " << AVN::Spectrometer::SYNC_WORD << std::dec << endl;
+             cout << "cSpectrometerDataStreamInterpreter::synchronise(): Deserialising header failed, resynchronising." << endl;
 
             return false;
         }
 
-        cout << "cSpectrometerDataStreamInterpreter::getNextFrame(): Synchronising: Got packet " << (uint32_t)m_oCurrentHeader.getSubframeNumber()
+        cout << "cSpectrometerDataStreamInterpreter::synchronise(): Synchronising: Got packet " << (uint32_t)m_oCurrentHeader.getSubframeNumber()
              << " of " << (uint32_t)m_oCurrentHeader.getNSubframes() << endl;
     }
     //Keep going until the next subframe will be subframe #0
     while(m_oCurrentHeader.getSubframeNumber() != m_oCurrentHeader.getNSubframes() - 1);
 
-    cout << "cSpectrometerDataStreamInterpreter::getNextFrame(): Synchronisation successful." << endl;
+    cout << "cSpectrometerDataStreamInterpreter::synchronise(): Synchronisation successful." << endl;
 
     m_u32NValuesPerPacket = (i32NextPacketSize_B - AVN::Spectrometer::HEADER_SIZE_B) / sizeof(int32_t);
     m_u32NValuesPerFrame = m_u32NValuesPerPacket * m_oCurrentHeader.getNSubframes();
@@ -171,8 +170,7 @@ bool cSpectrometerDataStreamInterpreter::getNextFrame(int32_t *pi32Chan0, int32_
 
         if(!m_oCurrentHeader.deserialise(m_vcPacket))
         {
-            cout << "cSpectrometerDataStreamInterpreter::getNextFrame(): Warning got wrong magic no: "
-                 << std::hex << m_oCurrentHeader.getSyncWord() << ". Expected " << AVN::Spectrometer::SYNC_WORD << std::dec << endl;
+            cout << "cSpectrometerDataStreamInterpreter::getNextFrame(): Deserialising header failed, resynchronising." << endl;
             return false;
         }
 
@@ -246,8 +244,7 @@ bool cSpectrometerDataStreamInterpreter::getNextFrame(float *pfChan0, float *pfC
 
         if(!m_oCurrentHeader.deserialise(m_vcPacket))
         {
-            cout << "cSpectrometerDataStreamInterpreter::getNextFrame(): Warning got wrong magic no: "
-                 << std::hex << m_oCurrentHeader.getSyncWord() << ". Expected " << AVN::Spectrometer::SYNC_WORD << std::dec << endl;
+            cout << "cSpectrometerDataStreamInterpreter::getNextFrame(): Deserialising header failed, resynchronising." << endl;
             return false;
         }
 
@@ -315,8 +312,7 @@ void cSpectrometerDataStreamInterpreter::offloadData_callback(char* pcData, uint
             //Check that we synced to the stream correctly
             if(!m_oCurrentHeader.deserialise(pcData))
             {
-                cout << "cSpectrometerDataStreamInterpreter::offloadData_callback(): Warning got wrong magic no: "
-                     << std::hex << m_oCurrentHeader.getSyncWord() << ". Expected " << AVN::Spectrometer::SYNC_WORD << std::dec << endl;
+                cout << "cSpectrometerDataStreamInterpreter::offloadData_callback(): Deserialising header failed, resynchronising." << endl;
 
                 return;
             }
@@ -363,8 +359,7 @@ void cSpectrometerDataStreamInterpreter::offloadData_callback(char* pcData, uint
     //Unpack and check this frames header
     if(!m_oCurrentHeader.deserialise(pcData))
     {
-        cout << "cSpectrometerDataStreamInterpreter::getNextFrame(): Warning got wrong magic no: "
-             << std::hex << m_oCurrentHeader.getSyncWord() << ". Expected " << AVN::Spectrometer::SYNC_WORD << std::dec << endl;
+         cout << "cSpectrometerDataStreamInterpreter::offloadData_callback(): Deserialising header failed, resynchronising." << endl;
 
         m_bSynchronised = false;
         return;
