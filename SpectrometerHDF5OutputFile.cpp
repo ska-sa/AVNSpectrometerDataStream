@@ -16,9 +16,10 @@ extern "C" {
 
 using namespace std;
 
-cSpectrometerHDF5OutputFile::cSpectrometerHDF5OutputFile(const std::string &strFilename, AVN::Spectrometer::digitiserType eDigitiserType) :
+cSpectrometerHDF5OutputFile::cSpectrometerHDF5OutputFile(const std::string &strFilename, AVN::Spectrometer::digitiserType eDigitiserType, uint32_t u32NFrequencyBins) :
     m_strFilename(strFilename),
     m_eDigitiserType(eDigitiserType),
+    m_u32NFrequencyBins(u32NFrequencyBins),
     m_vvfChannelAverages(4)
 {
     //Create file (overwrite any existing one with the same name)
@@ -34,7 +35,7 @@ cSpectrometerHDF5OutputFile::cSpectrometerHDF5OutputFile(const std::string &strF
     //Note data dimensions are [ time x frequency bin x data channel ]
 
     m_aChannelDatasetDims[0] = 1;
-    m_aChannelDatasetDims[1] = 1024;
+    m_aChannelDatasetDims[1] = m_u32NFrequencyBins;
     m_aChannelDatasetDims[2] = 4;
 
     m_aChannelDatasetExtensionDims[0] = 1;
@@ -165,7 +166,7 @@ void cSpectrometerHDF5OutputFile::addFrame(const std::vector<int> &vi32Chan0, co
 void cSpectrometerHDF5OutputFile::writeTimestamps()
 {
     hsize_t dimension = m_vdTimestamps_s.size();
-    herr_t err = H5LTmake_dataset(m_iH5DataGroupHandle, "Timestamps_us", 1, &dimension, H5T_NATIVE_DOUBLE, &m_vdTimestamps_s.front());
+    herr_t err = H5LTmake_dataset(m_iH5DataGroupHandle, "Timestamps", 1, &dimension, H5T_NATIVE_DOUBLE, &m_vdTimestamps_s.front());
 
     if(err < 0)
     {

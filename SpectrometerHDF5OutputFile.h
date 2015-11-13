@@ -34,16 +34,16 @@ class cSpectrometerHDF5OutputFile
 {
 
 public:
-    cSpectrometerHDF5OutputFile(const std::string &strFilename, AVN::Spectrometer::digitiserType eDigitiserType);
+    cSpectrometerHDF5OutputFile(const std::string &strFilename, AVN::Spectrometer::digitiserType eDigitiserType, uint32_t u32NFrequencyBins);
     ~cSpectrometerHDF5OutputFile();
 
     void                        addFrame(const std::vector<int> &vi32Chan0, const std::vector<int> &vi32Chan1, const std::vector<int> &vi32Chan2, std::vector<int> &vi32Chan3,
                                          const cSpectrometerHeader &oHeader);
 
+private:
     std::string                         m_strFilename;
     AVN::Spectrometer::digitiserType    m_eDigitiserType;
-
-private:
+    uint32_t                            m_u32NFrequencyBins;
 
     //HDF5:
     hid_t                               m_iH5FileHandle;

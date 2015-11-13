@@ -56,7 +56,9 @@ public:
     bool                                                isRunning();
     void                                                setIsRunning(bool bIsRunning);
 
+    void                                                registerCallbackHandler(cCallbackInterface* pNewHandler);
     void                                                registerCallbackHandler(boost::shared_ptr<cCallbackInterface> pNewHandler);
+    void                                                deregisterCallbackHandler(cCallbackInterface* pHandler);
     void                                                deregisterCallbackHandler(boost::shared_ptr<cCallbackInterface> pHandler);
 
     virtual void                                        offloadData_callback(char* pcData, uint32_t u32Size_B);
@@ -96,12 +98,12 @@ protected:
 
     bool                                                m_bSynchronised;
 
-    std::vector<boost::shared_ptr<cCallbackInterface> > m_vpCallbackHandlers;
+    std::vector<boost::shared_ptr<cCallbackInterface> > m_vpCallbackHandlers_shared;
+    std::vector<cCallbackInterface*>                    m_vpCallbackHandlers; //For classes owning and instance of this class a regular pointer is simpler.
     boost::shared_mutex                                 m_oCallbackHandlersMutex;
 
 
     //Inline functions
-
     inline bool headerConsistencyCheck()
     {
         //Some more consistency checks
