@@ -32,6 +32,11 @@ extern "C" {
 
 class cSpectrometerHDF5OutputFile
 {
+    typedef struct cNoiseDiodeState
+    {
+        double             m_dTimeStamp_s;
+        char               m_caState[1];
+    } cNoiseDiodeState;
 
 public:
     cSpectrometerHDF5OutputFile(const std::string &strFilename, AVN::Spectrometer::digitiserType eDigitiserType, uint32_t u32NFrequencyBins);
@@ -48,9 +53,15 @@ private:
     //HDF5:
     hid_t                               m_iH5FileHandle;
     hid_t                               m_iH5FileProperties;
-    hid_t                               m_iH5DataGroupHandle;
 
-    hid_t                               m_iH5Dataset;
+    hid_t                               m_iH5DataGroupHandle;
+    hid_t                               m_iH5MetaDataGroupHandle;
+    hid_t                               m_iH5SensorsGroupHandle;
+    hid_t                               m_iH5AntennasGroupHandle;
+    hid_t                               m_iH5Antenna1GroupHandle;
+
+    hid_t                               m_iH5DatasetVis;
+    hid_t                               m_iH5DatasetStokes;
 
     hsize_t                             m_aChannelDatasetDims[3];
     hsize_t                             m_aChannelDatasetExtensionDims[3];
@@ -59,6 +70,7 @@ private:
 
     std::vector<double>                 m_vdTimestamps_s;
     std::vector<std::vector<float> >    m_vvfChannelAverages;
+    std::vector<cNoiseDiodeState>       m_voNoiseDiodeStateChanges;
 
     cSpectrometerHeader                 m_oLastHeader;
 
@@ -66,6 +78,7 @@ private:
 
     void                                writeTimestamps();
     void                                writeChannelAverages();
+    void                                writeNoiseDiodeStates();
 
 };
 
