@@ -78,19 +78,19 @@ bool cSpectrometerHeader::deserialise(const char* pcData)
     if(m_bFlipEndianess)
     {
 #ifdef _WIN32
-        m_u32SyncWord = _byteswap_ulong( *(uint32_t*)(pcData) );
-        m_i64tTimestamp_us = _byteswap_uint64( *(int64_t*)(pcData + 4) );
+        m_u32SyncWord = (uint32_t)( _byteswap_ulong( *(uint32_t*)(pcData) ) );
+        m_i64tTimestamp_us = (int64_t)( _byteswap_uint64( *(int64_t*)(pcData + 4) ) );
         m_u8SubframeNumber = *(uint8_t*)(pcData + 12);
         m_u8NSubframes = *(uint8_t*)(pcData + 13);
-        m_u16DigitiserType = 0b0000000000001111 & _byteswap_ushort( *(uint16_t*)(pcData + 14) );
-        m_bNoiseDiodeOn = ( 0b1000000000000000 & _byteswap_ushort( *(uint16_t*)(pcData + 14) ) ) >> 15;
+        m_u16DigitiserType = 0x000F & (uint16_t)( _byteswap_ushort( *(uint16_t*)(pcData + 14) ) );
+        m_bNoiseDiodeOn = ( 0x000F & (uint16_t)( _byteswap_ushort( *(uint16_t*)(pcData + 14) ) ) ) >> 15;
 #else
         m_u32SyncWord = (uint32_t)( __builtin_bswap32( *(uint32_t*)(pcData) ) );
         m_i64tTimestamp_us = (int64_t)( __builtin_bswap64( *(int64_t*)(pcData + 4) ) );
         m_u8SubframeNumber = *(uint8_t*)(pcData + 12);
         m_u8NSubframes = *(uint8_t*)(pcData + 13);
-        m_u16DigitiserType = 0b0000000000001111 & (uint16_t)( __builtin_bswap16( *(uint16_t*)(pcData + 14) ) );
-        m_bNoiseDiodeOn = ( 0b1000000000000000 & (uint16_t)(__builtin_bswap16( *(uint16_t*)(pcData + 14) ) ) ) >> 15;
+        m_u16DigitiserType = 0x000F & (uint16_t)( __builtin_bswap16( *(uint16_t*)(pcData + 14) ) );
+        m_bNoiseDiodeOn = ( 0x000F & (uint16_t)(__builtin_bswap16( *(uint16_t*)(pcData + 14) ) ) ) >> 15;
 #endif
     }
     else
@@ -99,8 +99,8 @@ bool cSpectrometerHeader::deserialise(const char* pcData)
         m_i64tTimestamp_us = *(int64_t*)(pcData + 4);
         m_u8SubframeNumber = *(uint8_t*)(pcData + 12);
         m_u8NSubframes = *(uint8_t*)(pcData + 13);
-        m_u16DigitiserType = 0b0000000000001111 & *(uint16_t*)(pcData + 14);
-        m_bNoiseDiodeOn = ( 0b1000000000000000 & *(uint16_t*)(pcData + 14) ) >> 15;
+        m_u16DigitiserType = 0x000F & *(uint16_t*)(pcData + 14);
+        m_bNoiseDiodeOn = ( 0x000F & *(uint16_t*)(pcData + 14) ) >> 15;
     }
 
     m_bValid = true;

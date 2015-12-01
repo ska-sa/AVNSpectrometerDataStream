@@ -137,10 +137,10 @@ protected:
             for(uint32_t u32ValueNo = 0; u32ValueNo < u32NValuesPerChan; u32ValueNo++)
             {
 #ifdef _WIN32
-                *pi32Chan0++ = (int32_t)( _byteswap_long( *pi32Data++ ) );
-                *pi32Chan1++ = (int32_t)( _byteswap_long( *pi32Data++ ) );
-                *pi32Chan2++ = (int32_t)( _byteswap_long( *pi32Data++ ) );
-                *pi32Chan3++ = (int32_t)( _byteswap_long( *pi32Data++ ) );
+                *pi32Chan0++ = (int32_t)( _byteswap_ulong( *pi32Data++ ) );
+                *pi32Chan1++ = (int32_t)( _byteswap_ulong( *pi32Data++ ) );
+                *pi32Chan2++ = (int32_t)( _byteswap_ulong( *pi32Data++ ) );
+                *pi32Chan3++ = (int32_t)( _byteswap_ulong( *pi32Data++ ) );
 #else
                 *pi32Chan0++ = (int32_t)( __builtin_bswap32( *pi32Data++ ) );
                 *pi32Chan1++ = (int32_t)( __builtin_bswap32( *pi32Data++ ) );
@@ -168,10 +168,10 @@ protected:
             for(uint32_t u32ValueNo = 0; u32ValueNo < u32NValuesPerChan; u32ValueNo++)
             {
 #ifdef _WIN32
-                *pfChan0++ = (int32_t)( _byteswap_long( *pi32Data++ ) );
-                *pfChan1++ = (int32_t)( _byteswap_long( *pi32Data++ ) );
-                *pfChan2++ = (int32_t)( _byteswap_long( *pi32Data++ ) );
-                *pfChan3++ = (int32_t)( _byteswap_long( *pi32Data++ ) );
+                *pfChan0++ = (int32_t)( _byteswap_ulong( *pi32Data++ ) );
+                *pfChan1++ = (int32_t)( _byteswap_ulong( *pi32Data++ ) );
+                *pfChan2++ = (int32_t)( _byteswap_ulong( *pi32Data++ ) );
+                *pfChan3++ = (int32_t)( _byteswap_ulong( *pi32Data++ ) );
 #else
                 *pfChan0++ = (int32_t)( __builtin_bswap32( *pi32Data++ ) );
                 *pfChan1++ = (int32_t)( __builtin_bswap32( *pi32Data++ ) );
