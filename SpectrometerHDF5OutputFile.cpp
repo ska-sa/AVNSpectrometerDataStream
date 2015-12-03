@@ -203,16 +203,19 @@ void cSpectrometerHDF5OutputFile::addFrame(const std::vector<int> &vi32Chan0, co
 
         if(oHeader.getNoiseDiodeOn())
         {
-            oState.m_caState[0] = '1';
+            oState.m_caValue[0] = '1';
         }
         else
         {
-            oState.m_caState[0] = '0';
+            oState.m_caValue[0] = '0';
         }
+
+        sprintf(oState.m_caStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal.
+        //At present AVN doesn't make hardware provision for any sort of feedback with the noise diode
 
         m_voNoiseDiodeStateChanges.push_back(oState);
 
-        cout << "cSpectrometerHDF5OutputFile::addFrame(): Logged noise state change to " << string(oState.m_caState, 1) << " at " << AVN::stringFromTimestamp_full(oHeader.getTimestamp_us()) << endl;
+        cout << "cSpectrometerHDF5OutputFile::addFrame(): Logged noise state change to " << string(oState.m_caValue, 1) << " at " << AVN::stringFromTimestamp_full(oHeader.getTimestamp_us()) << endl;
     }
 
     m_aChannelDataOffset[0] += m_aChannelDatasetExtensionDims[0];
@@ -263,18 +266,30 @@ void cSpectrometerHDF5OutputFile::writeChannelAverages()
 
 void cSpectrometerHDF5OutputFile::writeNoiseDiodeStates()
 {
+    string strDatasetName("roach.noise.diode.on");
+
+    //Create the data space
     hsize_t dimension[] = { m_voNoiseDiodeStateChanges.size() };
     hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
+    //Create a compound data type consisting of different native types per entry:
     hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cNoiseDiodeState));
-    H5Tinsert(compoundDataType, "Timestamp_s", HOFFSET(cNoiseDiodeState, m_dTimeStamp_s), H5T_NATIVE_DOUBLE);
 
-    hid_t stringType = H5Tcopy (H5T_C_S1);
-    H5Tset_size(stringType, sizeof(cNoiseDiodeState::m_caState));
+    //Add to compound data type: a timestamp (double)
+    H5Tinsert(compoundDataType, "timestamp", HOFFSET(cNoiseDiodeState, m_dTimeStamp_s), H5T_NATIVE_DOUBLE);
 
-    H5Tinsert(compoundDataType, "Noise_diode_state", HOFFSET(cNoiseDiodeState, m_caState), stringType);
+    //Add to compound data type: the noise diode state (string of 1 character "0" or "1")
+    hid_t stringTypeValue = H5Tcopy (H5T_C_S1);
+    H5Tset_size(stringTypeValue, sizeof(cNoiseDiodeState::m_caValue));
+    H5Tinsert(compoundDataType, "value", HOFFSET(cNoiseDiodeState, m_caValue), stringTypeValue);
 
-    hid_t dataset = H5Dcreate1(m_iH5Antenna1GroupHandle, "noise.diode.on", compoundDataType, dataspace, H5P_DEFAULT);
+    //Add to compound data type: the status of the noise diode equiptment (string typically containing "nominal")
+    hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
+    H5Tset_size(stringTypeStatus, sizeof(cNoiseDiodeState::m_caStatus));
+    H5Tinsert(compoundDataType, "status", HOFFSET(cNoiseDiodeState, m_caStatus), stringTypeStatus);
+
+    //Create the data set of of the new compound datatype
+    hid_t dataset = H5Dcreate1(m_iH5Antenna1GroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
     herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voNoiseDiodeStateChanges.front());
 
@@ -287,7 +302,10 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeStates()
         cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeStates(): Wrote " << m_voNoiseDiodeStateChanges.size() << " noise diode states to dataset." << endl;
     }
 
-    H5Tclose(stringType);
+    addAttributeToDataSet(string("AVN frontend noise diode"), strDatasetName, string("boolean"), string(""), dataset);
+
+    H5Tclose(stringTypeValue);
+    H5Tclose(stringTypeStatus);
     H5Tclose(compoundDataType);
     H5Sclose(dataspace);
     H5Dclose(dataset);
@@ -328,4 +346,41 @@ float cSpectrometerHDF5OutputFile::calculateFrameAverage(const vector<int32_t> &
     }
 
     return (float)dAverage;
+}
+
+void cSpectrometerHDF5OutputFile::addAttributeToDataSet(const std::string &strDescription, const std::string &strName, const std::string &strType, const std::string &strUnits, hid_t dataset)
+{
+    //Adds the 4 attributes as per KAT7 standard
+
+    //Note: dataset must be open before calling this function and will remove open on function return.
+
+    //Add attributes for noise diode state dataset
+    hid_t variableLengthStringType;
+    variableLengthStringType = H5Tcopy (H5T_C_S1);
+    H5Tset_size (variableLengthStringType, H5T_VARIABLE);
+
+    hid_t attrDataspace = H5Screate(H5S_SCALAR);
+
+    hid_t attrDescription = H5Acreate(dataset, "description", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+    const char* pcDescription = &strDescription[0];
+    H5Awrite(attrDescription, variableLengthStringType, &pcDescription);
+
+    hid_t attrName = H5Acreate(dataset, "name", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+    const char* pcName = &strName[0];
+    H5Awrite(attrName, variableLengthStringType, &pcName);
+
+    hid_t attrType = H5Acreate(dataset, "type", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+    const char* pcType = &strType[0];
+    H5Awrite(attrType, variableLengthStringType, &pcType);
+
+    hid_t attrUnits = H5Acreate(dataset, "units", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+    const char* pcUnits = &strUnits[0];
+    H5Awrite(attrUnits, variableLengthStringType, &pcUnits);
+
+    H5Aclose (attrDescription);
+    H5Aclose (attrName);
+    H5Aclose (attrType);
+    H5Aclose (attrUnits);
+    H5Tclose(variableLengthStringType);
+    H5Sclose(attrDataspace);
 }

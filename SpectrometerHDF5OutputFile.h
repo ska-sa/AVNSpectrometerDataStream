@@ -35,7 +35,8 @@ class cSpectrometerHDF5OutputFile
     typedef struct cNoiseDiodeState
     {
         double             m_dTimeStamp_s;
-        char               m_caState[1];
+        char               m_caValue[1];
+        char               m_caStatus[7];
     } cNoiseDiodeState;
 
 public:
@@ -79,6 +80,8 @@ private:
     void                                writeTimestamps();
     void                                writeChannelAverages();
     void                                writeNoiseDiodeStates();
+
+    void                                addAttributeToDataSet(const std::string &strDescription, const std::string &strName, const std::string &strType, const std::string &strUnits, hid_t dataset);
 
 };
 
