@@ -15,16 +15,16 @@ string AVN::Spectrometer::digitiserTypeToString(uint16_t u16DigitiserType)
 
     switch(u16DigitiserType)
     {
-    case WB_SPECTROMETER_CFFT:
-        strDigitiserType = std::string("WB spectrometer complex FFT");
+    case WB_SPECTROMETER_LRPP:
+        strDigitiserType = std::string("WB spectrometer left and right power, left and right phase");
         break;
 
     case WB_SPECTROMETER_LRQU:
         strDigitiserType = std::string("WB spectrometer left and right power, Stokes Q and U");
         break;
 
-    case NB_SPECTROMETER_CFFT:
-        strDigitiserType = std::string("NB spectrometer complex FFT");
+    case NB_SPECTROMETER_LRPP:
+        strDigitiserType = std::string("NB spectrometer left and right power, left and right phase");
         break;
 
     case NB_SPECTROMETER_LRQU:
@@ -57,14 +57,14 @@ string AVN::Spectrometer::getDigitiserChannelName(uint16_t u16DigitiserType, uin
         }
         break;
 
-    case WB_SPECTROMETER_CFFT:
-    case NB_SPECTROMETER_CFFT:
+    case WB_SPECTROMETER_LRPP:
+    case NB_SPECTROMETER_LRPP:
         switch(u32ChanNo)
         {
-        case 0: strDigitiserChannelName = std::string("Channel 1 I"); break;
-        case 1: strDigitiserChannelName = std::string("Channel 1 Q"); break;
-        case 2: strDigitiserChannelName = std::string("Channel 2 I"); break;
-        case 3: strDigitiserChannelName = std::string("Channel 2 Q"); break;
+        case 0: strDigitiserChannelName = std::string("Left Power"); break;
+        case 1: strDigitiserChannelName = std::string("Right Power"); break;
+        case 2: strDigitiserChannelName = std::string("Left Phase"); break;
+        case 3: strDigitiserChannelName = std::string("Right Phase"); break;
         default: strDigitiserChannelName = std::string("Undefined"); break;
         }
         break;
@@ -83,7 +83,7 @@ uint32_t AVN::Spectrometer::getDigitiserFrameSize_nBins(uint16_t u16DigitiserTyp
 
     switch(u16DigitiserType)
     {
-    case WB_SPECTROMETER_CFFT:
+    case WB_SPECTROMETER_LRPP:
         u32DigitiserFrameSize_nBins = 1024;
         break;
 
@@ -91,7 +91,7 @@ uint32_t AVN::Spectrometer::getDigitiserFrameSize_nBins(uint16_t u16DigitiserTyp
         u32DigitiserFrameSize_nBins = 1024;
         break;
 
-    case NB_SPECTROMETER_CFFT:
+    case NB_SPECTROMETER_LRPP:
         u32DigitiserFrameSize_nBins = 4096;
         break;
 

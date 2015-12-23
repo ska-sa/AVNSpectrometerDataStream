@@ -20,9 +20,9 @@ static const uint32_t SYNC_WORD = 0x1a2b3c4d;
 
 enum digitiserType
 {
-    WB_SPECTROMETER_CFFT = 0,
+    WB_SPECTROMETER_LRPP = 0,
     WB_SPECTROMETER_LRQU = 1,
-    NB_SPECTROMETER_CFFT = 2,
+    NB_SPECTROMETER_LRPP = 2,
     NB_SPECTROMETER_LRQU = 3,
     UNDEFINED = 0xffff
 };
