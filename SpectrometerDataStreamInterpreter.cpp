@@ -87,7 +87,7 @@ bool cSpectrometerDataStreamInterpreter::synchronise()
     }
 
     //Synchronise: Find the last packet of the frame
-    cout << "Resynchronising to frame border." << endl;
+    cout << "cSpectrometerDataStreamInterpreter::synchronise(): Resynchronising to frame border." << endl;
     do
     {
         if(!isRunning())
