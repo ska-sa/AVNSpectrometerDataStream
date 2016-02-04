@@ -44,46 +44,29 @@ class cSpectrometerHDF5OutputFile
     typedef struct cNoiseDiodeState
     {
         double              m_dTimestamp_s;
-        char                m_caValue[1];
-        char                m_caStatus[7];
+        char                m_chaValue[1];
+        char                m_chaStatus[7];
     } cNoiseDiodeState;
-
-    typedef struct cMotorTorques
-    {
-        double              m_dTimestamp_s;
-        double              m_dAz0_Nm;
-        double              m_dAz1_Nm;
-        double              m_dEl0_Nm;
-        double              m_dEl1_Nm;
-        char                m_caStatus[7];
-    } cMotorTorques;
 
     typedef struct cSourceSelection
     {
         double              m_dTimestamp_s;
-        char                m_caSource[64];
-        char                m_caStatus[7];
+        char                m_chaSource[64];
+        char                m_chaStatus[7];
     } cSourceSelection;
-
-    typedef struct cSizeOfFFTs
-    {
-        uint32_t            m_u32CoarseFFTSize;
-        uint32_t            m_u32FineFFTSize;
-        char                m_caStatus[7];
-    } cSizeOfFFTs;
 
     typedef struct cAntennaStatus
     {
         double              m_dTimestamp_s;
-        char                m_caAntennaStatus[8];
-        char                m_caStatus[7];
+        char                m_chaAntennaStatus[8];
+        char                m_chaStatus[7];
     } cAntennaStatus;
 
     typedef struct cNoiseDiodeSource
     {
         double              m_dTimestamp_s;
-        char                m_caSource[8];
-        char                m_caStatus[7];
+        char                m_chaSource[8];
+        char                m_chaStatus[7];
     } cNoiseDiodeSource;
 
     //General structures
@@ -91,21 +74,21 @@ class cSpectrometerHDF5OutputFile
     {
         double              m_dTimestamp_s;
         int32_t             m_i32Value;
-        char                m_caStatus[7];
+        char                m_chaStatus[7];
     } cTimestampedInt;
 
     typedef struct cTimestampedUnsignedInt
     {
         double              m_dTimestamp_s;
         uint32_t            m_u32Value;
-        char                m_caStatus[7];
+        char                m_chaStatus[7];
     } cTimestampedUnsignedInt;
 
     typedef struct cTimestampedDouble
     {
         double              m_dTimestamp_s;
         double              m_dValue;
-        char                m_caStatus[7];
+        char                m_chaStatus[7];
     } cTimestampedDouble;
 
     typedef struct cTimestampedDualDouble
@@ -113,7 +96,7 @@ class cSpectrometerHDF5OutputFile
         double              m_dTimestamp_s;
         double              m_dValue1;
         double              m_dValue2;
-        char                m_caStatus[7];
+        char                m_chaStatus[7];
     } cTimestampedDualDouble;
 
 
@@ -125,33 +108,48 @@ public:
 
     //Different functions can be called concurrently but any single function is not at present thread safe with regard to concurrent calls
     void                                    addFrame(const std::vector<int> &vi32Chan0, const std::vector<int> &vi32Chan1, const std::vector<int> &vi32Chan2, std::vector<int> &vi32Chan3,
-                                                 const cSpectrometerHeader &oHeader);
+                                                     const cSpectrometerHeader &oHeader);
 
-    void                                    addRequestedAntennaAzEl(int64_t i64Timestamp_us, double dAzimuth_deg, double dElevation_deg);
-    void                                    addActualAntennaAzEl(int64_t i64Timestamp_us, double dAzimuth_deg, double dElevation_deg);
-    void                                    addActualSourceOffsetAzEl(int64_t i64Timestamp_us, double dAzimuthOffset_deg, double dElevationOffset_deg);
-    void                                    addActualAntennaRADec(int64_t i64Timestamp_us, double dRighAscension_deg, double dDeclination_deg);
+    void                                    addRequestedAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg);
+    void                                    addRequestedAntennaEl(int64_t i64Timestamp_us, double dElevation_deg);
+    void                                    addActualAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg);
+    void                                    addActualAntennaEl(int64_t i64Timestamp_us, double dElevation_deg);
+    void                                    addActualSourceOffsetAz(int64_t i64Timestamp_us, double dAzimuthOffset_deg);
+    void                                    addActualSourceOffsetEl(int64_t i64Timestamp_us, double dElevationOffset_deg);
+    void                                    addActualAntennaRA(int64_t i64Timestamp_us, double dRighAscension_deg);
+    void                                    addActualAntennaDec(int64_t i64Timestamp_us, double dDeclination_deg);
 
-    void                                    addAntennaStatus(int64_t i64Timestamp_us, int32_t i32AntennaStatus, const std::string &strAntennaStatus);
-    void                                    addMotorTorques(int64_t i64Timestamp_us, double dAz0_Nm, double dAz1_Nm, double dEl0_Nm, double dEl1_Nm);
+    void                                    addAntennaStatus(int64_t i64Timestamp_us, const std::string &strAntennaStatus);
+    void                                    motorTorqueAzMaster(int64_t i64Timestamp_us, double dAzMaster_mNm);
+    void                                    motorTorqueAzSlave(int64_t i64Timestamp_us, double dAzSlave_mNm);
+    void                                    motorTorqueElMaster(int64_t i64Timestamp_us, double dElMaster_mNm);
+    void                                    motorTorqueElSlave(int64_t i64Timestamp_us, double dElSlave_mNm);
     void                                    setAppliedPointingModel(const std::string &strModelName, const std::vector<double> &vdPointingModelParams);
 
     void                                    addNoiseDiodeSoftwareState(int64_t i64Timestamp_us, int32_t i32NoiseDiodeState);
-    void                                    addNoiseDiodeSource(int64_t i64Timestamp_us, int32_t i32NoiseDiodeSource, const std::string &strNoiseSource);
+    void                                    addNoiseDiodeSource(int64_t i64Timestamp_us, const std::string &strNoiseSource);
     void                                    addNoiseDiodeCurrent(int64_t i64Timestamp_us, double dNoiseDiodeCurrent_A);
 
     void                                    addSourceSelection(int64_t i64Timestamp_us, const std::string &strSourceName, double dRighAscension_deg, double dDeclination_deg);
 
-    void                                    addFrequencyRF(int64_t i64Timestamp_us, double dFreqencyRF_MHz);
-    void                                    addFrequencyLOs(int64_t i64Timestamp_us, double dFrequencyLO1_MHz, double dFrequencyLO2_MHz);
-    void                                    addBandwidthIF(int64_t i64Timestamp_us, double dBandwidthIF_MHz);
+    void                                    addFrequencyRFChan0(int64_t i64Timestamp_us, double dFreqencyRFChan0_MHz);
+    void                                    addFrequencyRFChan1(int64_t i64Timestamp_us, double dFreqencyRFChan1_MHz);
+    void                                    addFrequencyLO0Chan0(int64_t i64Timestamp_us, double dFrequencyLO0Chan0_MHz);
+    void                                    addFrequencyLO0Chan1(int64_t i64Timestamp_us, double dFrequencyLO0Chan1_MHz);
+    void                                    addFrequencyLO1(int64_t i64Timestamp_us, double dFrequencyLO1_MHz);
+    void                                    addReceiverBandwidthChan0(int64_t i64Timestamp_us, double dReceiverBandwidthChan0_MHz);
+    void                                    addReceiverBandwidthChan1(int64_t i64Timestamp_us, double dReceiverBandwidthChan1_MHz);
 
     void                                    addAccumulationLength(int64_t i64Timestamp_us, uint32_t u32NFrames);
-    void                                    addNarrowBandChannelSelect(int64_t i64Timestamp_us, uint32_t u32ChannelNo);
+    void                                    addCoarseChannelSelect(int64_t i64Timestamp_us, uint32_t u32ChannelNo);
     void                                    setFrequencyFs(double dFrequencyFs_MHz);
-    void                                    setSizeOfFFTs(uint32_t u32CoarseSize_nSamp, uint32_t u32FineSize_nSamp);
+    void                                    setSizeOfCoarseFFT(uint32_t u32SizeOfCoarseFFT_nSamp);
+    void                                    setSizeOfFineFFT(uint32_t u32SizeOfFineFFT_nSamp);
     void                                    addCoarseFFTShiftMask(int64_t i64Timestamp_us, uint32_t u32ShiftMask);
-    void                                    addAdcAttenuation(int64_t i64Timestamp_us, double dAttenuationChan0_dB, double dAttenuationChan1_dB);
+    void                                    addAttenuationADCChan0(int64_t i64Timestamp_us, double dADCAttenuationChan0_dB);
+    void                                    addAttenuationADCChan1(int64_t i64Timestamp_us, double dADCAttenuationChan1_dB);
+
+    std::string                             getFilename() const;
 
 private:
     std::string                             m_strFilename;
@@ -191,11 +189,16 @@ private:
     std::vector<cTimestampedDouble>         m_voRequestedAntennaEls_deg;
     std::vector<cTimestampedDouble>         m_voActualAntennaAzs_deg;
     std::vector<cTimestampedDouble>         m_voActualAntennaEls_deg;
-    std::vector<cTimestampedDualDouble>     m_voActualSourceOffsetAzEls_deg;
-    std::vector<cTimestampedDualDouble>     m_voActualAntennaRADecs_deg;
+    std::vector<cTimestampedDouble>         m_voActualSourceOffsetAzs_deg;
+    std::vector<cTimestampedDouble>         m_voActualSourceOffsetEls_deg;
+    std::vector<cTimestampedDouble>         m_voActualAntennaRAs_deg;
+    std::vector<cTimestampedDouble>         m_voActualAntennaDecs_deg;
 
     std::vector<cAntennaStatus>             m_voAntennaStatuses;
-    std::vector<cMotorTorques>              m_voMotorTorques_Nm;
+    std::vector<cTimestampedDouble>         m_voMotorTorquesAzMaster_mNm;
+    std::vector<cTimestampedDouble>         m_voMotorTorquesAzSlave_mNm;
+    std::vector<cTimestampedDouble>         m_voMotorTorquesElMaster_mNm;
+    std::vector<cTimestampedDouble>         m_voMotorTorquesElSlave_mNm;
     std::vector<double>                     m_vdPointingModelParams; //Only store most recent version
     std::string                             m_strPointModelName;
 
@@ -205,17 +208,23 @@ private:
 
     std::vector<cSourceSelection>           m_voSelectedSources;
 
-    std::vector<cTimestampedDouble>         m_voFrequenciesRF_MHz;
-    std::vector<cTimestampedDualDouble>     m_voFrequenciesLOs_MHz;
-    std::vector<cTimestampedDouble>         m_voBandwidthsIF_MHz;
+    std::vector<cTimestampedDouble>         m_voFrequenciesRFChan0_MHz;
+    std::vector<cTimestampedDouble>         m_voFrequenciesRFChan1_MHz;
+    std::vector<cTimestampedDouble>         m_voFrequenciesLO0Chan0_MHz;
+    std::vector<cTimestampedDouble>         m_voFrequenciesLO0Chan1_MHz;
+    std::vector<cTimestampedDouble>         m_voFrequenciesLO1_MHz;
+    std::vector<cTimestampedDouble>         m_voReceiverBandwidthsChan0_MHz;
+    std::vector<cTimestampedDouble>         m_voReceiverBandwidthsChan1_MHz;
 
     //Values received from ROACH TCPBorphServer
     std::vector<cTimestampedUnsignedInt>    m_voROACHAccumulationLengths_nFrames;
     std::vector<cTimestampedUnsignedInt>    m_voROACHNBChannelSelects;
     double                                  m_dROACHFrequencyFs_MHz; //Only store most recent version (shouldn't ever change from 800 MHz)
-    cSizeOfFFTs                             m_oROACHSizesOfFFTs_nSamp; //Only store most recent version (shouldn't ever change for a given gateware)
+    uint32_t                                m_dROACHSizeOfCoarseFFT_nSamp; //Only store most recent version (shouldn't ever change for a given gateware)
+    uint32_t                                m_dROACHSizeOfFineFFT_nSamp; //Only store most recent version (shouldn't ever change for a given gateware)
     std::vector<cTimestampedUnsignedInt>    m_voROACHCoarseFFTShiftMasks;
-    std::vector<cTimestampedDualDouble>     m_voROACHAdcAttenuations_dB;
+    std::vector<cTimestampedDouble>         m_voROACHADCAttenuationsChan0_dB;
+    std::vector<cTimestampedDouble>         m_voROACHADCAttenuationsChan1_dB;
 
     //Other
     cSpectrometerHeader                     m_oLastHeader;
@@ -255,7 +264,7 @@ private:
     void                                    writeROACHSamplingFrequency();
     void                                    writeROACHSizeOfFFTs();
     void                                    writeROACHCoarseFFTShiftMask();
-    void                                    writeROACHAdcAttentuations(); 
+    void                                    writeROACHAdcAttentuations();
 
 };
 
