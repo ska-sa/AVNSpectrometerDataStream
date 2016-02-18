@@ -179,7 +179,7 @@ bool cSpectrometerDataStreamInterpreter::getNextFrame(int32_t *pi32Chan0, int32_
             //Attempt to reach 30 frames per second.
             boost::upgrade_lock<boost::shared_mutex>  oLock(m_oMutex); //For for update rate variable
 
-            m_bSkipFrame = (m_oCurrentHeader.getTimestamp_us() - m_i64LastUsedTimestamp_us) < m_u32UpdateRate_ms;
+            m_bSkipFrame = (m_oCurrentHeader.getTimestamp_us() - m_i64LastUsedTimestamp_us) < m_u32UpdateRate_ms  * 1000;
         }
 
         if(m_bSkipFrame)
@@ -193,7 +193,10 @@ bool cSpectrometerDataStreamInterpreter::getNextFrame(int32_t *pi32Chan0, int32_
         deinterleaveInt32ToInt32(pi32Data, pi32Chan0, pi32Chan1, pi32Chan2, pi32Chan3, m_u32NValuesPerPacket / 4, m_oCurrentHeader.requiresEndianessFlip());
     }
 
-    m_i64LastUsedTimestamp_us = m_oCurrentHeader.getTimestamp_us();
+    if(!m_bSkipFrame)
+    {
+        m_i64LastUsedTimestamp_us = m_oCurrentHeader.getTimestamp_us();
+    }
 
     return true;
 }
@@ -256,7 +259,7 @@ bool cSpectrometerDataStreamInterpreter::getNextFrame(float *pfChan0, float *pfC
             //Attempt to reach 30 frames per second.
             boost::upgrade_lock<boost::shared_mutex>  oLock(m_oMutex); //For for update rate variable
 
-            m_bSkipFrame = (m_oCurrentHeader.getTimestamp_us() - m_i64LastUsedTimestamp_us) < m_u32UpdateRate_ms;
+            m_bSkipFrame = (m_oCurrentHeader.getTimestamp_us() - m_i64LastUsedTimestamp_us) < m_u32UpdateRate_ms * 1000;
         }
 
         if(m_bSkipFrame)
@@ -271,7 +274,10 @@ bool cSpectrometerDataStreamInterpreter::getNextFrame(float *pfChan0, float *pfC
         deinterleaveInt32ToFloat(pi32Data, pfChan0, pfChan1, pfChan2, pfChan3, m_u32NValuesPerPacket / 4, m_oCurrentHeader.requiresEndianessFlip());
     }
 
-    m_i64LastUsedTimestamp_us = m_oCurrentHeader.getTimestamp_us();
+    if(!m_bSkipFrame)
+    {
+        m_i64LastUsedTimestamp_us = m_oCurrentHeader.getTimestamp_us();
+    }
 
     return true;
 }
@@ -374,7 +380,7 @@ void cSpectrometerDataStreamInterpreter::offloadData_callback(char* pcData, uint
         //Attempt to reach 30 frames per second.
         boost::upgrade_lock<boost::shared_mutex>  oLock(m_oMutex); //For for update rate variable
 
-        m_bSkipFrame = (m_oCurrentHeader.getTimestamp_us() - m_i64LastUsedTimestamp_us) < m_u32UpdateRate_ms;
+        m_bSkipFrame = (m_oCurrentHeader.getTimestamp_us() - m_i64LastUsedTimestamp_us) < m_u32UpdateRate_ms  * 1000;
 
         //Also the the pointers to the beginning of the deinterleaved channel data
         m_pi32Chan0 = &(m_vviChannelData[0].front());
