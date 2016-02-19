@@ -35,6 +35,7 @@ cSpectrometerHDF5OutputFile::cSpectrometerHDF5OutputFile(const std::string &strF
     //Level 1:
     m_iH5DataGroupHandle                            = H5Gcreate2(m_iH5FileHandle, "/Data", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     m_iH5MetaDataGroupHandle                        = H5Gcreate2(m_iH5FileHandle, "/MetaData", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    m_iH5MarkupGroupHandle                          = H5Gcreate2(m_iH5FileHandle, "/Markup", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     //Level 2:
     m_iH5SensorsGroupHandle                         = H5Gcreate2(m_iH5MetaDataGroupHandle, "/MetaData/Sensors", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     m_iH5ConfigurationGroupHandle                   = H5Gcreate2(m_iH5MetaDataGroupHandle, "/MetaData/Configuration", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
@@ -104,6 +105,8 @@ cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
     string strExperimentID("test_experiment");
     addAttributesToFile("2.5", strExperimentID, AVN::getTimeNow_us(), 0, m_iH5FileHandle); // Zero errors, because our software is perfect!
 
+    writeMarkupLabels();
+
     writeSampleDataTimestamps();
     writeChannelAverages();
     writeROACHNoiseDiodeStates();
@@ -153,6 +156,7 @@ cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
     H5Gclose(m_iH5SensorsGroupHandle);
     H5Gclose(m_iH5ConfigurationGroupHandle);
     //Level 1
+    H5Gclose(m_iH5MarkupGroupHandle);
     H5Gclose(m_iH5MetaDataGroupHandle);
     H5Gclose(m_iH5DataGroupHandle);
 
@@ -352,6 +356,45 @@ void cSpectrometerHDF5OutputFile::writeROACHNoiseDiodeStates()
 
     H5Tclose(stringTypeValue);
     H5Tclose(stringTypeStatus);
+    H5Tclose(compoundDataType);
+    H5Sclose(dataspace);
+    H5Dclose(dataset);
+}
+
+void cSpectrometerHDF5OutputFile::writeMarkupLabels()
+{
+    string strDatasetName("labels");
+
+    //Create the data space TODO
+    hsize_t dimension[] = { m_voMarkupLabels.size() };
+    hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
+
+    //Create a compound data type consisting of different native types per entry:
+    hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cMarkupLabels));
+
+    //Add to compound data type: a timestamp (double)
+    H5Tinsert(compoundDataType, "timestamp", HOFFSET(cMarkupLabels, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+
+    //Add to compound data type: the label (string)
+    hid_t stringTypeLabel = H5Tcopy (H5T_C_S1);
+    H5Tset_size(stringTypeLabel, sizeof(cMarkupLabels::m_chaLabel));
+    H5Tinsert(compoundDataType, "label", HOFFSET(cMarkupLabels, m_chaLabel), stringTypeLabel);
+
+    //Create the data set of of the new compound datatype
+    hid_t dataset = H5Dcreate1(m_iH5MarkupGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
+
+    herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voMarkupLabels.front());
+
+    if(err < 0)
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeMarkupLabels(): HDF5 make dataset error" << endl;
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeMarkupLabels(): Wrote " << m_voMarkupLabels.size() << " markup labels to dataset." << endl;
+    }
+
+    H5Tclose(stringTypeLabel);
     H5Tclose(compoundDataType);
     H5Sclose(dataspace);
     H5Dclose(dataset);

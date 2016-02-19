@@ -41,6 +41,12 @@ class cSpectrometerHDF5OutputFile
     //Structures used for storing entries in HDF5 tables (NB: these must consist of POD! http://www.cplusplus.com/reference/type_traits/is_pod/)
 
     //Specific structures
+    typedef struct cMarkupLabels
+    {
+        double              m_dTimestamp_s;
+        char                m_chaLabel[64];
+    } cMarkupLabels;
+
     typedef struct cNoiseDiodeState
     {
         double              m_dTimestamp_s;
@@ -162,6 +168,7 @@ private:
 
     hid_t                                   m_iH5DataGroupHandle;
     hid_t                                   m_iH5MetaDataGroupHandle;
+    hid_t                                   m_iH5MarkupGroupHandle;
     hid_t                                   m_iH5SensorsGroupHandle;
     hid_t                                   m_iH5SensorsAntennasGroupHandle;
     hid_t                                   m_iH5SensorsRFEGroupHandle;
@@ -185,6 +192,8 @@ private:
     std::vector<cNoiseDiodeState>           m_voROACHNoiseDiodeStateChanges;
 
     //Values received from station controller
+    std::vector<cMarkupLabels>              m_voMarkupLabels;
+
     std::vector<cTimestampedDouble>         m_voRequestedAntennaAzs_deg;
     std::vector<cTimestampedDouble>         m_voRequestedAntennaEls_deg;
     std::vector<cTimestampedDouble>         m_voActualAntennaAzs_deg;
@@ -240,6 +249,8 @@ private:
     void                                    writeSampleDataTimestamps();
     void                                    writeChannelAverages();
     void                                    writeROACHNoiseDiodeStates();
+
+    void                                    writeMarkupLabels();
 
     void                                    writeRequestedAntennaAzEls();
     void                                    writeActualAntennaAzEls();
