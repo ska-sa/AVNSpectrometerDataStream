@@ -100,6 +100,10 @@ cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
 {
     cout << "cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile(): Got close request, writing accumulated data to end of HDF5 file... " << endl;
 
+    //TODO: compose some sort of experiment ID
+    string strExperimentID("test_experiment");
+    addAttributesToFile("2.5", strExperimentID, AVN::getTimeNow_us(), 0, m_iH5FileHandle); // Zero errors, because our software is perfect!
+
     writeSampleDataTimestamps();
     writeChannelAverages();
     writeROACHNoiseDiodeStates();
@@ -1773,6 +1777,41 @@ float cSpectrometerHDF5OutputFile::calculateFrameAverage(const vector<int32_t> &
     dAverage /= (double)vi32ChannelData.size();
 
     return (float)dAverage;
+}
+
+
+void cSpectrometerHDF5OutputFile::addAttributesToFile(const std::string &strVersion, const std::string &strExperimentID, int64_t i64AugmentTimestamp_us, uint32_t u32AugmentErrors, hid_t fileHandle)
+{
+    //Adds the attributes needed for the file as a whole.
+
+    hid_t variableLengthStringType;
+    variableLengthStringType = H5Tcopy (H5T_C_S1);
+
+    H5Tset_size (variableLengthStringType, H5T_VARIABLE);
+
+    hid_t attrDataspace = H5Screate(H5S_SCALAR);
+
+    hid_t attrVersion = H5Acreate(fileHandle, "version", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+    const char* pcVersion = &strVersion[0];
+    H5Awrite(attrVersion, variableLengthStringType, &pcVersion);
+
+    hid_t attrExperimentID = H5Acreate(fileHandle, "experiment_id", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+    const char* pcExperimentID = &strExperimentID[0];
+    H5Awrite(attrExperimentID, variableLengthStringType, &pcExperimentID);
+
+    double dTimestamp_s = (double)i64AugmentTimestamp_us / 1e6;
+    hid_t attrAugmentTimestamp = H5Acreate(fileHandle, "augment_ts", H5T_NATIVE_DOUBLE, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+    H5Awrite(attrAugmentTimestamp, H5T_NATIVE_DOUBLE, &dTimestamp_s);
+
+    hid_t attrAugmentErrors = H5Acreate(fileHandle, "augment_errors", H5T_NATIVE_UINT32, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+    H5Awrite(attrAugmentErrors, H5T_NATIVE_UINT32, &u32AugmentErrors);
+
+    H5Aclose (attrVersion);
+    H5Aclose (attrExperimentID);
+    H5Aclose (attrAugmentTimestamp);
+    H5Aclose (attrAugmentErrors);
+    H5Tclose(variableLengthStringType);
+    H5Sclose(attrDataspace);
 }
 
 void cSpectrometerHDF5OutputFile::addAttributeToDataSet(const std::string &strDescription, const std::string &strName, const std::string &strType, const std::string &strUnits, hid_t dataset)

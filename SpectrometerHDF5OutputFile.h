@@ -233,6 +233,7 @@ private:
 
     float                                   calculateFrameAverage(const std::vector<int32_t> &vi32ChannelData);
 
+    void                                    addAttributesToFile(const std::string &strVersion, const std::string &strExperimentID, int64_t i64AugmentTimestamp_us, uint32_t u32AugmentErrors, hid_t fileHandle);
     void                                    addAttributeToDataSet(const std::string &strDescription, const std::string &strName, const std::string &strType, const std::string &strUnits, hid_t dataset);
 
     //Write logged data to file (after sample recording is completed)
