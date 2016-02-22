@@ -177,6 +177,7 @@ private:
     hid_t                                   m_iH5ConfigurationGroupHandle;
     hid_t                                   m_iH5ConfigurationAntennasGroupHandle;
     hid_t                                   m_iH5ConfigurationAntennasAntenna1GroupHandle;
+    hid_t                                   m_iH5ConfigurationObservationGroupHandle;
 
     hid_t                                   m_iH5DatasetVis;
     hid_t                                   m_iH5DatasetStokes;
@@ -244,6 +245,19 @@ private:
 
     void                                    addAttributesToFile(const std::string &strVersion, const std::string &strExperimentID, int64_t i64AugmentTimestamp_us, uint32_t u32AugmentErrors, hid_t fileHandle);
     void                                    addAttributeToDataSet(const std::string &strDescription, const std::string &strName, const std::string &strType, const std::string &strUnits, hid_t dataset);
+    void                                    addAttributesToObservation(
+                                                const std::string &strScriptName,
+                                                const std::string &strScriptArguments,
+                                                const std::string &strObserver,
+                                                const std::string &strExperimentID,
+                                                const std::string &strDescription,
+                                                const std::string &strStartTime,
+                                                const std::string &strEndTime,
+                                                const std::string &strNoiseDiodeParams,
+                                                const std::string &strRFParams,
+                                                const std::string &strStatus,
+                                                hid_t observationGroup
+                                            );
 
     //Write logged data to file (after sample recording is completed)
     void                                    writeSampleDataTimestamps();

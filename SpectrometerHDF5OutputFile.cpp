@@ -44,6 +44,7 @@ cSpectrometerHDF5OutputFile::cSpectrometerHDF5OutputFile(const std::string &strF
     m_iH5SensorsRFEGroupHandle                      = H5Gcreate2(m_iH5SensorsGroupHandle, "/MetaData/Sensors/RFE", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     m_iH5SensorsDBEGroupHandle                      = H5Gcreate2(m_iH5SensorsGroupHandle, "/MetaData/Sensors/DBE", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     m_iH5ConfigurationAntennasGroupHandle           = H5Gcreate2(m_iH5ConfigurationGroupHandle, "/MetaData/Configuration/Antennas", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    m_iH5ConfigurationObservationGroupHandle        = H5Gcreate2(m_iH5MetaDataGroupHandle, "/MetaData/Configuration/Observation", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     //Level 4:
     m_iH5SensorsAntennasAntenna1GroupHandle         = H5Gcreate2(m_iH5SensorsAntennasGroupHandle, "/MetaData/Sensors/Antennas/ant1", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     m_iH5ConfigurationAntennasAntenna1GroupHandle   = H5Gcreate2(m_iH5ConfigurationAntennasGroupHandle, "/MetaData/Configuration/Antennas/ant1", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
@@ -101,9 +102,10 @@ cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
 {
     cout << "cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile(): Got close request, writing accumulated data to end of HDF5 file... " << endl;
 
-    //TODO: compose some sort of experiment ID
+    // TODO: This data needs to be retrieved from the KatCP server. Somewhere.
     string strExperimentID("test_experiment");
     addAttributesToFile("2.5", strExperimentID, AVN::getTimeNow_us(), 0, m_iH5FileHandle); // Zero errors, because our software is perfect!
+    addAttributesToObservation("script name", "script arguments", "Observer name", strExperimentID, "description", "start time", "end time", "noise diode params", "rf params", "status", m_iH5ConfigurationObservationGroupHandle);
 
     writeMarkupLabels();
 
@@ -152,6 +154,7 @@ cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
     H5Gclose(m_iH5SensorsRFEGroupHandle);
     H5Gclose(m_iH5SensorsDBEGroupHandle);
     H5Gclose(m_iH5ConfigurationAntennasGroupHandle);
+    H5Gclose(m_iH5ConfigurationObservationGroupHandle);
     //Level 2
     H5Gclose(m_iH5SensorsGroupHandle);
     H5Gclose(m_iH5ConfigurationGroupHandle);
@@ -1890,6 +1893,71 @@ void cSpectrometerHDF5OutputFile::addAttributeToDataSet(const std::string &strDe
     H5Aclose (attrName);
     H5Aclose (attrType);
     H5Aclose (attrUnits);
+    H5Tclose(variableLengthStringType);
+    H5Sclose(attrDataspace);
+}
+
+void cSpectrometerHDF5OutputFile::addAttributesToObservation(const std::string &strScriptName, const std::string &strScriptArguments, const std::string &strObserver, const std::string &strExperimentID, const std::string &strDescription, const std::string &strStartTime, const std::string &strEndTime, const std::string &strNoiseDiodeParams, const std::string &strRFParams, const std::string &strStatus, hid_t observationGroup)
+{
+    //Adds attributes to the Configuration/Observation group
+
+    hid_t variableLengthStringType;
+    variableLengthStringType = H5Tcopy (H5T_C_S1);
+
+    H5Tset_size (variableLengthStringType, H5T_VARIABLE);
+
+    hid_t attrDataspace = H5Screate(H5S_SCALAR);
+
+    hid_t attrScriptName = H5Acreate(observationGroup, "script_name", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+    const char* pcScriptName = &strScriptName[0];
+    H5Awrite(attrScriptName, variableLengthStringType, &pcScriptName);
+
+    hid_t attrScriptArguments = H5Acreate(observationGroup, "script_arguments", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+    const char* pcScriptArguments = &strScriptArguments[0];
+    H5Awrite(attrScriptArguments, variableLengthStringType, &pcScriptArguments);
+
+    hid_t attrObserver = H5Acreate(observationGroup, "observer", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+    const char* pcObserver = &strObserver[0];
+    H5Awrite(attrObserver, variableLengthStringType, &pcObserver);
+
+    hid_t attrExperimentID = H5Acreate(observationGroup, "experiment_id", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+    const char* pcExperimentID = &strExperimentID[0];
+    H5Awrite(attrExperimentID, variableLengthStringType, &pcExperimentID);
+
+    hid_t attrDescription = H5Acreate(observationGroup, "description", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+    const char* pcDescription = &strDescription[0];
+    H5Awrite(attrDescription, variableLengthStringType, &pcDescription);
+
+    hid_t attrStartTime = H5Acreate(observationGroup, "starttime", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+    const char* pcStartTime = &strStartTime[0];
+    H5Awrite(attrStartTime, variableLengthStringType, &pcStartTime);
+
+    hid_t attrEndTime = H5Acreate(observationGroup, "endtime", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+    const char* pcEndTime = &strEndTime[0];
+    H5Awrite(attrEndTime, variableLengthStringType, &pcEndTime);
+
+    hid_t attrNoiseDiodeParams = H5Acreate(observationGroup, "nd_params", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+    const char* pcNoiseDiodeParams = &strNoiseDiodeParams[0];
+    H5Awrite(attrNoiseDiodeParams, variableLengthStringType, &pcNoiseDiodeParams);
+
+    hid_t attrRFParams = H5Acreate(observationGroup, "rf_params", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+    const char* pcRFParams = &strRFParams[0];
+    H5Awrite(attrRFParams, variableLengthStringType, &pcRFParams);
+
+    hid_t attrStatus = H5Acreate(observationGroup, "status", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+    const char* pcStatus = &strStatus[0];
+    H5Awrite(attrStatus, variableLengthStringType, &pcStatus);
+
+    H5Aclose(attrScriptName);
+    H5Aclose(attrScriptArguments);
+    H5Aclose(attrObserver);
+    H5Aclose(attrExperimentID);
+    H5Aclose(attrDescription);
+    H5Aclose(attrStartTime);
+    H5Aclose(attrEndTime);
+    H5Aclose(attrNoiseDiodeParams);
+    H5Aclose(attrRFParams);
+    H5Aclose(attrStatus);
     H5Tclose(variableLengthStringType);
     H5Sclose(attrDataspace);
 }
