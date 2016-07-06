@@ -45,6 +45,7 @@ cSpectrometerHDF5OutputFile::cSpectrometerHDF5OutputFile(const std::string &strF
     m_iH5SensorsDBEGroupHandle                      = H5Gcreate2(m_iH5SensorsGroupHandle, "/MetaData/Sensors/DBE", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     m_iH5ConfigurationAntennasGroupHandle           = H5Gcreate2(m_iH5ConfigurationGroupHandle, "/MetaData/Configuration/Antennas", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     m_iH5ConfigurationObservationGroupHandle        = H5Gcreate2(m_iH5MetaDataGroupHandle, "/MetaData/Configuration/Observation", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    m_iH5ConfigurationDBEGroupHandle                = H5Gcreate2(m_iH5MetaDataGroupHandle, "/MetaData/Configuration/DBE", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     //Level 4:
     m_iH5SensorsAntennasAntenna1GroupHandle         = H5Gcreate2(m_iH5SensorsAntennasGroupHandle, "/MetaData/Sensors/Antennas/ant1", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     m_iH5ConfigurationAntennasAntenna1GroupHandle   = H5Gcreate2(m_iH5ConfigurationAntennasGroupHandle, "/MetaData/Configuration/Antennas/ant1", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
@@ -105,7 +106,8 @@ cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
     // TODO: This data needs to be retrieved from the KatCP server. Somewhere.
     string strExperimentID("test_experiment");
     addAttributesToFile("2.5", strExperimentID, AVN::getTimeNow_us(), 0, m_iH5FileHandle); // Zero errors, because our software is perfect!
-    addAttributesToObservation("script name", "script arguments", "Observer name", strExperimentID, "description", "start time", "end time", "noise diode params", "rf params", "status", m_iH5ConfigurationObservationGroupHandle);
+    addAttributesToObservation("script name", "script arguments", "Observer name", strExperimentID, "description", "ant1", "start time", "end time", "noise diode params", "rf params", "status", m_iH5ConfigurationObservationGroupHandle);
+    addAttributesToDBE("ll,rr", "q,u", m_iH5ConfigurationDBEGroupHandle);
 
     writeMarkupLabels();
 
@@ -149,6 +151,7 @@ cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
     //Level 4
     H5Gclose(m_iH5SensorsAntennasAntenna1GroupHandle);
     H5Gclose(m_iH5ConfigurationAntennasAntenna1GroupHandle);
+    H5Gclose(m_iH5ConfigurationDBEGroupHandle);
     //Level 3
     H5Gclose(m_iH5SensorsAntennasGroupHandle);
     H5Gclose(m_iH5SensorsRFEGroupHandle);
@@ -785,7 +788,8 @@ void cSpectrometerHDF5OutputFile::writeAntennaStatuses()
     hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
     //Create a compound data type consisting of different native types per entry:
-    hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cAntennaStatus));
+    //hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cAntennaStatus));
+    hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, H5T_VARIABLE);
 
     //Add to compound data type: a timestamp (double)
     H5Tinsert(compoundDataType, "timestamp", HOFFSET(cAntennaStatus, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
@@ -1522,47 +1526,85 @@ void cSpectrometerHDF5OutputFile::writeIFBandwidths()
 
 void cSpectrometerHDF5OutputFile::writeROACHAccumulationLengths()
 {
-    string strDatasetName("dbe.if.bandwidth");
+    //Ideally this dataset should only be one element long. So we'll trim.
+    vector<cTimestampedUnsignedInt> voUniqueAccumulationLengths_nFrames;
+    uint32_t ui32CurrentAccumulationLength_nFrames = 0;
+    for (uint32_t ui = 0; ui < m_voROACHAccumulationLengths_nFrames.size(); ui++)
+    {
+        if (m_voROACHAccumulationLengths_nFrames[ui].m_u32Value != ui32CurrentAccumulationLength_nFrames)
+        {
+            ui32CurrentAccumulationLength_nFrames = m_voROACHAccumulationLengths_nFrames[ui].m_u32Value;
+            voUniqueAccumulationLengths_nFrames.push_back(m_voROACHAccumulationLengths_nFrames[ui]);
+        }
+    }
 
-    //Create the data space
-    hsize_t dimension[] = { m_voROACHAccumulationLengths_nFrames.size() };
-    hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
+    hsize_t dimension = 1;
+    string strDatasetName("accum_length");
 
-    //Create a compound data type consisting of different native types per entry:
-    hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedUnsignedInt));
-
-    //Add to compound data type: a timestamp (double)
-    H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedUnsignedInt, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
-
-    //Add to compound data type: the accumulation length (unsigned int)
-    H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedUnsignedInt, m_u32Value), H5T_NATIVE_UINT32);
-
-    //Add to compound data type: the status of the sensor (string typically containing "nominal")
-    hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
-    H5Tset_size(stringTypeStatus, sizeof(cTimestampedUnsignedInt::m_chaStatus));
-    H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedUnsignedInt, m_chaStatus), stringTypeStatus);
-
-    //Create the data set of of the new compound datatype
-    hid_t dataset = H5Dcreate1(m_iH5SensorsDBEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
-
-    herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voROACHAccumulationLengths_nFrames.front());
+    herr_t err = H5LTmake_dataset(m_iH5ConfigurationDBEGroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_UINT32, &ui32CurrentAccumulationLength_nFrames);
 
     if(err < 0)
     {
-        cout << "cSpectrometerHDF5OutputFile::writeROACHAccumulationLengths(): HDF5 make dataset error" << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeROACHAccumulationLengths(): HDF5 make dataset error." << endl;
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeROACHAccumulationLengths(): Wrote " << m_voROACHAccumulationLengths_nFrames.size() << " accumulation lengths." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeROACHAccumulationLengths(): Wrote accumulation length." << endl;
     }
 
-    addAttributeToDataSet(string("accumulation length"), strDatasetName, string("unsigned int"), string("no. of FFT frames"), dataset);
+    //Need to open the dataset again here for attribute as the H5LTmake_dataset used above does leave an open handle.
+    hid_t dataset_id = H5Dopen2(m_iH5ConfigurationDBEGroupHandle, strDatasetName.c_str(), H5P_DEFAULT);
+    addAttributeToDataSet(string("sampling frequency of ROACH / KatADC"), strDatasetName, string("double"), string("MHz"), dataset_id);
 
-    H5Tclose(stringTypeStatus);
-    H5Tclose(compoundDataType);
-    H5Sclose(dataspace);
-    H5Dclose(dataset);
+    H5Dclose(dataset_id);
+
+    if (0) // (voUniqueAccumulationLengths_nFrames.size() != 1)
+    {
+        cout << "Warning! Unexpected change in accumulation length during recording. Saving changes in additional sensor dataset." << endl;
+
+        string strDatasetName("accum_length_history");
+
+        //Create the data space
+        hsize_t dimension[] = { voUniqueAccumulationLengths_nFrames.size() };
+        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
+
+        //Create a compound data type consisting of different native types per entry:
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedUnsignedInt));
+
+        //Add to compound data type: a timestamp (double)
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedUnsignedInt, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the accumulation length (unsigned int)
+        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedUnsignedInt, m_u32Value), H5T_NATIVE_UINT32);
+
+        //Add to compound data type: the status of the sensor (string typically containing "nominal")
+        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeStatus, sizeof(cTimestampedUnsignedInt::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedUnsignedInt, m_chaStatus), stringTypeStatus);
+
+        //Create the data set of of the new compound datatype
+        hid_t dataset = H5Dcreate1(m_iH5SensorsDBEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
+
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &voUniqueAccumulationLengths_nFrames.front());
+
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeROACHAccumulationLengths(): HDF5 make dataset error" << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeROACHAccumulationLengths(): Wrote " << voUniqueAccumulationLengths_nFrames.size() << " accumulation lengths." << endl;
+        }
+
+        addAttributeToDataSet(string("accumulation length"), strDatasetName, string("unsigned int"), string("no. of FFT frames"), dataset);
+
+        H5Tclose(stringTypeStatus);
+        H5Tclose(compoundDataType);
+        H5Sclose(dataspace);
+        H5Dclose(dataset);
+    }
 }
+
 
 void cSpectrometerHDF5OutputFile::writeROACHNBNarrowbandSelections()
 {
@@ -1611,9 +1653,9 @@ void cSpectrometerHDF5OutputFile::writeROACHNBNarrowbandSelections()
 void cSpectrometerHDF5OutputFile::writeROACHSamplingFrequency()
 {
     hsize_t dimension = 1;
-    string strDatasetName("dbe.fs");
+    string strDatasetName("adc_clk");
 
-    herr_t err = H5LTmake_dataset(m_iH5SensorsDBEGroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_DOUBLE, &m_dROACHFrequencyFs_MHz);
+    herr_t err = H5LTmake_dataset(m_iH5ConfigurationDBEGroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_DOUBLE, &m_dROACHFrequencyFs_MHz);
 
     if(err < 0)
     {
@@ -1621,12 +1663,12 @@ void cSpectrometerHDF5OutputFile::writeROACHSamplingFrequency()
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeROACHSamplingFrequency(): Wrote ROACH Fs." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeROACHSamplingFrequency(): Wrote ADC Sampling frequency." << endl;
     }
 
     //Need to open the dataset again here for attribute as the H5LTmake_dataset used above does leave an open handle.
-    hid_t dataset_id = H5Dopen2(m_iH5SensorsDBEGroupHandle, strDatasetName.c_str(), H5P_DEFAULT);
-    addAttributeToDataSet(string("sampling frequency of ROACH"), strDatasetName, string("double"), string("MHz"), dataset_id);
+    hid_t dataset_id = H5Dopen2(m_iH5ConfigurationDBEGroupHandle, strDatasetName.c_str(), H5P_DEFAULT);
+    addAttributeToDataSet(string("sampling frequency of ROACH / KatADC"), strDatasetName, string("double"), string("MHz"), dataset_id);
 
     H5Dclose(dataset_id);
 }
@@ -1897,7 +1939,7 @@ void cSpectrometerHDF5OutputFile::addAttributeToDataSet(const std::string &strDe
     H5Sclose(attrDataspace);
 }
 
-void cSpectrometerHDF5OutputFile::addAttributesToObservation(const std::string &strScriptName, const std::string &strScriptArguments, const std::string &strObserver, const std::string &strExperimentID, const std::string &strDescription, const std::string &strStartTime, const std::string &strEndTime, const std::string &strNoiseDiodeParams, const std::string &strRFParams, const std::string &strStatus, hid_t observationGroup)
+void cSpectrometerHDF5OutputFile::addAttributesToObservation(const std::string &strScriptName, const std::string &strScriptArguments, const std::string &strObserver, const std::string &strExperimentID, const std::string &strDescription, const std::string &strAntennas, const std::string &strStartTime, const std::string &strEndTime, const std::string &strNoiseDiodeParams, const std::string &strRFParams, const std::string &strStatus, hid_t observationGroup)
 {
     //Adds attributes to the Configuration/Observation group
 
@@ -1928,6 +1970,10 @@ void cSpectrometerHDF5OutputFile::addAttributesToObservation(const std::string &
     const char* pcDescription = &strDescription[0];
     H5Awrite(attrDescription, variableLengthStringType, &pcDescription);
 
+    hid_t attrAntennas = H5Acreate(observationGroup, "ants", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+    const char* pcAntennas = &strAntennas[0];
+    H5Awrite(attrAntennas, variableLengthStringType, &pcAntennas);
+
     hid_t attrStartTime = H5Acreate(observationGroup, "starttime", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
     const char* pcStartTime = &strStartTime[0];
     H5Awrite(attrStartTime, variableLengthStringType, &pcStartTime);
@@ -1953,6 +1999,7 @@ void cSpectrometerHDF5OutputFile::addAttributesToObservation(const std::string &
     H5Aclose(attrObserver);
     H5Aclose(attrExperimentID);
     H5Aclose(attrDescription);
+    H5Aclose(attrAntennas);
     H5Aclose(attrStartTime);
     H5Aclose(attrEndTime);
     H5Aclose(attrNoiseDiodeParams);
@@ -1962,161 +2009,184 @@ void cSpectrometerHDF5OutputFile::addAttributesToObservation(const std::string &
     H5Sclose(attrDataspace);
 }
 
+void cSpectrometerHDF5OutputFile::addAttributesToDBE(const std::string &strVisOrdering, const std::string &strStokesOrdering, hid_t DBEGroup)
+{
+    hid_t variableLengthStringType;
+    variableLengthStringType = H5Tcopy (H5T_C_S1);
+
+    H5Tset_size (variableLengthStringType, H5T_VARIABLE);
+
+    hid_t attrDataspace = H5Screate(H5S_SCALAR);
+
+    hid_t attrVisOrdering = H5Acreate(DBEGroup, "vis_ordering", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+    const char* pcVisOrdering = &strVisOrdering[0];
+    H5Awrite(attrVisOrdering, variableLengthStringType, &pcVisOrdering);
+
+    hid_t attrStokesOrdering = H5Acreate(DBEGroup, "stokes_ordering", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+    const char* pcStokesOrdering = &strStokesOrdering[0];
+    H5Awrite(attrStokesOrdering, variableLengthStringType, &pcStokesOrdering);
+
+    H5Aclose(attrVisOrdering);
+    H5Aclose(attrStokesOrdering);
+    H5Tclose(variableLengthStringType);
+    H5Sclose(attrDataspace);
+}
+
 //Functions for adding logged data from outside this class
 //Each function aquires a shared lock of a common shared mutex for adding data to its respective vector.
 //When all of this data is written to file a unique lock is obtained from that mutex so that none of the data be altered at that point
-void cSpectrometerHDF5OutputFile::addRequestedAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg)
+void cSpectrometerHDF5OutputFile::addRequestedAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg, const string &strStatus)
 {
     cTimestampedDouble oNewRequestedAntennaAz;
     oNewRequestedAntennaAz.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewRequestedAntennaAz.m_dValue = dAzimuth_deg;
-    sprintf(oNewRequestedAntennaAz.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    sprintf(oNewRequestedAntennaAz.m_chaStatus, strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     m_voRequestedAntennaAzs_deg.push_back(oNewRequestedAntennaAz);
 }
 
-void cSpectrometerHDF5OutputFile::addRequestedAntennaEl(int64_t i64Timestamp_us, double dElevation_deg)
+void cSpectrometerHDF5OutputFile::addRequestedAntennaEl(int64_t i64Timestamp_us, double dElevation_deg, const string &strStatus)
 {
     cTimestampedDouble oNewRequestedAntennaEl;
     oNewRequestedAntennaEl.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewRequestedAntennaEl.m_dValue = dElevation_deg;
-    sprintf(oNewRequestedAntennaEl.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    sprintf(oNewRequestedAntennaEl.m_chaStatus, strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     m_voRequestedAntennaEls_deg.push_back(oNewRequestedAntennaEl);
 }
 
-void cSpectrometerHDF5OutputFile::addActualAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg)
+void cSpectrometerHDF5OutputFile::addActualAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg, const string &strStatus)
 {
     cTimestampedDouble oNewActualAntennaAz;
     oNewActualAntennaAz.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewActualAntennaAz.m_dValue = dAzimuth_deg;
-    sprintf(oNewActualAntennaAz.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    sprintf(oNewActualAntennaAz.m_chaStatus, strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     m_voActualAntennaAzs_deg.push_back(oNewActualAntennaAz);
 }
 
-void cSpectrometerHDF5OutputFile::addActualAntennaEl(int64_t i64Timestamp_us, double dElevation_deg)
+void cSpectrometerHDF5OutputFile::addActualAntennaEl(int64_t i64Timestamp_us, double dElevation_deg, const string &strStatus)
 {
     cTimestampedDouble oNewActualAntennaEl;
     oNewActualAntennaEl.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewActualAntennaEl.m_dValue = dElevation_deg;
-    sprintf(oNewActualAntennaEl.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    sprintf(oNewActualAntennaEl.m_chaStatus, strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     m_voActualAntennaEls_deg.push_back(oNewActualAntennaEl);
 }
 
-void cSpectrometerHDF5OutputFile::addActualSourceOffsetAz(int64_t i64Timestamp_us, double dAzimuthOffset_deg)
+void cSpectrometerHDF5OutputFile::addActualSourceOffsetAz(int64_t i64Timestamp_us, double dAzimuthOffset_deg, const string &strStatus)
 {
     cTimestampedDouble oNewActualSourceOffsetAz;
     oNewActualSourceOffsetAz.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewActualSourceOffsetAz.m_dValue = dAzimuthOffset_deg;
-    sprintf(oNewActualSourceOffsetAz.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    sprintf(oNewActualSourceOffsetAz.m_chaStatus, strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     m_voActualSourceOffsetAzs_deg.push_back(oNewActualSourceOffsetAz);
 }
 
-void cSpectrometerHDF5OutputFile::addActualSourceOffsetEl(int64_t i64Timestamp_us, double dElevationOffset_deg)
+void cSpectrometerHDF5OutputFile::addActualSourceOffsetEl(int64_t i64Timestamp_us, double dElevationOffset_deg, const string &strStatus)
 {
     cTimestampedDouble oNewActualSourceOffsetEl;
     oNewActualSourceOffsetEl.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewActualSourceOffsetEl.m_dValue = dElevationOffset_deg;
-    sprintf(oNewActualSourceOffsetEl.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    sprintf(oNewActualSourceOffsetEl.m_chaStatus, strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     m_voActualSourceOffsetEls_deg.push_back(oNewActualSourceOffsetEl);
 }
 
-void cSpectrometerHDF5OutputFile::addActualAntennaRA(int64_t i64Timestamp_us, double dRighAscension_deg)
+void cSpectrometerHDF5OutputFile::addActualAntennaRA(int64_t i64Timestamp_us, double dRighAscension_deg, const string &strStatus)
 {
     cTimestampedDouble oNewActualAntennaRA;
     oNewActualAntennaRA.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewActualAntennaRA.m_dValue = dRighAscension_deg;
-    sprintf(oNewActualAntennaRA.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    sprintf(oNewActualAntennaRA.m_chaStatus, strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     m_voActualAntennaRAs_deg.push_back(oNewActualAntennaRA);
 }
 
-void cSpectrometerHDF5OutputFile::addActualAntennaDec(int64_t i64Timestamp_us, double dDeclination_deg)
+void cSpectrometerHDF5OutputFile::addActualAntennaDec(int64_t i64Timestamp_us, double dDeclination_deg, const string &strStatus)
 {
     cTimestampedDouble oNewActualAntennaDec;
     oNewActualAntennaDec.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewActualAntennaDec.m_dValue = dDeclination_deg;
-    sprintf(oNewActualAntennaDec.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    sprintf(oNewActualAntennaDec.m_chaStatus, strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     m_voActualAntennaDecs_deg.push_back(oNewActualAntennaDec);
 }
 
-void cSpectrometerHDF5OutputFile::addAntennaStatus(int64_t i64Timestamp_us, const string &strAntennaStatus)
+void cSpectrometerHDF5OutputFile::addAntennaStatus(int64_t i64Timestamp_us, const string &strAntennaStatus, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     cAntennaStatus oNewAntennaStatus;
     oNewAntennaStatus.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     sprintf( oNewAntennaStatus.m_chaAntennaStatus, strAntennaStatus.substr(0, sizeof(oNewAntennaStatus.m_chaAntennaStatus)).c_str() ); //Limit to size of the char array
-    sprintf( oNewAntennaStatus.m_chaStatus, "nominal" ); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    sprintf( oNewAntennaStatus.m_chaStatus, strStatus.c_str());
 
     //The numerical value is not used here
 
     m_voAntennaStatuses.push_back(oNewAntennaStatus);
 }
 
-void cSpectrometerHDF5OutputFile::motorTorqueAzMaster(int64_t i64Timestamp_us, double dAzMaster_mNm)
+void cSpectrometerHDF5OutputFile::motorTorqueAzMaster(int64_t i64Timestamp_us, double dAzMaster_mNm, const string &strStatus)
 {
     cTimestampedDouble oNewMotorTorque;
     oNewMotorTorque.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewMotorTorque.m_dValue = dAzMaster_mNm;
-    sprintf(oNewMotorTorque.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    sprintf(oNewMotorTorque.m_chaStatus, strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     m_voMotorTorquesAzMaster_mNm.push_back(oNewMotorTorque);
 }
 
-void cSpectrometerHDF5OutputFile::motorTorqueAzSlave(int64_t i64Timestamp_us, double dAzSlave_mNm)
+void cSpectrometerHDF5OutputFile::motorTorqueAzSlave(int64_t i64Timestamp_us, double dAzSlave_mNm, const string &strStatus)
 {
     cTimestampedDouble oNewMotorTorque;
     oNewMotorTorque.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewMotorTorque.m_dValue = dAzSlave_mNm;
-    sprintf(oNewMotorTorque.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    sprintf(oNewMotorTorque.m_chaStatus, strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     m_voMotorTorquesAzSlave_mNm.push_back(oNewMotorTorque);
 }
 
-void cSpectrometerHDF5OutputFile::motorTorqueElMaster(int64_t i64Timestamp_us, double dElMaster_mNm)
+void cSpectrometerHDF5OutputFile::motorTorqueElMaster(int64_t i64Timestamp_us, double dElMaster_mNm, const string &strStatus)
 {
     cTimestampedDouble oNewMotorTorque;
     oNewMotorTorque.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewMotorTorque.m_dValue = dElMaster_mNm;
-    sprintf(oNewMotorTorque.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    sprintf(oNewMotorTorque.m_chaStatus, strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     m_voMotorTorquesElMaster_mNm.push_back(oNewMotorTorque);
 }
 
-void cSpectrometerHDF5OutputFile::motorTorqueElSlave(int64_t i64Timestamp_us, double dElSlave_mNm)
+void cSpectrometerHDF5OutputFile::motorTorqueElSlave(int64_t i64Timestamp_us, double dElSlave_mNm, const string &strStatus)
 {
     cTimestampedDouble oNewMotorTorque;
     oNewMotorTorque.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewMotorTorque.m_dValue = dElSlave_mNm;
-    sprintf(oNewMotorTorque.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    sprintf(oNewMotorTorque.m_chaStatus, strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
@@ -2134,38 +2204,38 @@ void cSpectrometerHDF5OutputFile::setAppliedPointingModel(const string &strModel
     m_strPointModelName = strModelName;
 }
 
-void cSpectrometerHDF5OutputFile::addNoiseDiodeSoftwareState(int64_t i64Timestamp_us, int32_t i32NoiseDiodeState)
+void cSpectrometerHDF5OutputFile::addNoiseDiodeSoftwareState(int64_t i64Timestamp_us, int32_t i32NoiseDiodeState, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     cTimestampedInt oNewNoiseDiodeState;
     oNewNoiseDiodeState.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewNoiseDiodeState.m_i32Value = i32NoiseDiodeState;
-    sprintf(oNewNoiseDiodeState.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    sprintf(oNewNoiseDiodeState.m_chaStatus, strStatus.c_str());
 
     m_voNoiseDiodeSoftwareStates.push_back(oNewNoiseDiodeState);
 }
 
-void cSpectrometerHDF5OutputFile::addNoiseDiodeSource(int64_t i64Timestamp_us, const string &strNoiseSource)
+void cSpectrometerHDF5OutputFile::addNoiseDiodeSource(int64_t i64Timestamp_us, const string &strNoiseSource, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     cNoiseDiodeSource oNewNoiseDiodeSource;
     oNewNoiseDiodeSource.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     sprintf( oNewNoiseDiodeSource.m_chaSource, strNoiseSource.substr(0, sizeof(oNewNoiseDiodeSource.m_chaSource)).c_str() ); //Limit to size of the char array
-    sprintf( oNewNoiseDiodeSource.m_chaStatus, "nominal" ); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    sprintf( oNewNoiseDiodeSource.m_chaStatus, strStatus.c_str());
 
     m_voNoiseDiodeSources.push_back(oNewNoiseDiodeSource);
 }
 
-void cSpectrometerHDF5OutputFile::addNoiseDiodeCurrent(int64_t i64Timestamp_us, double dNoiseDiodeCurrent_A)
+void cSpectrometerHDF5OutputFile::addNoiseDiodeCurrent(int64_t i64Timestamp_us, double dNoiseDiodeCurrent_A, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     cTimestampedDouble oNewNoiseDiodeCurrent;
     oNewNoiseDiodeCurrent.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewNoiseDiodeCurrent.m_dValue = dNoiseDiodeCurrent_A;
-    sprintf(oNewNoiseDiodeCurrent.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    sprintf(oNewNoiseDiodeCurrent.m_chaStatus, strStatus.c_str());
 
 
     m_voNoiseDiodeCurrents.push_back(oNewNoiseDiodeCurrent);
@@ -2209,86 +2279,86 @@ void cSpectrometerHDF5OutputFile::addSourceSelection(int64_t i64Timestamp_us, co
 }
 
 
-void cSpectrometerHDF5OutputFile::addFrequencyRFChan0(int64_t i64Timestamp_us, double dFreqencyRFChan0_MHz)
+void cSpectrometerHDF5OutputFile::addFrequencyRFChan0(int64_t i64Timestamp_us, double dFreqencyRFChan0_MHz, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     cTimestampedDouble oNewRFFrequency;
     oNewRFFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewRFFrequency.m_dValue = dFreqencyRFChan0_MHz;
-    sprintf(oNewRFFrequency.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    sprintf(oNewRFFrequency.m_chaStatus, strStatus.c_str());
 
     m_voFrequenciesRFChan0_MHz.push_back(oNewRFFrequency);
 }
 
-void cSpectrometerHDF5OutputFile::addFrequencyRFChan1(int64_t i64Timestamp_us, double dFreqencyRFChan1_MHz)
+void cSpectrometerHDF5OutputFile::addFrequencyRFChan1(int64_t i64Timestamp_us, double dFreqencyRFChan1_MHz, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     cTimestampedDouble oNewRFFrequency;
     oNewRFFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewRFFrequency.m_dValue = dFreqencyRFChan1_MHz;
-    sprintf(oNewRFFrequency.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    sprintf(oNewRFFrequency.m_chaStatus, strStatus.c_str());
 
     m_voFrequenciesRFChan1_MHz.push_back(oNewRFFrequency);
 }
 
-void cSpectrometerHDF5OutputFile::addFrequencyLO0Chan0(int64_t i64Timestamp_us, double dFrequencyLO0Chan0_MHz)
+void cSpectrometerHDF5OutputFile::addFrequencyLO0Chan0(int64_t i64Timestamp_us, double dFrequencyLO0Chan0_MHz, const string &strStatus)
 {
     cTimestampedDouble oNewLOFrequency;
     oNewLOFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewLOFrequency.m_dValue = dFrequencyLO0Chan0_MHz;
-    sprintf(oNewLOFrequency.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    sprintf(oNewLOFrequency.m_chaStatus, strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     m_voFrequenciesLO0Chan0_MHz.push_back(oNewLOFrequency);
 }
 
-void cSpectrometerHDF5OutputFile::addFrequencyLO0Chan1(int64_t i64Timestamp_us, double dFrequencyLO0Chan1_MHz)
+void cSpectrometerHDF5OutputFile::addFrequencyLO0Chan1(int64_t i64Timestamp_us, double dFrequencyLO0Chan1_MHz, const string &strStatus)
 {
     cTimestampedDouble oNewLOFrequency;
     oNewLOFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewLOFrequency.m_dValue = dFrequencyLO0Chan1_MHz;
-    sprintf(oNewLOFrequency.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    sprintf(oNewLOFrequency.m_chaStatus, strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     m_voFrequenciesLO0Chan1_MHz.push_back(oNewLOFrequency);
 }
 
-void cSpectrometerHDF5OutputFile::addFrequencyLO1(int64_t i64Timestamp_us, double dFrequencyLO1_MHz)
+void cSpectrometerHDF5OutputFile::addFrequencyLO1(int64_t i64Timestamp_us, double dFrequencyLO1_MHz, const string &strStatus)
 {
     cTimestampedDouble oNewLOFrequency;
     oNewLOFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewLOFrequency.m_dValue = dFrequencyLO1_MHz;
-    sprintf(oNewLOFrequency.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    sprintf(oNewLOFrequency.m_chaStatus, strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     m_voFrequenciesLO1_MHz.push_back(oNewLOFrequency);
 }
 
-void cSpectrometerHDF5OutputFile::addReceiverBandwidthChan0(int64_t i64Timestamp_us, double dReceiverBandwidthChan0_MHz)
+void cSpectrometerHDF5OutputFile::addReceiverBandwidthChan0(int64_t i64Timestamp_us, double dReceiverBandwidthChan0_MHz, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     cTimestampedDouble oNewBandwidthIF;
     oNewBandwidthIF.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewBandwidthIF.m_dValue = dReceiverBandwidthChan0_MHz;
-    sprintf(oNewBandwidthIF.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    sprintf(oNewBandwidthIF.m_chaStatus, strStatus.c_str());
 
     m_voReceiverBandwidthsChan0_MHz.push_back(oNewBandwidthIF);
 }
 
-void cSpectrometerHDF5OutputFile::addReceiverBandwidthChan1(int64_t i64Timestamp_us, double dReceiverBandwidthChan1_MHz)
+void cSpectrometerHDF5OutputFile::addReceiverBandwidthChan1(int64_t i64Timestamp_us, double dReceiverBandwidthChan1_MHz, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     cTimestampedDouble oNewBandwidthIF;
     oNewBandwidthIF.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewBandwidthIF.m_dValue = dReceiverBandwidthChan1_MHz;
-    sprintf(oNewBandwidthIF.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    sprintf(oNewBandwidthIF.m_chaStatus, strStatus.c_str());
 
     m_voReceiverBandwidthsChan1_MHz.push_back(oNewBandwidthIF);
 }

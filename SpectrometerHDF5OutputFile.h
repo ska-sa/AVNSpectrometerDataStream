@@ -64,7 +64,7 @@ class cSpectrometerHDF5OutputFile
     typedef struct cAntennaStatus
     {
         double              m_dTimestamp_s;
-        char                m_chaAntennaStatus[8];
+        char                m_chaAntennaStatus[16];
         char                m_chaStatus[7];
     } cAntennaStatus;
 
@@ -116,35 +116,35 @@ public:
     void                                    addFrame(const std::vector<int> &vi32Chan0, const std::vector<int> &vi32Chan1, const std::vector<int> &vi32Chan2, std::vector<int> &vi32Chan3,
                                                      const cSpectrometerHeader &oHeader);
 
-    void                                    addRequestedAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg);
-    void                                    addRequestedAntennaEl(int64_t i64Timestamp_us, double dElevation_deg);
-    void                                    addActualAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg);
-    void                                    addActualAntennaEl(int64_t i64Timestamp_us, double dElevation_deg);
-    void                                    addActualSourceOffsetAz(int64_t i64Timestamp_us, double dAzimuthOffset_deg);
-    void                                    addActualSourceOffsetEl(int64_t i64Timestamp_us, double dElevationOffset_deg);
-    void                                    addActualAntennaRA(int64_t i64Timestamp_us, double dRighAscension_deg);
-    void                                    addActualAntennaDec(int64_t i64Timestamp_us, double dDeclination_deg);
+    void                                    addRequestedAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg, const std::string &strStatus);
+    void                                    addRequestedAntennaEl(int64_t i64Timestamp_us, double dElevation_deg, const std::string &strStatus);
+    void                                    addActualAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg, const std::string &strStatus);
+    void                                    addActualAntennaEl(int64_t i64Timestamp_us, double dElevation_deg, const std::string &strStatus);
+    void                                    addActualSourceOffsetAz(int64_t i64Timestamp_us, double dAzimuthOffset_deg, const std::string &strStatus);
+    void                                    addActualSourceOffsetEl(int64_t i64Timestamp_us, double dElevationOffset_deg, const std::string &strStatus);
+    void                                    addActualAntennaRA(int64_t i64Timestamp_us, double dRighAscension_deg, const std::string &strStatus);
+    void                                    addActualAntennaDec(int64_t i64Timestamp_us, double dDeclination_deg, const std::string &strStatus);
 
-    void                                    addAntennaStatus(int64_t i64Timestamp_us, const std::string &strAntennaStatus);
-    void                                    motorTorqueAzMaster(int64_t i64Timestamp_us, double dAzMaster_mNm);
-    void                                    motorTorqueAzSlave(int64_t i64Timestamp_us, double dAzSlave_mNm);
-    void                                    motorTorqueElMaster(int64_t i64Timestamp_us, double dElMaster_mNm);
-    void                                    motorTorqueElSlave(int64_t i64Timestamp_us, double dElSlave_mNm);
+    void                                    addAntennaStatus(int64_t i64Timestamp_us, const std::string &strAntennaStatus, const std::string &strStatus);
+    void                                    motorTorqueAzMaster(int64_t i64Timestamp_us, double dAzMaster_mNm, const std::string &strStatus);
+    void                                    motorTorqueAzSlave(int64_t i64Timestamp_us, double dAzSlave_mNm, const std::string &strStatus);
+    void                                    motorTorqueElMaster(int64_t i64Timestamp_us, double dElMaster_mNm, const std::string &strStatus);
+    void                                    motorTorqueElSlave(int64_t i64Timestamp_us, double dElSlave_mNm, const std::string &strStatus);
     void                                    setAppliedPointingModel(const std::string &strModelName, const std::vector<double> &vdPointingModelParams);
 
-    void                                    addNoiseDiodeSoftwareState(int64_t i64Timestamp_us, int32_t i32NoiseDiodeState);
-    void                                    addNoiseDiodeSource(int64_t i64Timestamp_us, const std::string &strNoiseSource);
-    void                                    addNoiseDiodeCurrent(int64_t i64Timestamp_us, double dNoiseDiodeCurrent_A);
+    void                                    addNoiseDiodeSoftwareState(int64_t i64Timestamp_us, int32_t i32NoiseDiodeState, const std::string &strStatus);
+    void                                    addNoiseDiodeSource(int64_t i64Timestamp_us, const std::string &strNoiseSource, const std::string &strStatus);
+    void                                    addNoiseDiodeCurrent(int64_t i64Timestamp_us, double dNoiseDiodeCurrent_A, const std::string &strStatus);
 
     void                                    addSourceSelection(int64_t i64Timestamp_us, const std::string &strSourceName, double dRighAscension_deg, double dDeclination_deg);
 
-    void                                    addFrequencyRFChan0(int64_t i64Timestamp_us, double dFreqencyRFChan0_MHz);
-    void                                    addFrequencyRFChan1(int64_t i64Timestamp_us, double dFreqencyRFChan1_MHz);
-    void                                    addFrequencyLO0Chan0(int64_t i64Timestamp_us, double dFrequencyLO0Chan0_MHz);
-    void                                    addFrequencyLO0Chan1(int64_t i64Timestamp_us, double dFrequencyLO0Chan1_MHz);
-    void                                    addFrequencyLO1(int64_t i64Timestamp_us, double dFrequencyLO1_MHz);
-    void                                    addReceiverBandwidthChan0(int64_t i64Timestamp_us, double dReceiverBandwidthChan0_MHz);
-    void                                    addReceiverBandwidthChan1(int64_t i64Timestamp_us, double dReceiverBandwidthChan1_MHz);
+    void                                    addFrequencyRFChan0(int64_t i64Timestamp_us, double dFreqencyRFChan0_MHz, const std::string &strStatus);
+    void                                    addFrequencyRFChan1(int64_t i64Timestamp_us, double dFreqencyRFChan1_MHz, const std::string &strStatus);
+    void                                    addFrequencyLO0Chan0(int64_t i64Timestamp_us, double dFrequencyLO0Chan0_MHz, const std::string &strStatus);
+    void                                    addFrequencyLO0Chan1(int64_t i64Timestamp_us, double dFrequencyLO0Chan1_MHz, const std::string &strStatus);
+    void                                    addFrequencyLO1(int64_t i64Timestamp_us, double dFrequencyLO1_MHz, const std::string &strStatus);
+    void                                    addReceiverBandwidthChan0(int64_t i64Timestamp_us, double dReceiverBandwidthChan0_MHz, const std::string &strStatus);
+    void                                    addReceiverBandwidthChan1(int64_t i64Timestamp_us, double dReceiverBandwidthChan1_MHz, const std::string &strStatus);
 
     void                                    addAccumulationLength(int64_t i64Timestamp_us, uint32_t u32NFrames);
     void                                    addCoarseChannelSelect(int64_t i64Timestamp_us, uint32_t u32ChannelNo);
@@ -178,6 +178,7 @@ private:
     hid_t                                   m_iH5ConfigurationAntennasGroupHandle;
     hid_t                                   m_iH5ConfigurationAntennasAntenna1GroupHandle;
     hid_t                                   m_iH5ConfigurationObservationGroupHandle;
+    hid_t                                   m_iH5ConfigurationDBEGroupHandle;
 
     hid_t                                   m_iH5DatasetVis;
     hid_t                                   m_iH5DatasetStokes;
@@ -251,6 +252,7 @@ private:
                                                 const std::string &strObserver,
                                                 const std::string &strExperimentID,
                                                 const std::string &strDescription,
+                                                const std::string &strAntennas,
                                                 const std::string &strStartTime,
                                                 const std::string &strEndTime,
                                                 const std::string &strNoiseDiodeParams,
@@ -258,6 +260,7 @@ private:
                                                 const std::string &strStatus,
                                                 hid_t observationGroup
                                             );
+    void                                    addAttributesToDBE(const std::string &strVisOrdering, const std::string &strStokesOrdering, hid_t DBEGroup);
 
     //Write logged data to file (after sample recording is completed)
     void                                    writeSampleDataTimestamps();
