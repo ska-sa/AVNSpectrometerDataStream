@@ -105,7 +105,15 @@ class cSpectrometerHDF5OutputFile
         char                m_chaStatus[7];
     } cTimestampedDualDouble;
 
-
+    typedef struct cAntennaConfiguration
+    {
+        char                m_chaAntennaName[64];
+        char                m_chaAntennaDiameter_m[8];
+        char                m_chaAntennaBeamwidth_deg[8];
+        char                m_chaAntennaLongitude_deg[16];
+        char                m_chaAntennaLatitude_deg[16];
+        char                m_chaPointModelName[16];
+    } cAntennaConfiguration;
 
 
 public:
@@ -115,6 +123,8 @@ public:
     //Different functions can be called concurrently but any single function is not at present thread safe with regard to concurrent calls
     void                                    addFrame(const std::vector<int> &vi32Chan0, const std::vector<int> &vi32Chan1, const std::vector<int> &vi32Chan2, std::vector<int> &vi32Chan3,
                                                      const cSpectrometerHeader &oHeader);
+
+    void                                    addMarkupLabel(int64_t i64Timestamp_us, const std::string &strLabel);
 
     void                                    addRequestedAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg, const std::string &strStatus);
     void                                    addRequestedAntennaEl(int64_t i64Timestamp_us, double dElevation_deg, const std::string &strStatus);
@@ -154,6 +164,13 @@ public:
     void                                    addCoarseFFTShiftMask(int64_t i64Timestamp_us, uint32_t u32ShiftMask);
     void                                    addAttenuationADCChan0(int64_t i64Timestamp_us, double dADCAttenuationChan0_dB);
     void                                    addAttenuationADCChan1(int64_t i64Timestamp_us, double dADCAttenuationChan1_dB);
+
+    void                                    setAntennaName(const std::string &strAntennaName);
+    void                                    setAntennaBeamwidth(const std::string &strAntennaBeamwidth_deg);
+    void                                    addAntennaDelayModel(const std::string &strAntennaDelayModel);
+    void                                    setAntennaDiameter(const std::string &strAntennaDiameter_m);
+    void                                    setAntennaLatitude(const std::string &strAntennaLatitude_deg);
+    void                                    setAntennaLongitude(const std::string &strAntennaLongitude_deg);
 
     std::string                             getFilename() const;
 
@@ -210,8 +227,6 @@ private:
     std::vector<cTimestampedDouble>         m_voMotorTorquesAzSlave_mNm;
     std::vector<cTimestampedDouble>         m_voMotorTorquesElMaster_mNm;
     std::vector<cTimestampedDouble>         m_voMotorTorquesElSlave_mNm;
-    std::vector<double>                     m_vdPointingModelParams; //Only store most recent version
-    std::string                             m_strPointModelName;
 
     std::vector<cTimestampedInt>            m_voNoiseDiodeSoftwareStates;
     std::vector<cNoiseDiodeSource>          m_voNoiseDiodeSources;
@@ -226,6 +241,10 @@ private:
     std::vector<cTimestampedDouble>         m_voFrequenciesLO1_MHz;
     std::vector<cTimestampedDouble>         m_voReceiverBandwidthsChan0_MHz;
     std::vector<cTimestampedDouble>         m_voReceiverBandwidthsChan1_MHz;
+
+    cAntennaConfiguration                   m_oAntennaConfiguration;
+    std::vector<double>                     m_vdDelayModelParams;
+    std::vector<double>                     m_vdPointingModelParams; //Only store most recent version
 
     //Values received from ROACH TCPBorphServer
     std::vector<cTimestampedUnsignedInt>    m_voROACHAccumulationLengths_nFrames;
@@ -276,7 +295,7 @@ private:
 
     void                                    writeAntennaStatuses();
     void                                    writeMotorTorques();
-    void                                    writeAppliedPointingModel();
+    void                                    writeAntennaConfiguration();
 
     void                                    writeNoiseDiodeSoftwareStates();
     void                                    writeNoiseDiodeSources();

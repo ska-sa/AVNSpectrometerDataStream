@@ -122,7 +122,7 @@ cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
 
     writeAntennaStatuses();
     writeMotorTorques();
-    writeAppliedPointingModel();
+    writeAntennaConfiguration();
 
     writeNoiseDiodeSoftwareStates();
     writeNoiseDiodeSources();
@@ -414,7 +414,7 @@ void cSpectrometerHDF5OutputFile::writeRequestedAntennaAzEls()
     //Azimuth:
     ////////////////////////////////////////////////////////////////////////////////////////////
     {
-        string strDatasetName("pos.actual-pointm-azim");
+        string strDatasetName("pos.request-scan-azim");
 
         //Create the data space
         hsize_t dimension[] = { m_voRequestedAntennaAzs_deg.size() };
@@ -448,7 +448,7 @@ void cSpectrometerHDF5OutputFile::writeRequestedAntennaAzEls()
             cout << "cSpectrometerHDF5OutputFile::writeRequestedAntennaAzEls(): Wrote " << m_voRequestedAntennaAzs_deg.size() << " requested antenna azimuths to dataset." << endl;
         }
 
-        addAttributeToDataSet(string("Requested azimuth after pointing model"), strDatasetName, string("double"), string("deg"), dataset);
+        addAttributeToDataSet(string("Requested azimuth after scan offset"), strDatasetName, string("double"), string("deg"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -459,7 +459,7 @@ void cSpectrometerHDF5OutputFile::writeRequestedAntennaAzEls()
     //Elevation:
     ////////////////////////////////////////////////////////////////////////////////////////////
     {
-        string strDatasetName("pos.actual-pointm-elev");
+        string strDatasetName("pos.request-scan-elev");
 
         //Create the data space
         hsize_t dimension[] = { m_voRequestedAntennaEls_deg.size() };
@@ -493,7 +493,7 @@ void cSpectrometerHDF5OutputFile::writeRequestedAntennaAzEls()
             cout << "cSpectrometerHDF5OutputFile::writeRequestedAntennaAzEls(): Wrote " << m_voRequestedAntennaEls_deg.size() << " requested antenna elevations to dataset." << endl;
         }
 
-        addAttributeToDataSet(string("Requested elevation after pointing model"), strDatasetName, string("double"), string("deg"), dataset);
+        addAttributeToDataSet(string("Requested elevation after scan offset"), strDatasetName, string("double"), string("deg"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -513,7 +513,7 @@ void cSpectrometerHDF5OutputFile::writeActualAntennaAzEls()
     //Azimuth:
     ////////////////////////////////////////////////////////////////////////////////////////////
     {
-        string strDatasetName("pos.request-pointm-azim");
+        string strDatasetName("pos.actual-scan-azim");
 
         //Create the data space
         hsize_t dimension[] = { m_voActualAntennaAzs_deg.size() };
@@ -547,7 +547,7 @@ void cSpectrometerHDF5OutputFile::writeActualAntennaAzEls()
             cout << "cSpectrometerHDF5OutputFile::writeActualAntennaAzEls(): Wrote " << m_voActualAntennaAzs_deg.size() << " actual antenna azimuths to dataset." << endl;
         }
 
-        addAttributeToDataSet(string("Actual azimuth after pointing model"), strDatasetName, string("double"), string("deg"), dataset);
+        addAttributeToDataSet(string("Actual azimuth after scan offset"), strDatasetName, string("double"), string("deg"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -558,7 +558,7 @@ void cSpectrometerHDF5OutputFile::writeActualAntennaAzEls()
     //Elevation:
     ////////////////////////////////////////////////////////////////////////////////////////////
     {
-        string strDatasetName("pos.request-pointm-elev");
+        string strDatasetName("pos.actual-scan-elev");
 
         //Create the data space
         hsize_t dimension[] = { m_voActualAntennaEls_deg.size() };
@@ -592,7 +592,7 @@ void cSpectrometerHDF5OutputFile::writeActualAntennaAzEls()
             cout << "cSpectrometerHDF5OutputFile::writeActualAntennaAzEls(): Wrote " << m_voActualAntennaEls_deg.size() << " actual antenna elevations to dataset." << endl;
         }
 
-        addAttributeToDataSet(string("Actual elevation after pointing model"), strDatasetName, string("double"), string("deg"), dataset);
+        addAttributeToDataSet(string("Actual elevation after scan offset"), strDatasetName, string("double"), string("deg"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -788,8 +788,8 @@ void cSpectrometerHDF5OutputFile::writeAntennaStatuses()
     hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
     //Create a compound data type consisting of different native types per entry:
-    //hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cAntennaStatus));
-    hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, H5T_VARIABLE);
+    hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cAntennaStatus));
+    //hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, H5T_VARIABLE);
 
     //Add to compound data type: a timestamp (double)
     H5Tinsert(compoundDataType, "timestamp", HOFFSET(cAntennaStatus, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
@@ -798,7 +798,6 @@ void cSpectrometerHDF5OutputFile::writeAntennaStatuses()
     hid_t stringTypeValue = H5Tcopy (H5T_C_S1);
     H5Tset_size(stringTypeValue, sizeof(cAntennaStatus::m_chaAntennaStatus));
     H5Tinsert(compoundDataType, "value", HOFFSET(cAntennaStatus, m_chaAntennaStatus), stringTypeValue);
-
     //Add to compound data type: the status of the sensor (string typically containing "nominal")
     hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
     H5Tset_size(stringTypeStatus, sizeof(cAntennaStatus::m_chaStatus));
@@ -806,7 +805,6 @@ void cSpectrometerHDF5OutputFile::writeAntennaStatuses()
 
     //Create the data set of of the new compound datatype
     hid_t dataset = H5Dcreate1(m_iH5SensorsAntennasAntenna1GroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
-
     herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voAntennaStatuses.front());
 
     if(err < 0)
@@ -1001,32 +999,87 @@ void cSpectrometerHDF5OutputFile::writeMotorTorques()
     }
 }
 
-void cSpectrometerHDF5OutputFile::writeAppliedPointingModel()
+void cSpectrometerHDF5OutputFile::writeAntennaConfiguration()
 {
-    hsize_t dimension = m_vdPointingModelParams.size();
-    string strDatasetName("pointing-model-params");
-
-    herr_t err = H5LTmake_dataset(m_iH5ConfigurationAntennasAntenna1GroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_DOUBLE, &m_vdPointingModelParams.front());
-
-    if(err < 0)
     {
-        cout << "cSpectrometerHDF5OutputFile::writeAppliedPointingModel(): HDF5 make dataset error." << endl;
+        hsize_t dimension = m_vdPointingModelParams.size();
+        string strDatasetName("pointing-model-params");
+
+        herr_t err = H5LTmake_dataset(m_iH5ConfigurationAntennasAntenna1GroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_DOUBLE, &m_vdPointingModelParams.front());
+
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeAppliedPointingModel(): HDF5 make dataset error." << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeAppliedPointingModel(): Wrote " << m_vdPointingModelParams.size() << " pointing model parameters to file." << endl;
+        }
+
+        //Add pointing model name as data attribute
+        stringstream oSS;
+        oSS << "Pointing model name = ";
+        oSS << m_oAntennaConfiguration.m_chaPointModelName;
+
+        //Need to open the dataset again here as the H5LTmake_dataset used above does leave an open handle.
+        hid_t dataset_id = H5Dopen2(m_iH5ConfigurationAntennasAntenna1GroupHandle, strDatasetName.c_str(), H5P_DEFAULT);
+        addAttributeToDataSet(oSS.str(), strDatasetName, string("string"), string(""), dataset_id);
+
+        H5Dclose(dataset_id);
     }
-    else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeAppliedPointingModel(): Wrote " << m_vdPointingModelParams.size() << " pointing model parameters to file." << endl;
+        hsize_t dimension = m_vdDelayModelParams.size();
+        string strDatasetName("delay-model-params");
+
+        herr_t err = H5LTmake_dataset(m_iH5ConfigurationAntennasAntenna1GroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_DOUBLE, &m_vdDelayModelParams.front());
+
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeAntennaConfiguration(): HDF5 make dataset error." << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeAntennaConfiguration(): Wrote " << m_vdDelayModelParams.size() << " delay model parameters to file." << endl;
+        }
     }
+    {
+        //Add the rest of the data as attributes to the group.
+        hid_t variableLengthStringType;
+        variableLengthStringType = H5Tcopy (H5T_C_S1);
 
-    //Add pointing model name as data attribute
-    stringstream oSS;
-    oSS << "Pointing model name = ";
-    oSS << m_strPointModelName;
+        H5Tset_size (variableLengthStringType, H5T_VARIABLE);
 
-    //Need to open the dataset again here as the H5LTmake_dataset used above does leave an open handle.
-    hid_t dataset_id = H5Dopen2(m_iH5ConfigurationAntennasAntenna1GroupHandle, strDatasetName.c_str(), H5P_DEFAULT);
-    addAttributeToDataSet(oSS.str(), strDatasetName, string("string"), string(""), dataset_id);
+        hid_t attrDataspace = H5Screate(H5S_SCALAR);
+        hid_t groupHandle = m_iH5ConfigurationAntennasAntenna1GroupHandle; // Just to keep the lines a bit shorter.
 
-    H5Dclose(dataset_id);
+        hid_t attrAntennaName = H5Acreate(groupHandle, "name", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+        const char* pcAntennaName = m_oAntennaConfiguration.m_chaAntennaName;
+        H5Awrite(attrAntennaName, variableLengthStringType, &pcAntennaName);
+
+        hid_t attrAntennaDiameter = H5Acreate(groupHandle, "diameter", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+        const char* pcAntennaDiameter_m = m_oAntennaConfiguration.m_chaAntennaDiameter_m;
+        H5Awrite(attrAntennaDiameter, variableLengthStringType, &pcAntennaDiameter_m);
+
+        hid_t attrAntennaBeamwidth = H5Acreate(groupHandle, "beamwidth", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+        const char* pcAntennaBeamwidth_deg = m_oAntennaConfiguration.m_chaAntennaBeamwidth_deg;
+        H5Awrite(attrAntennaBeamwidth, variableLengthStringType, &pcAntennaBeamwidth_deg);
+
+        hid_t attrAntennaLatitude = H5Acreate(groupHandle, "latitude", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+        const char* pcAntennaLatitude_deg = m_oAntennaConfiguration.m_chaAntennaLatitude_deg;
+        H5Awrite(attrAntennaLatitude, variableLengthStringType, &pcAntennaLatitude_deg);
+
+        hid_t attrAntennaLongitude = H5Acreate(groupHandle, "longitude", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+        const char* pcAntennaLongitude_deg = m_oAntennaConfiguration.m_chaAntennaLongitude_deg;
+        H5Awrite(attrAntennaLongitude, variableLengthStringType, &pcAntennaLongitude_deg);
+
+        H5Aclose(attrAntennaBeamwidth);
+        H5Aclose(attrAntennaDiameter);
+        H5Aclose(attrAntennaLatitude);
+        H5Aclose(attrAntennaLongitude);
+        H5Aclose(attrAntennaName);
+        H5Tclose(variableLengthStringType);
+        H5Sclose(attrDataspace);
+    }
 }
 
 void cSpectrometerHDF5OutputFile::writeNoiseDiodeSoftwareStates()
@@ -2035,6 +2088,17 @@ void cSpectrometerHDF5OutputFile::addAttributesToDBE(const std::string &strVisOr
 //Functions for adding logged data from outside this class
 //Each function aquires a shared lock of a common shared mutex for adding data to its respective vector.
 //When all of this data is written to file a unique lock is obtained from that mutex so that none of the data be altered at that point
+void cSpectrometerHDF5OutputFile::addMarkupLabel(int64_t i64Timestamp_us, const string &strLabel)
+{
+    cMarkupLabels oNewMarkupLabel;
+    oNewMarkupLabel.m_dTimestamp_s = double(i64Timestamp_us) / 1e6;
+    sprintf(oNewMarkupLabel.m_chaLabel, strLabel.c_str());
+
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+
+    m_voMarkupLabels.push_back(oNewMarkupLabel);
+}
+
 void cSpectrometerHDF5OutputFile::addRequestedAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg, const string &strStatus)
 {
     cTimestampedDouble oNewRequestedAntennaAz;
@@ -2201,8 +2265,50 @@ void cSpectrometerHDF5OutputFile::setAppliedPointingModel(const string &strModel
     //Update the current record whenever a new value is received
 
     m_vdPointingModelParams = vdPointingModelParams;
-    m_strPointModelName = strModelName;
+    sprintf(m_oAntennaConfiguration.m_chaPointModelName, strModelName.c_str());
 }
+
+void cSpectrometerHDF5OutputFile::setAntennaName(const string &strAntennaName)
+{
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+    //Only a single set of values
+    sprintf(m_oAntennaConfiguration.m_chaAntennaName, strAntennaName.c_str());
+}
+
+void cSpectrometerHDF5OutputFile::setAntennaDiameter(const string &strAntennaDiameter_m)
+{
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+    //Only a single set of values
+    sprintf(m_oAntennaConfiguration.m_chaAntennaDiameter_m, strAntennaDiameter_m.c_str());
+}
+
+void cSpectrometerHDF5OutputFile::setAntennaBeamwidth(const string &strAntennaBeamwidth_deg)
+{
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+    //Only a single set of values
+    sprintf(m_oAntennaConfiguration.m_chaAntennaBeamwidth_deg, strAntennaBeamwidth_deg.c_str());
+}
+
+void cSpectrometerHDF5OutputFile::setAntennaLongitude(const string &strAntennaLongitude_deg)
+{
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+    //Only a single set of values
+    sprintf(m_oAntennaConfiguration.m_chaAntennaLongitude_deg, strAntennaLongitude_deg.c_str());
+}
+
+void cSpectrometerHDF5OutputFile::setAntennaLatitude(const string &strAntennaLatitude_deg)
+{
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+    //Only a single set of values
+    sprintf(m_oAntennaConfiguration.m_chaAntennaLatitude_deg, strAntennaLatitude_deg.c_str());
+}
+
+/*void cSpectrometerHDF5OutputFile::addAntennaDelayModel(const string &strAntennaDelayModel)
+{
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+    //Only a single set of values
+    sprintf(m_oAntennaConfiguration.m_chaAntennaDelayModel, strAntennaDelayModel.c_str());
+}*/
 
 void cSpectrometerHDF5OutputFile::addNoiseDiodeSoftwareState(int64_t i64Timestamp_us, int32_t i32NoiseDiodeState, const string &strStatus)
 {
@@ -2446,3 +2552,4 @@ void cSpectrometerHDF5OutputFile::addAttenuationADCChan1(int64_t i64Timestamp_us
 
     m_voROACHADCAttenuationsChan1_dB.push_back(oNewAdcAttenuantion);
 }
+
