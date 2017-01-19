@@ -239,6 +239,7 @@ void cSpectrometerHDF5OutputFile::addFrame(const std::vector<int> &vi32Chan0, co
     H5Sclose (filespaceStokes);
 
     //Store values to be written after channel data in memory:
+    //(Not written directly to disk because they will be interleaved on the disk and cause long read times.)
 
     //Data entry timestamps
     double dTimestamp_s = (double)oHeader.getTimestamp_us() / 1e6;
@@ -270,8 +271,6 @@ void cSpectrometerHDF5OutputFile::addFrame(const std::vector<int> &vi32Chan0, co
         //At present AVN doesn't make hardware provision for any sort of feedback with the noise diode
 
         m_voROACHNoiseDiodeStateChanges.push_back(oState);
-
-        cout << "cSpectrometerHDF5OutputFile::addFrame(): Logged noise state change to " << string(oState.m_chaValue, 1) << " at " << AVN::stringFromTimestamp_full(oHeader.getTimestamp_us()) << endl;
     }
 
     m_aChannelDataOffset[0] += m_aChannelDatasetExtensionDims[0];
