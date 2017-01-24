@@ -1708,46 +1708,49 @@ void cSpectrometerHDF5OutputFile::writeROACHAccumulationLengths()
 
 void cSpectrometerHDF5OutputFile::writeROACHNBNarrowbandSelections()
 {
-    string strDatasetName("dbe.nb-chan");
-
-    //Create the data space
-    hsize_t dimension[] = { m_voROACHNBChannelSelects.size() };
-    hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
-
-    //Create a compound data type consisting of different native types per entry:
-    hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedUnsignedInt));
-
-    //Add to compound data type: a timestamp (double)
-    H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedUnsignedInt, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
-
-    //Add to compound data type: the narrowband channel no (unsigned int)
-    H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedUnsignedInt, m_u32Value), H5T_NATIVE_UINT32);
-
-    //Add to compound data type: the status of the sensor (string typically containing "nominal")
-    hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
-    H5Tset_size(stringTypeStatus, sizeof(cTimestampedUnsignedInt::m_chaStatus));
-    H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedUnsignedInt, m_chaStatus), stringTypeStatus);
-
-    //Create the data set of of the new compound datatype
-    hid_t dataset = H5Dcreate1(m_iH5SensorsDBEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
-
-    herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voROACHNBChannelSelects.front());
-
-    if(err < 0)
+    if (m_voROACHNBChannelSelects.size())
     {
-        cout << "cSpectrometerHDF5OutputFile::writeROACHNBNarrowbandSelections(): HDF5 make dataset error" << endl;
-    }
-    else
-    {
-        cout << "cSpectrometerHDF5OutputFile::writeROACHNBNarrowbandSelections(): Wrote " << m_voROACHNBChannelSelects.size() << " narrow band channel selections." << endl;
-    }
+        string strDatasetName("dbe.nb-chan");
 
-    addAttributeToDataSet(string("narrowband channel selection"), strDatasetName, string("unsigned int"), string("cannonical bin no."), dataset);
+        //Create the data space
+        hsize_t dimension[] = { m_voROACHNBChannelSelects.size() };
+        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
-    H5Tclose(stringTypeStatus);
-    H5Tclose(compoundDataType);
-    H5Sclose(dataspace);
-    H5Dclose(dataset);
+        //Create a compound data type consisting of different native types per entry:
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedUnsignedInt));
+
+        //Add to compound data type: a timestamp (double)
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedUnsignedInt, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the narrowband channel no (unsigned int)
+        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedUnsignedInt, m_u32Value), H5T_NATIVE_UINT32);
+
+        //Add to compound data type: the status of the sensor (string typically containing "nominal")
+        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeStatus, sizeof(cTimestampedUnsignedInt::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedUnsignedInt, m_chaStatus), stringTypeStatus);
+
+        //Create the data set of of the new compound datatype
+        hid_t dataset = H5Dcreate1(m_iH5SensorsDBEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
+
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voROACHNBChannelSelects.front());
+
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeROACHNBNarrowbandSelections(): HDF5 make dataset error" << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeROACHNBNarrowbandSelections(): Wrote " << m_voROACHNBChannelSelects.size() << " narrow band channel selections." << endl;
+        }
+
+        addAttributeToDataSet(string("narrowband channel selection"), strDatasetName, string("unsigned int"), string("cannonical bin no."), dataset);
+
+        H5Tclose(stringTypeStatus);
+        H5Tclose(compoundDataType);
+        H5Sclose(dataspace);
+        H5Dclose(dataset);
+    }
 }
 
 void cSpectrometerHDF5OutputFile::writeROACHSamplingFrequency()
@@ -1779,7 +1782,7 @@ void cSpectrometerHDF5OutputFile::writeROACHSizeOfFFTs()
     hsize_t dimension = 1;
     string strDatasetName("dbe.fft.coarse.size");
 
-    herr_t err = H5LTmake_dataset(m_iH5SensorsDBEGroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_DOUBLE, &m_dROACHSizeOfCoarseFFT_nSamp);
+    herr_t err = H5LTmake_dataset(m_iH5SensorsDBEGroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_UINT32, &m_dROACHSizeOfCoarseFFT_nSamp);
 
     if(err < 0)
     {
@@ -1787,7 +1790,7 @@ void cSpectrometerHDF5OutputFile::writeROACHSizeOfFFTs()
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeROACHSamplingFrequency(): Wrote coarse FFT size." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeROACHSamplingFrequency(): Wrote coarse FFT size: " << m_dROACHSizeOfCoarseFFT_nSamp << endl;
     }
 
     //Need to open the dataset again here for attribute as the H5LTmake_dataset used above does leave an open handle.
@@ -1801,7 +1804,7 @@ void cSpectrometerHDF5OutputFile::writeROACHSizeOfFFTs()
     hsize_t dimension = 1;
     string strDatasetName("dbe.fft.fine.size");
 
-    herr_t err = H5LTmake_dataset(m_iH5SensorsDBEGroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_DOUBLE, &m_dROACHSizeOfFineFFT_nSamp);
+    herr_t err = H5LTmake_dataset(m_iH5SensorsDBEGroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_UINT32, &m_dROACHSizeOfFineFFT_nSamp);
 
     if(err < 0)
     {
@@ -1809,7 +1812,7 @@ void cSpectrometerHDF5OutputFile::writeROACHSizeOfFFTs()
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeROACHSamplingFrequency(): Wrote fine FFT size." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeROACHSamplingFrequency(): Wrote fine FFT size: " << m_dROACHSizeOfFineFFT_nSamp << endl;
     }
 
     //Need to open the dataset again here for attribute as the H5LTmake_dataset used above does leave an open handle.
@@ -1834,7 +1837,7 @@ void cSpectrometerHDF5OutputFile::writeROACHCoarseFFTShiftMask()
     //Add to compound data type: a timestamp (double)
     H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedUnsignedInt, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
 
-    //Add to compound data type: the shift mask applied to the course FFT no (unsigned int)
+    //Add to compound data type: the shift mask applied to the coarse FFT no (unsigned int)
     H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedUnsignedInt, m_u32Value), H5T_NATIVE_UINT32);
 
     //Add to compound data type: the status of the sensor (string typically containing "nominal")
@@ -1856,7 +1859,7 @@ void cSpectrometerHDF5OutputFile::writeROACHCoarseFFTShiftMask()
         cout << "cSpectrometerHDF5OutputFile::writeROACHCoarseFFTShiftMask(): Wrote " << m_voROACHCoarseFFTShiftMasks.size() << " coarse FFT shift masks." << endl;
     }
 
-    addAttributeToDataSet(string("the shift mask applied to the course FFT"), strDatasetName, string("unsigned int"), string(""), dataset);
+    addAttributeToDataSet(string("the shift mask applied to the coarse FFT"), strDatasetName, string("unsigned int"), string(""), dataset);
 
     H5Tclose(stringTypeStatus);
     H5Tclose(compoundDataType);
@@ -2532,12 +2535,15 @@ void cSpectrometerHDF5OutputFile::addCoarseChannelSelect(int64_t i64Timestamp_us
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
-    cTimestampedUnsignedInt oNewCoarseChannelSelection;
-    oNewCoarseChannelSelection.m_dTimestamp_s = i64Timestamp_us;
-    oNewCoarseChannelSelection.m_u32Value = u32ChannelNo;
-    sprintf(oNewCoarseChannelSelection.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    if (!m_voROACHNBChannelSelects.size() || u32ChannelNo != m_voROACHNBChannelSelects[m_voROACHNBChannelSelects.size() - 1].m_u32Value)
+    {
+        cTimestampedUnsignedInt oNewCoarseChannelSelection;
+        oNewCoarseChannelSelection.m_dTimestamp_s = i64Timestamp_us;
+        oNewCoarseChannelSelection.m_u32Value = u32ChannelNo;
+        sprintf(oNewCoarseChannelSelection.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
 
-    m_voROACHNBChannelSelects.push_back(oNewCoarseChannelSelection);
+        m_voROACHNBChannelSelects.push_back(oNewCoarseChannelSelection);
+    }
 }
 
 void cSpectrometerHDF5OutputFile::setFrequencyFs(double dFrequencyFs_MHz)
@@ -2555,6 +2561,7 @@ void cSpectrometerHDF5OutputFile::setSizeOfCoarseFFT(uint32_t u32SizeOfCoarseFFT
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     m_dROACHSizeOfCoarseFFT_nSamp = u32SizeOfCoarseFFT_nSamp;
+    //cout << "cSpectrometerHDF5OutputFile::setSizeOfCoarseFFT(): wrote size of coarse FFT " << u32SizeOfCoarseFFT_nSamp << endl;
 }
 
 void cSpectrometerHDF5OutputFile::setSizeOfFineFFT(uint32_t u32SizeOfFineFFT_nSamp)
@@ -2562,6 +2569,7 @@ void cSpectrometerHDF5OutputFile::setSizeOfFineFFT(uint32_t u32SizeOfFineFFT_nSa
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     m_dROACHSizeOfFineFFT_nSamp = u32SizeOfFineFFT_nSamp;
+    //cout << "cSpectrometerHDF5OutputFile::setSizeOfFineFFT(): wrote size of fine FFT " << u32SizeOfFineFFT_nSamp << endl;
 }
 
 void cSpectrometerHDF5OutputFile::addCoarseFFTShiftMask(int64_t i64Timestamp_us, uint32_t u32ShiftMask)
