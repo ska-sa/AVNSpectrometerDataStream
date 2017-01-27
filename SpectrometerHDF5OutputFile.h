@@ -158,7 +158,7 @@ public:
 
     void                                    addAccumulationLength(int64_t i64Timestamp_us, uint32_t u32NFrames);
     void                                    addCoarseChannelSelect(int64_t i64Timestamp_us, uint32_t u32ChannelNo);
-    void                                    setFrequencyFs(double dFrequencyFs_MHz);
+    void                                    setFrequencyFs(double dFrequencyFs_Hz);
     void                                    setSizeOfCoarseFFT(uint32_t u32SizeOfCoarseFFT_nSamp);
     void                                    setSizeOfFineFFT(uint32_t u32SizeOfFineFFT_nSamp);
     void                                    addCoarseFFTShiftMask(int64_t i64Timestamp_us, uint32_t u32ShiftMask);
@@ -249,9 +249,9 @@ private:
     //Values received from ROACH TCPBorphServer
     std::vector<cTimestampedUnsignedInt>    m_voROACHAccumulationLengths_nFrames;
     std::vector<cTimestampedUnsignedInt>    m_voROACHNBChannelSelects;
-    double                                  m_dROACHFrequencyFs_MHz; //Only store most recent version (shouldn't ever change from 800 MHz)
-    uint32_t                                m_dROACHSizeOfCoarseFFT_nSamp; //Only store most recent version (shouldn't ever change for a given gateware)
-    uint32_t                                m_dROACHSizeOfFineFFT_nSamp; //Only store most recent version (shouldn't ever change for a given gateware)
+    double                                  m_dROACHFrequencyFs_Hz; //Only store most recent version (shouldn't ever change from 800 MHz)
+    uint32_t                                m_u32ROACHSizeOfCoarseFFT_nSamp; //Only store most recent version (shouldn't ever change for a given gateware)
+    uint32_t                                m_u32ROACHSizeOfFineFFT_nSamp; //Only store most recent version (shouldn't ever change for a given gateware)
     std::vector<cTimestampedUnsignedInt>    m_voROACHCoarseFFTShiftMasks;
     std::vector<cTimestampedDouble>         m_voROACHADCAttenuationsChan0_dB;
     std::vector<cTimestampedDouble>         m_voROACHADCAttenuationsChan1_dB;
@@ -307,9 +307,10 @@ private:
     void                                    writeLOFrequencies();
     void                                    writeIFBandwidths();
 
+    void                                    writeROACHNumberChannels();
     void                                    writeROACHAccumulationLengths();
     void                                    writeROACHNBNarrowbandSelections();
-    void                                    writeROACHSamplingFrequency();
+    void                                    writeROACHSamplingFreqBandwidth();
     void                                    writeROACHSizeOfFFTs();
     void                                    writeROACHCoarseFFTShiftMask();
     void                                    writeROACHAdcAttentuations();

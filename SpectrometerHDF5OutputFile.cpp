@@ -136,7 +136,8 @@ cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
 
     writeROACHAccumulationLengths();
     writeROACHNBNarrowbandSelections();
-    writeROACHSamplingFrequency();
+    writeROACHSamplingFreqBandwidth();
+    writeROACHNumberChannels();
     writeROACHSizeOfFFTs();
     writeROACHCoarseFFTShiftMask();
     writeROACHAdcAttentuations();
@@ -1623,6 +1624,29 @@ void cSpectrometerHDF5OutputFile::writeIFBandwidths()
     }
 }
 
+void cSpectrometerHDF5OutputFile::writeROACHNumberChannels()
+{
+    hsize_t dimension = 1;
+    string strDatasetName("n_chans");
+
+    herr_t err = H5LTmake_dataset(m_iH5ConfigurationDBEGroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_UINT32, &m_u32NFrequencyBins);
+
+    if(err < 0)
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeROACHSamplingFrequency(): HDF5 make dataset error." << endl;
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeROACHSamplingFrequency(): Wrote number of channels." << endl;
+    }
+
+    //Need to open the dataset again here for attribute as the H5LTmake_dataset used above does leave an open handle.
+    hid_t dataset_id = H5Dopen2(m_iH5ConfigurationDBEGroupHandle, strDatasetName.c_str(), H5P_DEFAULT);
+    addAttributeToDataSet(string("Number of frequency channels"), strDatasetName, string("uint32"), string(""), dataset_id);
+
+    H5Dclose(dataset_id);
+}
+
 void cSpectrometerHDF5OutputFile::writeROACHAccumulationLengths()
 {
     //Ideally this dataset should only be one element long. So we'll trim.
@@ -1753,27 +1777,62 @@ void cSpectrometerHDF5OutputFile::writeROACHNBNarrowbandSelections()
     }
 }
 
-void cSpectrometerHDF5OutputFile::writeROACHSamplingFrequency()
+void cSpectrometerHDF5OutputFile::writeROACHSamplingFreqBandwidth()
 {
-    hsize_t dimension = 1;
-    string strDatasetName("adc_clk");
-
-    herr_t err = H5LTmake_dataset(m_iH5ConfigurationDBEGroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_DOUBLE, &m_dROACHFrequencyFs_MHz);
-
-    if(err < 0)
     {
-        cout << "cSpectrometerHDF5OutputFile::writeROACHSamplingFrequency(): HDF5 make dataset error." << endl;
+        hsize_t dimension = 1;
+        string strDatasetName("adc_clk");
+
+        herr_t err = H5LTmake_dataset(m_iH5ConfigurationDBEGroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_DOUBLE, &m_dROACHFrequencyFs_Hz);
+
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeROACHSamplingFreqBandwidth(): HDF5 make dataset error." << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeROACHSamplingFreqBandwidth(): Wrote ADC Sampling frequency." << endl;
+        }
+
+        //Need to open the dataset again here for attribute as the H5LTmake_dataset used above does leave an open handle.
+        hid_t dataset_id = H5Dopen2(m_iH5ConfigurationDBEGroupHandle, strDatasetName.c_str(), H5P_DEFAULT);
+        addAttributeToDataSet(string("sampling frequency of ROACH / KatADC"), strDatasetName, string("double"), string("Hz"), dataset_id);
+
+        H5Dclose(dataset_id);
     }
-    else
+
     {
-        cout << "cSpectrometerHDF5OutputFile::writeROACHSamplingFrequency(): Wrote ADC Sampling frequency." << endl;
+        //Calculate the 'digital' bandwidth of the file. Wideband / radiometer mode assumed to be default.
+        double iBandwidth_Hz = m_dROACHFrequencyFs_Hz / 2.0;
+        if (m_u32ROACHSizeOfFineFFT_nSamp)
+        {
+            //If the fineFFT size is nonzero, then it's a narrowband mode.
+            //Bandwidth is reduced by a factor of the number of coarse channels,
+            //which is in turn the number of points divided by 2.
+            int iNumCoarseChannels_nChan = m_u32ROACHSizeOfCoarseFFT_nSamp / 2;
+            iBandwidth_Hz = iBandwidth_Hz / iNumCoarseChannels_nChan;
+        }
+
+        hsize_t dimension = 1;
+        string strDatasetName("bandwidth");
+
+        herr_t err = H5LTmake_dataset(m_iH5ConfigurationDBEGroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_DOUBLE, &iBandwidth_Hz);
+
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeROACHSamplingFreqBandwidth(): HDF5 make dataset error." << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeROACHSamplingFreqBandwidth(): Wrote observation bandwidth." << endl;
+        }
+
+        //Need to open the dataset again here for attribute as the H5LTmake_dataset used above does leave an open handle.
+        hid_t dataset_id = H5Dopen2(m_iH5ConfigurationDBEGroupHandle, strDatasetName.c_str(), H5P_DEFAULT);
+        addAttributeToDataSet(string("Bandwidth of observation"), strDatasetName, string("double"), string("Hz"), dataset_id);
+
+        H5Dclose(dataset_id);
     }
-
-    //Need to open the dataset again here for attribute as the H5LTmake_dataset used above does leave an open handle.
-    hid_t dataset_id = H5Dopen2(m_iH5ConfigurationDBEGroupHandle, strDatasetName.c_str(), H5P_DEFAULT);
-    addAttributeToDataSet(string("sampling frequency of ROACH / KatADC"), strDatasetName, string("double"), string("MHz"), dataset_id);
-
-    H5Dclose(dataset_id);
 }
 
 void cSpectrometerHDF5OutputFile::writeROACHSizeOfFFTs()
@@ -1782,7 +1841,7 @@ void cSpectrometerHDF5OutputFile::writeROACHSizeOfFFTs()
     hsize_t dimension = 1;
     string strDatasetName("dbe.fft.coarse.size");
 
-    herr_t err = H5LTmake_dataset(m_iH5SensorsDBEGroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_UINT32, &m_dROACHSizeOfCoarseFFT_nSamp);
+    herr_t err = H5LTmake_dataset(m_iH5ConfigurationDBEGroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_UINT32, &m_u32ROACHSizeOfCoarseFFT_nSamp);
 
     if(err < 0)
     {
@@ -1790,11 +1849,11 @@ void cSpectrometerHDF5OutputFile::writeROACHSizeOfFFTs()
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeROACHSamplingFrequency(): Wrote coarse FFT size: " << m_dROACHSizeOfCoarseFFT_nSamp << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeROACHSamplingFrequency(): Wrote coarse FFT size: " << m_u32ROACHSizeOfCoarseFFT_nSamp << endl;
     }
 
     //Need to open the dataset again here for attribute as the H5LTmake_dataset used above does leave an open handle.
-    hid_t dataset_id = H5Dopen2(m_iH5SensorsDBEGroupHandle, strDatasetName.c_str(), H5P_DEFAULT);
+    hid_t dataset_id = H5Dopen2(m_iH5ConfigurationDBEGroupHandle, strDatasetName.c_str(), H5P_DEFAULT);
     addAttributeToDataSet(string("size of coarse FFT"), strDatasetName, string("unsigned int"), string("no. of time domain input samples"), dataset_id);
 
     H5Dclose(dataset_id);
@@ -1804,7 +1863,7 @@ void cSpectrometerHDF5OutputFile::writeROACHSizeOfFFTs()
     hsize_t dimension = 1;
     string strDatasetName("dbe.fft.fine.size");
 
-    herr_t err = H5LTmake_dataset(m_iH5SensorsDBEGroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_UINT32, &m_dROACHSizeOfFineFFT_nSamp);
+    herr_t err = H5LTmake_dataset(m_iH5ConfigurationDBEGroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_UINT32, &m_u32ROACHSizeOfFineFFT_nSamp);
 
     if(err < 0)
     {
@@ -1812,11 +1871,11 @@ void cSpectrometerHDF5OutputFile::writeROACHSizeOfFFTs()
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeROACHSamplingFrequency(): Wrote fine FFT size: " << m_dROACHSizeOfFineFFT_nSamp << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeROACHSamplingFrequency(): Wrote fine FFT size: " << m_u32ROACHSizeOfFineFFT_nSamp << endl;
     }
 
     //Need to open the dataset again here for attribute as the H5LTmake_dataset used above does leave an open handle.
-    hid_t dataset_id = H5Dopen2(m_iH5SensorsDBEGroupHandle, strDatasetName.c_str(), H5P_DEFAULT);
+    hid_t dataset_id = H5Dopen2(m_iH5ConfigurationDBEGroupHandle, strDatasetName.c_str(), H5P_DEFAULT);
     addAttributeToDataSet(string("size of fine FFT"), strDatasetName, string("unsigned int"), string("no. of time domain input samples"), dataset_id);
 
     H5Dclose(dataset_id);
@@ -2546,21 +2605,21 @@ void cSpectrometerHDF5OutputFile::addCoarseChannelSelect(int64_t i64Timestamp_us
     }
 }
 
-void cSpectrometerHDF5OutputFile::setFrequencyFs(double dFrequencyFs_MHz)
+void cSpectrometerHDF5OutputFile::setFrequencyFs(double dFrequencyFs_Hz)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     //This only a single value, not a history of values.
     //Update the current record whenever a new value is received
 
-    m_dROACHFrequencyFs_MHz = dFrequencyFs_MHz;
+    m_dROACHFrequencyFs_Hz = dFrequencyFs_Hz;
 }
 
 void cSpectrometerHDF5OutputFile::setSizeOfCoarseFFT(uint32_t u32SizeOfCoarseFFT_nSamp)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
-    m_dROACHSizeOfCoarseFFT_nSamp = u32SizeOfCoarseFFT_nSamp;
+    m_u32ROACHSizeOfCoarseFFT_nSamp = u32SizeOfCoarseFFT_nSamp;
     //cout << "cSpectrometerHDF5OutputFile::setSizeOfCoarseFFT(): wrote size of coarse FFT " << u32SizeOfCoarseFFT_nSamp << endl;
 }
 
@@ -2568,7 +2627,7 @@ void cSpectrometerHDF5OutputFile::setSizeOfFineFFT(uint32_t u32SizeOfFineFFT_nSa
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
-    m_dROACHSizeOfFineFFT_nSamp = u32SizeOfFineFFT_nSamp;
+    m_u32ROACHSizeOfFineFFT_nSamp = u32SizeOfFineFFT_nSamp;
     //cout << "cSpectrometerHDF5OutputFile::setSizeOfFineFFT(): wrote size of fine FFT " << u32SizeOfFineFFT_nSamp << endl;
 }
 
