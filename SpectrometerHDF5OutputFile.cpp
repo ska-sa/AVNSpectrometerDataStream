@@ -1309,12 +1309,12 @@ void cSpectrometerHDF5OutputFile::writeSelectedSources()
 
 void cSpectrometerHDF5OutputFile::writeRFFrequencies()
 {
-    if (m_voFrequenciesRFChan0_MHz.size())
+    if (m_voFrequenciesRFChan0_Hz.size())
     {
         string strDatasetName("rfe.rf.chan0.frequency");
 
         //Create the data space
-        hsize_t dimension[] = { m_voFrequenciesRFChan0_MHz.size() };
+        hsize_t dimension[] = { m_voFrequenciesRFChan0_Hz.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
@@ -1334,7 +1334,7 @@ void cSpectrometerHDF5OutputFile::writeRFFrequencies()
         //Create the data set of of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voFrequenciesRFChan0_MHz.front());
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voFrequenciesRFChan0_Hz.front());
 
         if(err < 0)
         {
@@ -1342,7 +1342,7 @@ void cSpectrometerHDF5OutputFile::writeRFFrequencies()
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeRFFrequencies(): Wrote " << m_voFrequenciesRFChan0_MHz.size() << " RF frequencies for channel 0." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeRFFrequencies(): Wrote " << m_voFrequenciesRFChan0_Hz.size() << " RF frequencies for channel 0." << endl;
         }
 
         addAttributeToDataSet(string("RF centre frequency for final IF channel 0"), strDatasetName, string("double"), string("MHz"), dataset);
@@ -1353,12 +1353,12 @@ void cSpectrometerHDF5OutputFile::writeRFFrequencies()
         H5Dclose(dataset);
     }
 
-    if (m_voFrequenciesRFChan1_MHz.size())
+    if (m_voFrequenciesRFChan1_Hz.size())
     {
         string strDatasetName("rfe.rf.chan1.frequency");
 
         //Create the data space
-        hsize_t dimension[] = { m_voFrequenciesRFChan1_MHz.size() };
+        hsize_t dimension[] = { m_voFrequenciesRFChan1_Hz.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
@@ -1378,7 +1378,7 @@ void cSpectrometerHDF5OutputFile::writeRFFrequencies()
         //Create the data set of of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voFrequenciesRFChan1_MHz.front());
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voFrequenciesRFChan1_Hz.front());
 
         if(err < 0)
         {
@@ -1386,10 +1386,10 @@ void cSpectrometerHDF5OutputFile::writeRFFrequencies()
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeRFFrequencies(): Wrote " << m_voFrequenciesRFChan1_MHz.size() << " RF frequencies for channel 1." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeRFFrequencies(): Wrote " << m_voFrequenciesRFChan1_Hz.size() << " RF frequencies for channel 1." << endl;
         }
 
-        addAttributeToDataSet(string("RF centre frequency for final IF channel 1"), strDatasetName, string("double"), string("MHz"), dataset);
+        addAttributeToDataSet(string("RF centre frequency for final IF channel 1"), strDatasetName, string("double"), string("Hz"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -1400,12 +1400,12 @@ void cSpectrometerHDF5OutputFile::writeRFFrequencies()
 
 void cSpectrometerHDF5OutputFile::writeLOFrequencies()
 {
-    if (m_voFrequenciesLO0Chan0_MHz.size())
+    if (m_voFrequenciesLO0Chan0_Hz.size())
     {
         string strDatasetName("rfe.lo0.chan0.frequency");
 
         //Create the data space
-        hsize_t dimension[] = { m_voFrequenciesLO0Chan0_MHz.size() };
+        hsize_t dimension[] = { m_voFrequenciesLO0Chan0_Hz.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
@@ -1425,7 +1425,7 @@ void cSpectrometerHDF5OutputFile::writeLOFrequencies()
         //Create the data set of of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voFrequenciesLO0Chan0_MHz.front());
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voFrequenciesLO0Chan0_Hz.front());
 
         if(err < 0)
         {
@@ -1433,10 +1433,10 @@ void cSpectrometerHDF5OutputFile::writeLOFrequencies()
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeLOFrequencies(): Wrote " << m_voFrequenciesLO0Chan0_MHz.size() << " LO0 chan 0 frequencies." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeLOFrequencies(): Wrote " << m_voFrequenciesLO0Chan0_Hz.size() << " LO0 chan 0 frequencies." << endl;
         }
 
-        addAttributeToDataSet(string("frequency of channel 0, LO 0"), strDatasetName, string("double"), string("MHz"), dataset);
+        addAttributeToDataSet(string("frequency of channel 0, LO 0"), strDatasetName, string("double"), string("Hz"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -1444,12 +1444,12 @@ void cSpectrometerHDF5OutputFile::writeLOFrequencies()
         H5Dclose(dataset);
     }
 
-    if (m_voFrequenciesLO0Chan1_MHz.size())
+    if (m_voFrequenciesLO0Chan1_Hz.size())
     {
         string strDatasetName("rfe.lo0.chan1.frequency");
 
         //Create the data space
-        hsize_t dimension[] = { m_voFrequenciesLO0Chan1_MHz.size() };
+        hsize_t dimension[] = { m_voFrequenciesLO0Chan1_Hz.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
@@ -1469,7 +1469,7 @@ void cSpectrometerHDF5OutputFile::writeLOFrequencies()
         //Create the data set of of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voFrequenciesLO0Chan1_MHz.front());
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voFrequenciesLO0Chan1_Hz.front());
 
         if(err < 0)
         {
@@ -1477,10 +1477,10 @@ void cSpectrometerHDF5OutputFile::writeLOFrequencies()
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeLOFrequencies(): Wrote " << m_voFrequenciesLO0Chan1_MHz.size() << " LO0 chan 1 frequencies." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeLOFrequencies(): Wrote " << m_voFrequenciesLO0Chan1_Hz.size() << " LO0 chan 1 frequencies." << endl;
         }
 
-        addAttributeToDataSet(string("frequency of channel 0, LO 0"), strDatasetName, string("double"), string("MHz"), dataset);
+        addAttributeToDataSet(string("frequency of channel 0, LO 0"), strDatasetName, string("double"), string("Hz"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -1488,12 +1488,12 @@ void cSpectrometerHDF5OutputFile::writeLOFrequencies()
         H5Dclose(dataset);
     }
 
-    if (m_voFrequenciesLO1_MHz.size())
+    if (m_voFrequenciesLO1_Hz.size())
     {
         string strDatasetName("rfe.lo1.frequency");
 
         //Create the data space
-        hsize_t dimension[] = { m_voFrequenciesLO1_MHz.size() };
+        hsize_t dimension[] = { m_voFrequenciesLO1_Hz.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
@@ -1513,7 +1513,7 @@ void cSpectrometerHDF5OutputFile::writeLOFrequencies()
         //Create the data set of of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voFrequenciesLO1_MHz.front());
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voFrequenciesLO1_Hz.front());
 
         if(err < 0)
         {
@@ -1521,10 +1521,10 @@ void cSpectrometerHDF5OutputFile::writeLOFrequencies()
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeLOFrequencies(): Wrote " << m_voFrequenciesLO1_MHz.size() << " LO1 frequencies." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeLOFrequencies(): Wrote " << m_voFrequenciesLO1_Hz.size() << " LO1 frequencies." << endl;
         }
 
-        addAttributeToDataSet(string("frequency of LO 1"), strDatasetName, string("double"), string("MHz"), dataset);
+        addAttributeToDataSet(string("frequency of LO 1"), strDatasetName, string("double"), string("Hz"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -1535,12 +1535,12 @@ void cSpectrometerHDF5OutputFile::writeLOFrequencies()
 
 void cSpectrometerHDF5OutputFile::writeIFBandwidths()
 {
-    if (m_voReceiverBandwidthsChan0_MHz.size())
+    if (m_voReceiverBandwidthsChan0_Hz.size())
     {
         string strDatasetName("rfe.if.chan0.receiver_bandwidth");
 
         //Create the data space
-        hsize_t dimension[] = { m_voReceiverBandwidthsChan0_MHz.size() };
+        hsize_t dimension[] = { m_voReceiverBandwidthsChan0_Hz.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
@@ -1560,7 +1560,7 @@ void cSpectrometerHDF5OutputFile::writeIFBandwidths()
         //Create the data set of of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voReceiverBandwidthsChan0_MHz.front());
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voReceiverBandwidthsChan0_Hz.front());
 
         if(err < 0)
         {
@@ -1568,10 +1568,10 @@ void cSpectrometerHDF5OutputFile::writeIFBandwidths()
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeIFBandwidths(): Wrote " << m_voReceiverBandwidthsChan0_MHz.size() << " chan0 receiver bandwidths." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeIFBandwidths(): Wrote " << m_voReceiverBandwidthsChan0_Hz.size() << " chan0 receiver bandwidths." << endl;
         }
 
-        addAttributeToDataSet(string("Analogue 3 dB bandwidth available to the ADC chan0"), strDatasetName, string("double"), string("MHz"), dataset);
+        addAttributeToDataSet(string("Analogue 3 dB bandwidth available to the ADC chan0"), strDatasetName, string("double"), string("Hz"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -1579,12 +1579,12 @@ void cSpectrometerHDF5OutputFile::writeIFBandwidths()
         H5Dclose(dataset);
     }
 
-    if (m_voReceiverBandwidthsChan1_MHz.size())
+    if (m_voReceiverBandwidthsChan1_Hz.size())
     {
         string strDatasetName("rfe.if.chan1.receiver_bandwidth");
 
         //Create the data space
-        hsize_t dimension[] = { m_voReceiverBandwidthsChan1_MHz.size() };
+        hsize_t dimension[] = { m_voReceiverBandwidthsChan1_Hz.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
@@ -1604,7 +1604,7 @@ void cSpectrometerHDF5OutputFile::writeIFBandwidths()
         //Create the data set of of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voReceiverBandwidthsChan1_MHz.front());
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voReceiverBandwidthsChan1_Hz.front());
 
         if(err < 0)
         {
@@ -1612,10 +1612,10 @@ void cSpectrometerHDF5OutputFile::writeIFBandwidths()
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeIFBandwidths(): Wrote " << m_voReceiverBandwidthsChan1_MHz.size() << " chan1 receiver bandwidths." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeIFBandwidths(): Wrote " << m_voReceiverBandwidthsChan1_Hz.size() << " chan1 receiver bandwidths." << endl;
         }
 
-        addAttributeToDataSet(string("Analogue 3 dB bandwidth available to the ADC chan1"), strDatasetName, string("double"), string("MHz"), dataset);
+        addAttributeToDataSet(string("Analogue 3 dB bandwidth available to the ADC chan1"), strDatasetName, string("double"), string("Hz"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -2494,88 +2494,88 @@ void cSpectrometerHDF5OutputFile::addSourceSelection(int64_t i64Timestamp_us, co
 }
 
 
-void cSpectrometerHDF5OutputFile::addFrequencyRFChan0(int64_t i64Timestamp_us, double dFreqencyRFChan0_MHz, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addFrequencyRFChan0(int64_t i64Timestamp_us, double dFreqencyRFChan0_Hz, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     cTimestampedDouble oNewRFFrequency;
     oNewRFFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewRFFrequency.m_dValue = dFreqencyRFChan0_MHz;
+    oNewRFFrequency.m_dValue = dFreqencyRFChan0_Hz;
     sprintf(oNewRFFrequency.m_chaStatus, strStatus.c_str());
 
-    m_voFrequenciesRFChan0_MHz.push_back(oNewRFFrequency);
+    m_voFrequenciesRFChan0_Hz.push_back(oNewRFFrequency);
 }
 
-void cSpectrometerHDF5OutputFile::addFrequencyRFChan1(int64_t i64Timestamp_us, double dFreqencyRFChan1_MHz, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addFrequencyRFChan1(int64_t i64Timestamp_us, double dFreqencyRFChan1_Hz, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     cTimestampedDouble oNewRFFrequency;
     oNewRFFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewRFFrequency.m_dValue = dFreqencyRFChan1_MHz;
+    oNewRFFrequency.m_dValue = dFreqencyRFChan1_Hz;
     sprintf(oNewRFFrequency.m_chaStatus, strStatus.c_str());
 
-    m_voFrequenciesRFChan1_MHz.push_back(oNewRFFrequency);
+    m_voFrequenciesRFChan1_Hz.push_back(oNewRFFrequency);
 }
 
-void cSpectrometerHDF5OutputFile::addFrequencyLO0Chan0(int64_t i64Timestamp_us, double dFrequencyLO0Chan0_MHz, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addFrequencyLO0Chan0(int64_t i64Timestamp_us, double dFrequencyLO0Chan0_Hz, const string &strStatus)
 {
     cTimestampedDouble oNewLOFrequency;
     oNewLOFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewLOFrequency.m_dValue = dFrequencyLO0Chan0_MHz;
+    oNewLOFrequency.m_dValue = dFrequencyLO0Chan0_Hz;
     sprintf(oNewLOFrequency.m_chaStatus, strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
-    m_voFrequenciesLO0Chan0_MHz.push_back(oNewLOFrequency);
+    m_voFrequenciesLO0Chan0_Hz.push_back(oNewLOFrequency);
 }
 
-void cSpectrometerHDF5OutputFile::addFrequencyLO0Chan1(int64_t i64Timestamp_us, double dFrequencyLO0Chan1_MHz, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addFrequencyLO0Chan1(int64_t i64Timestamp_us, double dFrequencyLO0Chan1_Hz, const string &strStatus)
 {
     cTimestampedDouble oNewLOFrequency;
     oNewLOFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewLOFrequency.m_dValue = dFrequencyLO0Chan1_MHz;
+    oNewLOFrequency.m_dValue = dFrequencyLO0Chan1_Hz;
     sprintf(oNewLOFrequency.m_chaStatus, strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
-    m_voFrequenciesLO0Chan1_MHz.push_back(oNewLOFrequency);
+    m_voFrequenciesLO0Chan1_Hz.push_back(oNewLOFrequency);
 }
 
-void cSpectrometerHDF5OutputFile::addFrequencyLO1(int64_t i64Timestamp_us, double dFrequencyLO1_MHz, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addFrequencyLO1(int64_t i64Timestamp_us, double dFrequencyLO1_Hz, const string &strStatus)
 {
     cTimestampedDouble oNewLOFrequency;
     oNewLOFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewLOFrequency.m_dValue = dFrequencyLO1_MHz;
+    oNewLOFrequency.m_dValue = dFrequencyLO1_Hz;
     sprintf(oNewLOFrequency.m_chaStatus, strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
-    m_voFrequenciesLO1_MHz.push_back(oNewLOFrequency);
+    m_voFrequenciesLO1_Hz.push_back(oNewLOFrequency);
 }
 
-void cSpectrometerHDF5OutputFile::addReceiverBandwidthChan0(int64_t i64Timestamp_us, double dReceiverBandwidthChan0_MHz, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addReceiverBandwidthChan0(int64_t i64Timestamp_us, double dReceiverBandwidthChan0_Hz, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     cTimestampedDouble oNewBandwidthIF;
     oNewBandwidthIF.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewBandwidthIF.m_dValue = dReceiverBandwidthChan0_MHz;
+    oNewBandwidthIF.m_dValue = dReceiverBandwidthChan0_Hz;
     sprintf(oNewBandwidthIF.m_chaStatus, strStatus.c_str());
 
-    m_voReceiverBandwidthsChan0_MHz.push_back(oNewBandwidthIF);
+    m_voReceiverBandwidthsChan0_Hz.push_back(oNewBandwidthIF);
 }
 
-void cSpectrometerHDF5OutputFile::addReceiverBandwidthChan1(int64_t i64Timestamp_us, double dReceiverBandwidthChan1_MHz, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addReceiverBandwidthChan1(int64_t i64Timestamp_us, double dReceiverBandwidthChan1_Hz, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     cTimestampedDouble oNewBandwidthIF;
     oNewBandwidthIF.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewBandwidthIF.m_dValue = dReceiverBandwidthChan1_MHz;
+    oNewBandwidthIF.m_dValue = dReceiverBandwidthChan1_Hz;
     sprintf(oNewBandwidthIF.m_chaStatus, strStatus.c_str());
 
-    m_voReceiverBandwidthsChan1_MHz.push_back(oNewBandwidthIF);
+    m_voReceiverBandwidthsChan1_Hz.push_back(oNewBandwidthIF);
 }
 
 void cSpectrometerHDF5OutputFile::addAccumulationLength(int64_t i64Timestamp_us, uint32_t u32NFrames)

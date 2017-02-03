@@ -150,7 +150,7 @@ public:
 
     void                                    addFrequencyRFChan0(int64_t i64Timestamp_us, double dFreqencyRFChan0_MHz, const std::string &strStatus);
     void                                    addFrequencyRFChan1(int64_t i64Timestamp_us, double dFreqencyRFChan1_MHz, const std::string &strStatus);
-    void                                    addFrequencyLO0Chan0(int64_t i64Timestamp_us, double dFrequencyLO0Chan0_MHz, const std::string &strStatus);
+    void                                    addFrequencyLO0Chan0(int64_t i64Timestamp_us, double dFrequencyLO0Chan0_Hz, const std::string &strStatus);
     void                                    addFrequencyLO0Chan1(int64_t i64Timestamp_us, double dFrequencyLO0Chan1_MHz, const std::string &strStatus);
     void                                    addFrequencyLO1(int64_t i64Timestamp_us, double dFrequencyLO1_MHz, const std::string &strStatus);
     void                                    addReceiverBandwidthChan0(int64_t i64Timestamp_us, double dReceiverBandwidthChan0_MHz, const std::string &strStatus);
@@ -234,13 +234,13 @@ private:
 
     std::vector<cSourceSelection>           m_voSelectedSources;
 
-    std::vector<cTimestampedDouble>         m_voFrequenciesRFChan0_MHz;
-    std::vector<cTimestampedDouble>         m_voFrequenciesRFChan1_MHz;
-    std::vector<cTimestampedDouble>         m_voFrequenciesLO0Chan0_MHz;
-    std::vector<cTimestampedDouble>         m_voFrequenciesLO0Chan1_MHz;
-    std::vector<cTimestampedDouble>         m_voFrequenciesLO1_MHz;
-    std::vector<cTimestampedDouble>         m_voReceiverBandwidthsChan0_MHz;
-    std::vector<cTimestampedDouble>         m_voReceiverBandwidthsChan1_MHz;
+    std::vector<cTimestampedDouble>         m_voFrequenciesRFChan0_Hz;
+    std::vector<cTimestampedDouble>         m_voFrequenciesRFChan1_Hz;
+    std::vector<cTimestampedDouble>         m_voFrequenciesLO0Chan0_Hz;
+    std::vector<cTimestampedDouble>         m_voFrequenciesLO0Chan1_Hz;
+    std::vector<cTimestampedDouble>         m_voFrequenciesLO1_Hz;
+    std::vector<cTimestampedDouble>         m_voReceiverBandwidthsChan0_Hz;
+    std::vector<cTimestampedDouble>         m_voReceiverBandwidthsChan1_Hz;
 
     cAntennaConfiguration                   m_oAntennaConfiguration;
     std::vector<double>                     m_vdDelayModelParams;
