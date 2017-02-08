@@ -255,7 +255,7 @@ void cSpectrometerHDF5OutputFile::addFrame(const std::vector<int> &vi32Chan0, co
     //Noise diode state changes
     if(oHeader.getNoiseDiodeOn() != m_oLastHeader.getNoiseDiodeOn() || !m_voROACHNoiseDiodeStateChanges.size())
     {
-        cNoiseDiodeState oState;
+        cTimestampedChar oState;
 
         oState.m_dTimestamp_s = dTimestamp_s;
 
@@ -331,20 +331,20 @@ void cSpectrometerHDF5OutputFile::writeROACHNoiseDiodeStates()
     hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
     //Create a compound data type consisting of different native types per entry:
-    hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cNoiseDiodeState));
+    hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedChar));
 
     //Add to compound data type: a timestamp (double)
-    H5Tinsert(compoundDataType, "timestamp", HOFFSET(cNoiseDiodeState, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+    H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedChar, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
 
     //Add to compound data type: the noise diode state (string of 1 character "0" or "1")
     hid_t stringTypeValue = H5Tcopy (H5T_C_S1);
-    H5Tset_size(stringTypeValue, sizeof(cNoiseDiodeState::m_chaValue));
-    H5Tinsert(compoundDataType, "value", HOFFSET(cNoiseDiodeState, m_chaValue), stringTypeValue);
+    H5Tset_size(stringTypeValue, sizeof(cTimestampedChar::m_chaValue));
+    H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedChar, m_chaValue), stringTypeValue);
 
     //Add to compound data type: the status of the noise diode equiptment (string typically containing "nominal")
     hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
-    H5Tset_size(stringTypeStatus, sizeof(cNoiseDiodeState::m_chaStatus));
-    H5Tinsert(compoundDataType, "status", HOFFSET(cNoiseDiodeState, m_chaStatus), stringTypeStatus);
+    H5Tset_size(stringTypeStatus, sizeof(cTimestampedChar::m_chaStatus));
+    H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedChar, m_chaStatus), stringTypeStatus);
 
     //Create the data set of of the new compound datatype
     hid_t dataset = H5Dcreate1(m_iH5SensorsAntennasAntenna1GroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
@@ -1121,20 +1121,20 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeSoftwareStates()
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
-        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cNoiseDiodeState));
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedChar));
 
         //Add to compound data type: a timestamp (double)
-        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cNoiseDiodeState, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedChar, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
 
         //Add to compound data type: the noise diode state (string of 1 character "0" or "1")
         hid_t stringTypeValue = H5Tcopy (H5T_C_S1);
-        H5Tset_size(stringTypeValue, sizeof(cNoiseDiodeState::m_chaValue));
-        H5Tinsert(compoundDataType, "value", HOFFSET(cNoiseDiodeState, m_chaValue), stringTypeValue);
+        H5Tset_size(stringTypeValue, sizeof(cTimestampedChar::m_chaValue));
+        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedChar, m_chaValue), stringTypeValue);
 
         //Add to compound data type: the status of the noise diode equiptment (string typically containing "nominal")
         hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
-        H5Tset_size(stringTypeStatus, sizeof(cNoiseDiodeState::m_chaStatus));
-        H5Tinsert(compoundDataType, "status", HOFFSET(cNoiseDiodeState, m_chaStatus), stringTypeStatus);
+        H5Tset_size(stringTypeStatus, sizeof(cTimestampedChar::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedChar, m_chaStatus), stringTypeStatus);
 
         //Create the data set of of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5SensorsAntennasAntenna1GroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
@@ -1231,7 +1231,7 @@ void cSpectrometerHDF5OutputFile::writeNoideDiodeCurrents()
 
         //Add to compound data type: the status of the sensor (string typically containing "nominal")
         hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
-        H5Tset_size(stringTypeStatus, sizeof(cNoiseDiodeState::m_chaStatus));
+        H5Tset_size(stringTypeStatus, sizeof(cTimestampedChar::m_chaStatus));
         H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
 
         //Create the data set of of the new compound datatype
@@ -1309,12 +1309,12 @@ void cSpectrometerHDF5OutputFile::writeSelectedSources()
 
 void cSpectrometerHDF5OutputFile::writeRFFrequencies()
 {
-    if (m_voFrequenciesRFChan0_Hz.size())
+    if (m_voFrequencySelectLCP.size())
     {
-        string strDatasetName("rfe.rf.chan0.frequency");
+        string strDatasetName("rfe.band.select.LCP");
 
         //Create the data space
-        hsize_t dimension[] = { m_voFrequenciesRFChan0_Hz.size() };
+        hsize_t dimension[] = { m_voFrequencySelectLCP.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
@@ -1323,18 +1323,21 @@ void cSpectrometerHDF5OutputFile::writeRFFrequencies()
         //Add to compound data type: a timestamp (double)
         H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
 
-        //Add to compound data type: the RF frequency for channel 0 (double)
-        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
+        //Add to compound data type: the FrequencySelectLCP state (string of 1 character "0" or "1")
+        // Zero means 5 GHz, 1 means 6.7 GHz.
+        hid_t stringTypeValue = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeValue, sizeof(cTimestampedChar::m_chaValue));
+        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedChar, m_chaValue), stringTypeValue);
 
         //Add to compound data type: the status of the sensor (string typically containing "nominal")
         hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
-        H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
-        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
+        H5Tset_size(stringTypeStatus, sizeof(cTimestampedChar::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedChar, m_chaStatus), stringTypeStatus);
 
         //Create the data set of of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voFrequenciesRFChan0_Hz.front());
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voFrequencySelectLCP.front());
 
         if(err < 0)
         {
@@ -1342,23 +1345,24 @@ void cSpectrometerHDF5OutputFile::writeRFFrequencies()
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeRFFrequencies(): Wrote " << m_voFrequenciesRFChan0_Hz.size() << " RF frequencies for channel 0." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeRFFrequencies(): Wrote " << m_voFrequencySelectLCP.size() << " RF band selections for LCP." << endl;
         }
 
-        addAttributeToDataSet(string("RF centre frequency for final IF channel 0"), strDatasetName, string("double"), string("MHz"), dataset);
+        addAttributeToDataSet(string("RF band selection for LCP (0 - 5GHz, 1 - 6.7 GHz)"), strDatasetName, string("boolean"), string(""), dataset);
 
+        H5Tclose(stringTypeValue);
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
         H5Sclose(dataspace);
         H5Dclose(dataset);
     }
 
-    if (m_voFrequenciesRFChan1_Hz.size())
+    if (m_voFrequencySelectRCP.size())
     {
-        string strDatasetName("rfe.rf.chan1.frequency");
+        string strDatasetName("rfe.band.select.RCP");
 
         //Create the data space
-        hsize_t dimension[] = { m_voFrequenciesRFChan1_Hz.size() };
+        hsize_t dimension[] = { m_voFrequencySelectRCP.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
@@ -1367,18 +1371,21 @@ void cSpectrometerHDF5OutputFile::writeRFFrequencies()
         //Add to compound data type: a timestamp (double)
         H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
 
-        //Add to compound data type: the RF frequency for channel 1 (double)
-        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
+        //Add to compound data type: the FrequencySelectLCP state (string of 1 character "0" or "1")
+        // Zero means 5 GHz, 1 means 6.7 GHz.
+        hid_t stringTypeValue = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeValue, sizeof(cTimestampedChar::m_chaValue));
+        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedChar, m_chaValue), stringTypeValue);
 
         //Add to compound data type: the status of the sensor (string typically containing "nominal")
         hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
-        H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
-        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
+        H5Tset_size(stringTypeStatus, sizeof(cTimestampedChar::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedChar, m_chaStatus), stringTypeStatus);
 
         //Create the data set of of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voFrequenciesRFChan1_Hz.front());
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voFrequencySelectRCP.front());
 
         if(err < 0)
         {
@@ -1386,11 +1393,12 @@ void cSpectrometerHDF5OutputFile::writeRFFrequencies()
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeRFFrequencies(): Wrote " << m_voFrequenciesRFChan1_Hz.size() << " RF frequencies for channel 1." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeRFFrequencies(): Wrote " << m_voFrequencySelectLCP.size() << " RF band selections for RCP." << endl;
         }
 
-        addAttributeToDataSet(string("RF centre frequency for final IF channel 1"), strDatasetName, string("double"), string("Hz"), dataset);
+        addAttributeToDataSet(string("RF band selection for LCP (0 - 5GHz, 1 - 6.7 GHz)"), strDatasetName, string("boolean"), string(""), dataset);
 
+        H5Tclose(stringTypeValue);
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
         H5Sclose(dataspace);
@@ -1402,7 +1410,7 @@ void cSpectrometerHDF5OutputFile::writeLOFrequencies()
 {
     if (m_voFrequenciesLO0Chan0_Hz.size())
     {
-        string strDatasetName("rfe.lo0.chan0.frequency");
+        string strDatasetName("rfe.lo0.chan0.frequency"); // chan 0 is the 5 GHz receiver
 
         //Create the data space
         hsize_t dimension[] = { m_voFrequenciesLO0Chan0_Hz.size() };
@@ -1446,7 +1454,7 @@ void cSpectrometerHDF5OutputFile::writeLOFrequencies()
 
     if (m_voFrequenciesLO0Chan1_Hz.size())
     {
-        string strDatasetName("rfe.lo0.chan1.frequency");
+        string strDatasetName("rfe.lo0.chan1.frequency"); // chan1 is the 6.7 GHz receiver
 
         //Create the data space
         hsize_t dimension[] = { m_voFrequenciesLO0Chan1_Hz.size() };
@@ -2493,29 +2501,31 @@ void cSpectrometerHDF5OutputFile::addSourceSelection(int64_t i64Timestamp_us, co
     m_voSelectedSources.push_back(oNewSourceSelection);
 }
 
-
-void cSpectrometerHDF5OutputFile::addFrequencyRFChan0(int64_t i64Timestamp_us, double dFreqencyRFChan0_Hz, const string &strStatus)
+//FOOBAR
+void cSpectrometerHDF5OutputFile::addFrequencySelectLCP(int64_t i64Timestamp_us, bool bFrequencySelectLCP, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
-    cTimestampedDouble oNewRFFrequency;
-    oNewRFFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewRFFrequency.m_dValue = dFreqencyRFChan0_Hz;
-    sprintf(oNewRFFrequency.m_chaStatus, strStatus.c_str());
+    cTimestampedChar oNewFrequencyLCP;
+    oNewFrequencyLCP.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    //oNewFrequencyLCP.m_chaValue = bFreqencySelectLCP;
+    sprintf(oNewFrequencyLCP.m_chaValue, "%s", (bFrequencySelectLCP)?"1":"0");
+    sprintf(oNewFrequencyLCP.m_chaStatus, strStatus.c_str());
 
-    m_voFrequenciesRFChan0_Hz.push_back(oNewRFFrequency);
+    m_voFrequencySelectLCP.push_back(oNewFrequencyLCP);
 }
 
-void cSpectrometerHDF5OutputFile::addFrequencyRFChan1(int64_t i64Timestamp_us, double dFreqencyRFChan1_Hz, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addFrequencySelectRCP(int64_t i64Timestamp_us, bool bFrequencySelectRCP, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
-    cTimestampedDouble oNewRFFrequency;
+    cTimestampedChar oNewRFFrequency;
     oNewRFFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewRFFrequency.m_dValue = dFreqencyRFChan1_Hz;
+    //oNewRFFrequency.m_chaValue = bFrequencySelectRCP;
+    sprintf(oNewRFFrequency.m_chaValue, "%s", (bFrequencySelectRCP)?"1":"0");
     sprintf(oNewRFFrequency.m_chaStatus, strStatus.c_str());
 
-    m_voFrequenciesRFChan1_Hz.push_back(oNewRFFrequency);
+    m_voFrequencySelectRCP.push_back(oNewRFFrequency);
 }
 
 void cSpectrometerHDF5OutputFile::addFrequencyLO0Chan0(int64_t i64Timestamp_us, double dFrequencyLO0Chan0_Hz, const string &strStatus)

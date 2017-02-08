@@ -47,12 +47,12 @@ class cSpectrometerHDF5OutputFile
         char                m_chaLabel[64];
     } cMarkupLabels;
 
-    typedef struct cNoiseDiodeState
+    typedef struct cTimestampedChar
     {
         double              m_dTimestamp_s;
         char                m_chaValue[1];
         char                m_chaStatus[7];
-    } cNoiseDiodeState;
+    } cTimestampedChar;
 
     typedef struct cSourceSelection
     {
@@ -148,8 +148,8 @@ public:
 
     void                                    addSourceSelection(int64_t i64Timestamp_us, const std::string &strSourceName, double dRighAscension_deg, double dDeclination_deg);
 
-    void                                    addFrequencyRFChan0(int64_t i64Timestamp_us, double dFreqencyRFChan0_MHz, const std::string &strStatus);
-    void                                    addFrequencyRFChan1(int64_t i64Timestamp_us, double dFreqencyRFChan1_MHz, const std::string &strStatus);
+    void                                    addFrequencySelectLCP(int64_t i64Timestamp_us, bool bFrequencySelectLCP, const std::string &strStatus);
+    void                                    addFrequencySelectRCP(int64_t i64Timestamp_us, bool bFrequencySelectRCP, const std::string &strStatus);
     void                                    addFrequencyLO0Chan0(int64_t i64Timestamp_us, double dFrequencyLO0Chan0_Hz, const std::string &strStatus);
     void                                    addFrequencyLO0Chan1(int64_t i64Timestamp_us, double dFrequencyLO0Chan1_MHz, const std::string &strStatus);
     void                                    addFrequencyLO1(int64_t i64Timestamp_us, double dFrequencyLO1_MHz, const std::string &strStatus);
@@ -208,7 +208,7 @@ private:
     //Values received / calculated from ROACH sample data stream
     std::vector<double>                     m_vdSampleDataTimestamps_s;
     std::vector<std::vector<float> >        m_vvfChannelAverages;
-    std::vector<cNoiseDiodeState>           m_voROACHNoiseDiodeStateChanges;
+    std::vector<cTimestampedChar>           m_voROACHNoiseDiodeStateChanges;
 
     //Values received from station controller
     std::vector<cMarkupLabels>              m_voMarkupLabels;
@@ -234,8 +234,8 @@ private:
 
     std::vector<cSourceSelection>           m_voSelectedSources;
 
-    std::vector<cTimestampedDouble>         m_voFrequenciesRFChan0_Hz;
-    std::vector<cTimestampedDouble>         m_voFrequenciesRFChan1_Hz;
+    std::vector<cTimestampedChar>           m_voFrequencySelectLCP;
+    std::vector<cTimestampedChar>           m_voFrequencySelectRCP;
     std::vector<cTimestampedDouble>         m_voFrequenciesLO0Chan0_Hz;
     std::vector<cTimestampedDouble>         m_voFrequenciesLO0Chan1_Hz;
     std::vector<cTimestampedDouble>         m_voFrequenciesLO1_Hz;
