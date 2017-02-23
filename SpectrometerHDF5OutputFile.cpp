@@ -10,6 +10,10 @@ extern "C" {
 #include <hdf5_hl.h>
 }
 
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
+namespace pt = boost::property_tree;
+
 //Local includes
 #include "SpectrometerHDF5OutputFile.h"
 #include "../../AVNUtilLibs/Timestamp/Timestamp.h"
@@ -97,6 +101,25 @@ cSpectrometerHDF5OutputFile::cSpectrometerHDF5OutputFile(const std::string &strF
     H5Sclose(dataSpaceStokes);
     H5Pclose(datasetPropertiesVis);
     H5Pclose(datasetPropertiesStokes);
+
+    //Read observatory information from ini file
+    pt::ptree ObsInfo;
+    pt::ini_parser::read_ini("ObservatoryInfo.ini", ObsInfo);
+
+    string strAntennaName   = ObsInfo.get<string>("Antenna.name");
+    string strLatitude_deg  = ObsInfo.get<string>("Antenna.latitude");
+    string strLongitude_deg = ObsInfo.get<string>("Antenna.longitude");
+    string strAltitude_m    = ObsInfo.get<string>("Antenna.altitude");
+    string strDiameter_m    = ObsInfo.get<string>("Antenna.diameter");
+    string strBeamwidth     = ObsInfo.get<string>("Antenna.beamwidth");
+
+    strcpy(m_oAntennaConfiguration.m_chaAntennaName, strAntennaName.c_str());
+    strcpy(m_oAntennaConfiguration.m_chaAntennaLatitude_deg, strLatitude_deg.c_str());
+    strcpy(m_oAntennaConfiguration.m_chaAntennaLongitude_deg, strLongitude_deg.c_str());
+    strcpy(m_oAntennaConfiguration.m_chaAntennaAltitude_m, strAltitude_m.c_str());
+    strcpy(m_oAntennaConfiguration.m_chaAntennaDiameter_m, strDiameter_m.c_str());
+    strcpy(m_oAntennaConfiguration.m_chaAntennaBeamwidth, strBeamwidth.c_str());
+    strcpy(m_oAntennaConfiguration.m_chaPointModelName, "vlbi");
 }
 
 cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
@@ -1068,7 +1091,6 @@ void cSpectrometerHDF5OutputFile::writeAntennaConfiguration()
         }
     }
 
-    //TODO: This stuff is coming out funky. Is it actually being assigned somewhere?
     {
         //Add the rest of the data as attributes to the group.
         hid_t variableLengthStringType;
@@ -1088,7 +1110,7 @@ void cSpectrometerHDF5OutputFile::writeAntennaConfiguration()
         H5Awrite(attrAntennaDiameter, variableLengthStringType, &pcAntennaDiameter_m);
 
         hid_t attrAntennaBeamwidth = H5Acreate(groupHandle, "beamwidth", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
-        const char* pcAntennaBeamwidth_deg = m_oAntennaConfiguration.m_chaAntennaBeamwidth_deg;
+        const char* pcAntennaBeamwidth_deg = m_oAntennaConfiguration.m_chaAntennaBeamwidth;
         H5Awrite(attrAntennaBeamwidth, variableLengthStringType, &pcAntennaBeamwidth_deg);
 
         hid_t attrAntennaLatitude = H5Acreate(groupHandle, "latitude", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
@@ -1099,6 +1121,11 @@ void cSpectrometerHDF5OutputFile::writeAntennaConfiguration()
         const char* pcAntennaLongitude_deg = m_oAntennaConfiguration.m_chaAntennaLongitude_deg;
         H5Awrite(attrAntennaLongitude, variableLengthStringType, &pcAntennaLongitude_deg);
 
+        hid_t attrAntennaAltitude = H5Acreate(groupHandle, "altitude", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
+        const char* pcAntennaAltitude_m = m_oAntennaConfiguration.m_chaAntennaAltitude_m;
+        H5Awrite(attrAntennaAltitude, variableLengthStringType, &pcAntennaAltitude_m);
+
+        H5Aclose(attrAntennaAltitude);
         H5Aclose(attrAntennaBeamwidth);
         H5Aclose(attrAntennaDiameter);
         H5Aclose(attrAntennaLatitude);
@@ -1444,7 +1471,7 @@ void cSpectrometerHDF5OutputFile::writeLOFrequencies()
             cout << "cSpectrometerHDF5OutputFile::writeLOFrequencies(): Wrote " << m_voFrequenciesLO0Chan0_Hz.size() << " LO0 chan 0 frequencies." << endl;
         }
 
-        addAttributeToDataSet(string("frequency of channel 0, LO 0"), strDatasetName, string("double"), string("Hz"), dataset);
+        addAttributeToDataSet(string("frequency of synth a, valon 0 (5 GHz LO)"), strDatasetName, string("double"), string("Hz"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -1488,7 +1515,7 @@ void cSpectrometerHDF5OutputFile::writeLOFrequencies()
             cout << "cSpectrometerHDF5OutputFile::writeLOFrequencies(): Wrote " << m_voFrequenciesLO0Chan1_Hz.size() << " LO0 chan 1 frequencies." << endl;
         }
 
-        addAttributeToDataSet(string("frequency of channel 0, LO 0"), strDatasetName, string("double"), string("Hz"), dataset);
+        addAttributeToDataSet(string("frequency of synth b, valon 0 (6.7 GHz LO)"), strDatasetName, string("double"), string("Hz"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -1532,7 +1559,7 @@ void cSpectrometerHDF5OutputFile::writeLOFrequencies()
             cout << "cSpectrometerHDF5OutputFile::writeLOFrequencies(): Wrote " << m_voFrequenciesLO1_Hz.size() << " LO1 frequencies." << endl;
         }
 
-        addAttributeToDataSet(string("frequency of LO 1"), strDatasetName, string("double"), string("Hz"), dataset);
+        addAttributeToDataSet(string("frequency of valon 1 synth a (Intermediate LO)"), strDatasetName, string("double"), string("Hz"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -2403,7 +2430,7 @@ void cSpectrometerHDF5OutputFile::setAntennaBeamwidth(const string &strAntennaBe
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     //Only a single set of values
-    sprintf(m_oAntennaConfiguration.m_chaAntennaBeamwidth_deg, strAntennaBeamwidth_deg.c_str());
+    sprintf(m_oAntennaConfiguration.m_chaAntennaBeamwidth, strAntennaBeamwidth_deg.c_str());
 }
 
 void cSpectrometerHDF5OutputFile::setAntennaLongitude(const string &strAntennaLongitude_deg)

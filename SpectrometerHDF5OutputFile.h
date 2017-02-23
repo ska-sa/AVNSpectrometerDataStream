@@ -109,10 +109,11 @@ class cSpectrometerHDF5OutputFile
     {
         char                m_chaAntennaName[64];
         char                m_chaAntennaDiameter_m[8];
-        char                m_chaAntennaBeamwidth_deg[8];
+        char                m_chaAntennaBeamwidth[8];
         char                m_chaAntennaLongitude_deg[16];
         char                m_chaAntennaLatitude_deg[16];
-        char                m_chaPointModelName[16];
+        char                m_chaAntennaAltitude_m[8];
+        char                m_chaPointModelName[16]; //TODO: Remove this, I don't think it's necessary at all.
     } cAntennaConfiguration;
 
 
