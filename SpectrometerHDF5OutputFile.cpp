@@ -102,24 +102,26 @@ cSpectrometerHDF5OutputFile::cSpectrometerHDF5OutputFile(const std::string &strF
     H5Pclose(datasetPropertiesVis);
     H5Pclose(datasetPropertiesStokes);
 
-    //Read observatory information from ini file
+    //Read antenna config information from ini file
     pt::ptree ObsInfo;
     pt::ini_parser::read_ini("ObservatoryInfo.ini", ObsInfo);
+    setAntennaName(ObsInfo.get<string>("Antenna.name"));
+    setAntennaLatitude(ObsInfo.get<string>("Antenna.latitude"));
+    setAntennaLongitude(ObsInfo.get<string>("Antenna.longitude"));
+    setAntennaAltitude(ObsInfo.get<string>("Antenna.altitude"));
+    setAntennaDiameter(ObsInfo.get<string>("Antenna.diameter"));
+    setAntennaBeamwidth(ObsInfo.get<string>("Antenna.beamwidth"));
 
-    string strAntennaName   = ObsInfo.get<string>("Antenna.name");
-    string strLatitude_deg  = ObsInfo.get<string>("Antenna.latitude");
-    string strLongitude_deg = ObsInfo.get<string>("Antenna.longitude");
-    string strAltitude_m    = ObsInfo.get<string>("Antenna.altitude");
-    string strDiameter_m    = ObsInfo.get<string>("Antenna.diameter");
-    string strBeamwidth     = ObsInfo.get<string>("Antenna.beamwidth");
+    //Assume zero delay and pointing models. Maybe incorporate in config file in future?
+    vector<double> vdZeroModelParams;
+    for(int ui = 0; ui < 22; ui++)
+    {
+        vdZeroModelParams.push_back(0.0);
+        if (ui == 2) // i.e. we've reached the third one.
+            setAntennaDelayModel(vdZeroModelParams);
+    }
+    setAppliedPointingModel("vlbi", vdZeroModelParams);
 
-    strcpy(m_oAntennaConfiguration.m_chaAntennaName, strAntennaName.c_str());
-    strcpy(m_oAntennaConfiguration.m_chaAntennaLatitude_deg, strLatitude_deg.c_str());
-    strcpy(m_oAntennaConfiguration.m_chaAntennaLongitude_deg, strLongitude_deg.c_str());
-    strcpy(m_oAntennaConfiguration.m_chaAntennaAltitude_m, strAltitude_m.c_str());
-    strcpy(m_oAntennaConfiguration.m_chaAntennaDiameter_m, strDiameter_m.c_str());
-    strcpy(m_oAntennaConfiguration.m_chaAntennaBeamwidth, strBeamwidth.c_str());
-    strcpy(m_oAntennaConfiguration.m_chaPointModelName, "vlbi");
 }
 
 cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
@@ -2447,12 +2449,21 @@ void cSpectrometerHDF5OutputFile::setAntennaLatitude(const string &strAntennaLat
     sprintf(m_oAntennaConfiguration.m_chaAntennaLatitude_deg, strAntennaLatitude_deg.c_str());
 }
 
-/*void cSpectrometerHDF5OutputFile::addAntennaDelayModel(const string &strAntennaDelayModel)
+void cSpectrometerHDF5OutputFile::setAntennaAltitude(const string &strAntennAltitude_m)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     //Only a single set of values
-    sprintf(m_oAntennaConfiguration.m_chaAntennaDelayModel, strAntennaDelayModel.c_str());
-}*/
+    sprintf(m_oAntennaConfiguration.m_chaAntennaAltitude_m, strAntennAltitude_m.c_str());
+}
+
+void cSpectrometerHDF5OutputFile::setAntennaDelayModel(const vector<double> &vdDelayModelParams)
+{
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+    //This only a single set of values, not a history of values.
+    //Update the current record whenever a new value is received
+
+    m_vdDelayModelParams = vdDelayModelParams;
+}
 
 void cSpectrometerHDF5OutputFile::addNoiseDiodeSoftwareState(int64_t i64Timestamp_us, int32_t i32NoiseDiodeState, const string &strStatus)
 {

@@ -141,7 +141,6 @@ public:
     void                                    motorTorqueAzSlave(int64_t i64Timestamp_us, double dAzSlave_mNm, const std::string &strStatus);
     void                                    motorTorqueElMaster(int64_t i64Timestamp_us, double dElMaster_mNm, const std::string &strStatus);
     void                                    motorTorqueElSlave(int64_t i64Timestamp_us, double dElSlave_mNm, const std::string &strStatus);
-    void                                    setAppliedPointingModel(const std::string &strModelName, const std::vector<double> &vdPointingModelParams);
 
     void                                    addNoiseDiodeSoftwareState(int64_t i64Timestamp_us, int32_t i32NoiseDiodeState, const std::string &strStatus);
     void                                    addNoiseDiodeSource(int64_t i64Timestamp_us, const std::string &strNoiseSource, const std::string &strStatus);
@@ -168,10 +167,14 @@ public:
 
     void                                    setAntennaName(const std::string &strAntennaName);
     void                                    setAntennaBeamwidth(const std::string &strAntennaBeamwidth_deg);
-    void                                    addAntennaDelayModel(const std::string &strAntennaDelayModel);
     void                                    setAntennaDiameter(const std::string &strAntennaDiameter_m);
     void                                    setAntennaLatitude(const std::string &strAntennaLatitude_deg);
+    void                                    setAntennaAltitude(const std::string &strAntennaAltitude_m);
     void                                    setAntennaLongitude(const std::string &strAntennaLongitude_deg);
+
+    void                                    setAntennaDelayModel(const std::vector<double> &vdDelayModelParams);
+    void                                    setAppliedPointingModel(const std::string &strModelName, const std::vector<double> &vdPointingModelParams);
+
 
     std::string                             getFilename() const;
 
