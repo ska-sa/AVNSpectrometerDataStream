@@ -2645,7 +2645,7 @@ void cSpectrometerHDF5OutputFile::addCoarseChannelSelect(int64_t i64Timestamp_us
     if (!m_voROACHNBChannelSelects.size() || u32ChannelNo != m_voROACHNBChannelSelects[m_voROACHNBChannelSelects.size() - 1].m_u32Value)
     {
         cTimestampedUnsignedInt oNewCoarseChannelSelection;
-        oNewCoarseChannelSelection.m_dTimestamp_s = i64Timestamp_us;
+        oNewCoarseChannelSelection.m_dTimestamp_s = i64Timestamp_us / 1e6; //Convert from us to standard s
         oNewCoarseChannelSelection.m_u32Value = u32ChannelNo;
         sprintf(oNewCoarseChannelSelection.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
 
@@ -2684,7 +2684,7 @@ void cSpectrometerHDF5OutputFile::addCoarseFFTShiftMask(int64_t i64Timestamp_us,
     if (!m_voROACHCoarseFFTShiftMasks.size() || u32ShiftMask != m_voROACHCoarseFFTShiftMasks[m_voROACHCoarseFFTShiftMasks.size() - 1].m_u32Value)
     {
         cTimestampedUnsignedInt oNewCoarseFFTShift;
-        oNewCoarseFFTShift.m_dTimestamp_s = i64Timestamp_us;
+        oNewCoarseFFTShift.m_dTimestamp_s = i64Timestamp_us / 1e6;
         oNewCoarseFFTShift.m_u32Value = u32ShiftMask;
         sprintf(oNewCoarseFFTShift.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
 
@@ -2699,7 +2699,7 @@ void cSpectrometerHDF5OutputFile::addAttenuationADCChan0(int64_t i64Timestamp_us
     if (!m_voROACHADCAttenuationsChan0_dB.size() || dADCAttenuationChan0_dB != m_voROACHADCAttenuationsChan0_dB[m_voROACHADCAttenuationsChan0_dB.size() - 1].m_dValue)
     {
         cTimestampedDouble oNewAdcAttenuantion;
-        oNewAdcAttenuantion.m_dTimestamp_s = i64Timestamp_us;
+        oNewAdcAttenuantion.m_dTimestamp_s = i64Timestamp_us / 1e6;
         oNewAdcAttenuantion.m_dValue = dADCAttenuationChan0_dB;
         sprintf(oNewAdcAttenuantion.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
 
@@ -2714,7 +2714,7 @@ void cSpectrometerHDF5OutputFile::addAttenuationADCChan1(int64_t i64Timestamp_us
     if (!m_voROACHADCAttenuationsChan1_dB.size() || dADCAttenuationChan1_dB != m_voROACHADCAttenuationsChan1_dB[m_voROACHADCAttenuationsChan1_dB.size() - 1].m_dValue)
     {
         cTimestampedDouble oNewAdcAttenuantion;
-        oNewAdcAttenuantion.m_dTimestamp_s = i64Timestamp_us;
+        oNewAdcAttenuantion.m_dTimestamp_s = i64Timestamp_us / 1e6;
         oNewAdcAttenuantion.m_dValue = dADCAttenuationChan1_dB;
         sprintf(oNewAdcAttenuantion.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
 
