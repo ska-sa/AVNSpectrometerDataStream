@@ -155,6 +155,8 @@ public:
     void                                    addFrequencyLO1(int64_t i64Timestamp_us, double dFrequencyLO1_MHz, const std::string &strStatus);
     void                                    addReceiverBandwidthChan0(int64_t i64Timestamp_us, double dReceiverBandwidthChan0_MHz, const std::string &strStatus);
     void                                    addReceiverBandwidthChan1(int64_t i64Timestamp_us, double dReceiverBandwidthChan1_MHz, const std::string &strStatus);
+    void                                    addReceiverLcpAttenuation(int64_t i64Timestamp_us, double dReceiverLcpAttenuation_dB, const std::string &strStatus);
+    void                                    addReceiverRcpAttenuation(int64_t i64Timestamp_us, double dReceiverRcpAttenuation_dB, const std::string &strStatus);
 
     void                                    addAccumulationLength(int64_t i64Timestamp_us, uint32_t u32NFrames);
     void                                    addCoarseChannelSelect(int64_t i64Timestamp_us, uint32_t u32ChannelNo);
@@ -245,6 +247,8 @@ private:
     std::vector<cTimestampedDouble>         m_voFrequenciesLO1_Hz;
     std::vector<cTimestampedDouble>         m_voReceiverBandwidthsChan0_Hz;
     std::vector<cTimestampedDouble>         m_voReceiverBandwidthsChan1_Hz;
+    std::vector<cTimestampedDouble>         m_voReceiverLcpAttenuations_dB;
+    std::vector<cTimestampedDouble>         m_voReceiverRcpAttenuations_dB;
 
     cAntennaConfiguration                   m_oAntennaConfiguration;
     std::vector<double>                     m_vdDelayModelParams;
@@ -310,6 +314,7 @@ private:
     void                                    writeRFFrequencies();
     void                                    writeLOFrequencies();
     void                                    writeIFBandwidths();
+    void                                    writeReceiverAttenuations();
 
     void                                    writeROACHNumberChannels();
     void                                    writeROACHAccumulationLengths();

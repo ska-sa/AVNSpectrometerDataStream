@@ -158,6 +158,7 @@ cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
     writeRFFrequencies();
     writeLOFrequencies();
     writeIFBandwidths();
+    writeReceiverAttenuations();
 
     writeROACHAccumulationLengths();
     writeROACHNBNarrowbandSelections();
@@ -1570,6 +1571,7 @@ void cSpectrometerHDF5OutputFile::writeLOFrequencies()
     }
 }
 
+
 void cSpectrometerHDF5OutputFile::writeIFBandwidths()
 {
     if (m_voReceiverBandwidthsChan0_Hz.size())
@@ -1660,6 +1662,99 @@ void cSpectrometerHDF5OutputFile::writeIFBandwidths()
         H5Dclose(dataset);
     }
 }
+
+
+void cSpectrometerHDF5OutputFile::writeReceiverAttenuations()
+{
+    if (m_voReceiverLcpAttenuations_dB.size())
+    {
+        string strDatasetName("rfe.LCP.attenuation");
+
+        //Create the data space
+        hsize_t dimension[] = { m_voReceiverLcpAttenuations_dB.size() };
+        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
+
+        //Create a compound data type consisting of different native types per entry:
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
+
+        //Add to compound data type: a timestamp (double)
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the receiver bandwidth (double)
+        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the status of the sensor (string typically containing "nominal")
+        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
+
+        //Create the data set of of the new compound datatype
+        hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
+
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voReceiverLcpAttenuations_dB.front());
+
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeReceiverAttenuations(): HDF5 make dataset error" << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeReceiverAttenuations(): Wrote " << m_voReceiverLcpAttenuations_dB.size() << " receiver LCP attenuation values." << endl;
+        }
+
+        addAttributeToDataSet(string("Receiver chain LCP variable attenuator setting."), strDatasetName, string("double"), string("dB"), dataset);
+
+        H5Tclose(stringTypeStatus);
+        H5Tclose(compoundDataType);
+        H5Sclose(dataspace);
+        H5Dclose(dataset);
+    }
+
+    if (m_voReceiverRcpAttenuations_dB.size())
+    {
+        string strDatasetName("rfe.RCP.attenuation");
+
+        //Create the data space
+        hsize_t dimension[] = { m_voReceiverRcpAttenuations_dB.size() };
+        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
+
+        //Create a compound data type consisting of different native types per entry:
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
+
+        //Add to compound data type: a timestamp (double)
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the receiver bandwidth (double)
+        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the status of the sensor (string typically containing "nominal")
+        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
+
+        //Create the data set of of the new compound datatype
+        hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
+
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voReceiverRcpAttenuations_dB.front());
+
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeReceiverAttenuations(): HDF5 make dataset error" << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeReceiverAttenuations(): Wrote " << m_voReceiverRcpAttenuations_dB.size() << " receiver RCP attenuation values." << endl;
+        }
+
+        addAttributeToDataSet(string("Receiver chain RCP variable attenuator setting."), strDatasetName, string("double"), string("dB"), dataset);
+
+        H5Tclose(stringTypeStatus);
+        H5Tclose(compoundDataType);
+        H5Sclose(dataspace);
+        H5Dclose(dataset);
+    }
+}
+
 
 void cSpectrometerHDF5OutputFile::writeROACHNumberChannels()
 {
@@ -2238,7 +2333,7 @@ void cSpectrometerHDF5OutputFile::addMarkupLabel(int64_t i64Timestamp_us, const 
 {
     cMarkupLabels oNewMarkupLabel;
     oNewMarkupLabel.m_dTimestamp_s = double(i64Timestamp_us) / 1e6;
-    sprintf(oNewMarkupLabel.m_chaLabel, strLabel.c_str());
+    sprintf(oNewMarkupLabel.m_chaLabel, "%s", strLabel.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
@@ -2250,7 +2345,7 @@ void cSpectrometerHDF5OutputFile::addRequestedAntennaAz(int64_t i64Timestamp_us,
     cTimestampedDouble oNewRequestedAntennaAz;
     oNewRequestedAntennaAz.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewRequestedAntennaAz.m_dValue = dAzimuth_deg;
-    sprintf(oNewRequestedAntennaAz.m_chaStatus, strStatus.c_str());
+    sprintf(oNewRequestedAntennaAz.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
@@ -2262,7 +2357,7 @@ void cSpectrometerHDF5OutputFile::addRequestedAntennaEl(int64_t i64Timestamp_us,
     cTimestampedDouble oNewRequestedAntennaEl;
     oNewRequestedAntennaEl.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewRequestedAntennaEl.m_dValue = dElevation_deg;
-    sprintf(oNewRequestedAntennaEl.m_chaStatus, strStatus.c_str());
+    sprintf(oNewRequestedAntennaEl.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
@@ -2274,7 +2369,7 @@ void cSpectrometerHDF5OutputFile::addActualAntennaAz(int64_t i64Timestamp_us, do
     cTimestampedDouble oNewActualAntennaAz;
     oNewActualAntennaAz.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewActualAntennaAz.m_dValue = dAzimuth_deg;
-    sprintf(oNewActualAntennaAz.m_chaStatus, strStatus.c_str());
+    sprintf(oNewActualAntennaAz.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
@@ -2286,7 +2381,7 @@ void cSpectrometerHDF5OutputFile::addActualAntennaEl(int64_t i64Timestamp_us, do
     cTimestampedDouble oNewActualAntennaEl;
     oNewActualAntennaEl.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewActualAntennaEl.m_dValue = dElevation_deg;
-    sprintf(oNewActualAntennaEl.m_chaStatus, strStatus.c_str());
+    sprintf(oNewActualAntennaEl.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
@@ -2298,7 +2393,7 @@ void cSpectrometerHDF5OutputFile::addActualSourceOffsetAz(int64_t i64Timestamp_u
     cTimestampedDouble oNewActualSourceOffsetAz;
     oNewActualSourceOffsetAz.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewActualSourceOffsetAz.m_dValue = dAzimuthOffset_deg;
-    sprintf(oNewActualSourceOffsetAz.m_chaStatus, strStatus.c_str());
+    sprintf(oNewActualSourceOffsetAz.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
@@ -2310,7 +2405,7 @@ void cSpectrometerHDF5OutputFile::addActualSourceOffsetEl(int64_t i64Timestamp_u
     cTimestampedDouble oNewActualSourceOffsetEl;
     oNewActualSourceOffsetEl.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewActualSourceOffsetEl.m_dValue = dElevationOffset_deg;
-    sprintf(oNewActualSourceOffsetEl.m_chaStatus, strStatus.c_str());
+    sprintf(oNewActualSourceOffsetEl.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
@@ -2322,7 +2417,7 @@ void cSpectrometerHDF5OutputFile::addActualAntennaRA(int64_t i64Timestamp_us, do
     cTimestampedDouble oNewActualAntennaRA;
     oNewActualAntennaRA.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewActualAntennaRA.m_dValue = dRighAscension_deg;
-    sprintf(oNewActualAntennaRA.m_chaStatus, strStatus.c_str());
+    sprintf(oNewActualAntennaRA.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
@@ -2334,7 +2429,7 @@ void cSpectrometerHDF5OutputFile::addActualAntennaDec(int64_t i64Timestamp_us, d
     cTimestampedDouble oNewActualAntennaDec;
     oNewActualAntennaDec.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewActualAntennaDec.m_dValue = dDeclination_deg;
-    sprintf(oNewActualAntennaDec.m_chaStatus, strStatus.c_str());
+    sprintf(oNewActualAntennaDec.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
@@ -2347,8 +2442,8 @@ void cSpectrometerHDF5OutputFile::addAntennaStatus(int64_t i64Timestamp_us, cons
 
     cAntennaStatus oNewAntennaStatus;
     oNewAntennaStatus.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    sprintf( oNewAntennaStatus.m_chaAntennaStatus, strAntennaStatus.substr(0, sizeof(oNewAntennaStatus.m_chaAntennaStatus)).c_str() ); //Limit to size of the char array
-    sprintf( oNewAntennaStatus.m_chaStatus, strStatus.c_str());
+    sprintf( oNewAntennaStatus.m_chaAntennaStatus, "%s", strAntennaStatus.substr(0, sizeof(oNewAntennaStatus.m_chaAntennaStatus)).c_str() ); //Limit to size of the char array
+    sprintf( oNewAntennaStatus.m_chaStatus, "%s", strStatus.c_str());
 
     //The numerical value is not used here
 
@@ -2360,7 +2455,7 @@ void cSpectrometerHDF5OutputFile::motorTorqueAzMaster(int64_t i64Timestamp_us, d
     cTimestampedDouble oNewMotorTorque;
     oNewMotorTorque.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewMotorTorque.m_dValue = dAzMaster_mNm;
-    sprintf(oNewMotorTorque.m_chaStatus, strStatus.c_str());
+    sprintf(oNewMotorTorque.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
@@ -2372,7 +2467,7 @@ void cSpectrometerHDF5OutputFile::motorTorqueAzSlave(int64_t i64Timestamp_us, do
     cTimestampedDouble oNewMotorTorque;
     oNewMotorTorque.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewMotorTorque.m_dValue = dAzSlave_mNm;
-    sprintf(oNewMotorTorque.m_chaStatus, strStatus.c_str());
+    sprintf(oNewMotorTorque.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
@@ -2384,7 +2479,7 @@ void cSpectrometerHDF5OutputFile::motorTorqueElMaster(int64_t i64Timestamp_us, d
     cTimestampedDouble oNewMotorTorque;
     oNewMotorTorque.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewMotorTorque.m_dValue = dElMaster_mNm;
-    sprintf(oNewMotorTorque.m_chaStatus, strStatus.c_str());
+    sprintf(oNewMotorTorque.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
@@ -2396,7 +2491,7 @@ void cSpectrometerHDF5OutputFile::motorTorqueElSlave(int64_t i64Timestamp_us, do
     cTimestampedDouble oNewMotorTorque;
     oNewMotorTorque.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewMotorTorque.m_dValue = dElSlave_mNm;
-    sprintf(oNewMotorTorque.m_chaStatus, strStatus.c_str());
+    sprintf(oNewMotorTorque.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
@@ -2411,49 +2506,49 @@ void cSpectrometerHDF5OutputFile::setAppliedPointingModel(const string &strModel
     //Update the current record whenever a new value is received
 
     m_vdPointingModelParams = vdPointingModelParams;
-    sprintf(m_oAntennaConfiguration.m_chaPointModelName, strModelName.c_str());
+    sprintf(m_oAntennaConfiguration.m_chaPointModelName, "%s", strModelName.c_str());
 }
 
 void cSpectrometerHDF5OutputFile::setAntennaName(const string &strAntennaName)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     //Only a single set of values
-    sprintf(m_oAntennaConfiguration.m_chaAntennaName, strAntennaName.c_str());
+    sprintf(m_oAntennaConfiguration.m_chaAntennaName, "%s", strAntennaName.c_str());
 }
 
 void cSpectrometerHDF5OutputFile::setAntennaDiameter(const string &strAntennaDiameter_m)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     //Only a single set of values
-    sprintf(m_oAntennaConfiguration.m_chaAntennaDiameter_m, strAntennaDiameter_m.c_str());
+    sprintf(m_oAntennaConfiguration.m_chaAntennaDiameter_m, "%s", strAntennaDiameter_m.c_str());
 }
 
 void cSpectrometerHDF5OutputFile::setAntennaBeamwidth(const string &strAntennaBeamwidth_deg)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     //Only a single set of values
-    sprintf(m_oAntennaConfiguration.m_chaAntennaBeamwidth, strAntennaBeamwidth_deg.c_str());
+    sprintf(m_oAntennaConfiguration.m_chaAntennaBeamwidth, "%s", strAntennaBeamwidth_deg.c_str());
 }
 
 void cSpectrometerHDF5OutputFile::setAntennaLongitude(const string &strAntennaLongitude_deg)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     //Only a single set of values
-    sprintf(m_oAntennaConfiguration.m_chaAntennaLongitude_deg, strAntennaLongitude_deg.c_str());
+    sprintf(m_oAntennaConfiguration.m_chaAntennaLongitude_deg, "%s", strAntennaLongitude_deg.c_str());
 }
 
 void cSpectrometerHDF5OutputFile::setAntennaLatitude(const string &strAntennaLatitude_deg)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     //Only a single set of values
-    sprintf(m_oAntennaConfiguration.m_chaAntennaLatitude_deg, strAntennaLatitude_deg.c_str());
+    sprintf(m_oAntennaConfiguration.m_chaAntennaLatitude_deg, "%s", strAntennaLatitude_deg.c_str());
 }
 
 void cSpectrometerHDF5OutputFile::setAntennaAltitude(const string &strAntennAltitude_m)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     //Only a single set of values
-    sprintf(m_oAntennaConfiguration.m_chaAntennaAltitude_m, strAntennAltitude_m.c_str());
+    sprintf(m_oAntennaConfiguration.m_chaAntennaAltitude_m, "%s", strAntennAltitude_m.c_str());
 }
 
 void cSpectrometerHDF5OutputFile::setAntennaDelayModel(const vector<double> &vdDelayModelParams)
@@ -2472,7 +2567,7 @@ void cSpectrometerHDF5OutputFile::addNoiseDiodeSoftwareState(int64_t i64Timestam
     cTimestampedInt oNewNoiseDiodeState;
     oNewNoiseDiodeState.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewNoiseDiodeState.m_i32Value = i32NoiseDiodeState;
-    sprintf(oNewNoiseDiodeState.m_chaStatus, strStatus.c_str());
+    sprintf(oNewNoiseDiodeState.m_chaStatus, "%s", strStatus.c_str());
 
     m_voNoiseDiodeSoftwareStates.push_back(oNewNoiseDiodeState);
 }
@@ -2483,8 +2578,8 @@ void cSpectrometerHDF5OutputFile::addNoiseDiodeSource(int64_t i64Timestamp_us, c
 
     cNoiseDiodeSource oNewNoiseDiodeSource;
     oNewNoiseDiodeSource.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    sprintf( oNewNoiseDiodeSource.m_chaSource, strNoiseSource.substr(0, sizeof(oNewNoiseDiodeSource.m_chaSource)).c_str() ); //Limit to size of the char array
-    sprintf( oNewNoiseDiodeSource.m_chaStatus, strStatus.c_str());
+    sprintf( oNewNoiseDiodeSource.m_chaSource, "%s", strNoiseSource.substr(0, sizeof(oNewNoiseDiodeSource.m_chaSource)).c_str() ); //Limit to size of the char array
+    sprintf( oNewNoiseDiodeSource.m_chaStatus, "%s", strStatus.c_str());
 
     m_voNoiseDiodeSources.push_back(oNewNoiseDiodeSource);
 }
@@ -2496,7 +2591,7 @@ void cSpectrometerHDF5OutputFile::addNoiseDiodeCurrent(int64_t i64Timestamp_us, 
     cTimestampedDouble oNewNoiseDiodeCurrent;
     oNewNoiseDiodeCurrent.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewNoiseDiodeCurrent.m_dValue = dNoiseDiodeCurrent_A;
-    sprintf(oNewNoiseDiodeCurrent.m_chaStatus, strStatus.c_str());
+    sprintf(oNewNoiseDiodeCurrent.m_chaStatus, "%s", strStatus.c_str());
 
 
     m_voNoiseDiodeCurrents.push_back(oNewNoiseDiodeCurrent);
@@ -2533,7 +2628,7 @@ void cSpectrometerHDF5OutputFile::addSourceSelection(int64_t i64Timestamp_us, co
     cSourceSelection oNewSourceSelection;
 
     oNewSourceSelection.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    sprintf(oNewSourceSelection.m_chaSource, oSS.str().substr(0, sizeof(oNewSourceSelection.m_chaSource)).c_str() ); //Limit to size of the char array
+    sprintf(oNewSourceSelection.m_chaSource, "%s", oSS.str().substr(0, sizeof(oNewSourceSelection.m_chaSource)).c_str() ); //Limit to size of the char array
     sprintf(oNewSourceSelection.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
 
     m_voSelectedSources.push_back(oNewSourceSelection);
@@ -2548,7 +2643,7 @@ void cSpectrometerHDF5OutputFile::addFrequencySelectLCP(int64_t i64Timestamp_us,
     oNewFrequencyLCP.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     //oNewFrequencyLCP.m_chaValue = bFreqencySelectLCP;
     sprintf(oNewFrequencyLCP.m_chaValue, "%s", (bFrequencySelectLCP)?"1":"0");
-    sprintf(oNewFrequencyLCP.m_chaStatus, strStatus.c_str());
+    sprintf(oNewFrequencyLCP.m_chaStatus, "%s", strStatus.c_str());
 
     m_voFrequencySelectLCP.push_back(oNewFrequencyLCP);
 }
@@ -2561,7 +2656,7 @@ void cSpectrometerHDF5OutputFile::addFrequencySelectRCP(int64_t i64Timestamp_us,
     oNewRFFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     //oNewRFFrequency.m_chaValue = bFrequencySelectRCP;
     sprintf(oNewRFFrequency.m_chaValue, "%s", (bFrequencySelectRCP)?"1":"0");
-    sprintf(oNewRFFrequency.m_chaStatus, strStatus.c_str());
+    sprintf(oNewRFFrequency.m_chaStatus, "%s", strStatus.c_str());
 
     m_voFrequencySelectRCP.push_back(oNewRFFrequency);
 }
@@ -2571,7 +2666,7 @@ void cSpectrometerHDF5OutputFile::addFrequencyLO0Chan0(int64_t i64Timestamp_us, 
     cTimestampedDouble oNewLOFrequency;
     oNewLOFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewLOFrequency.m_dValue = dFrequencyLO0Chan0_Hz;
-    sprintf(oNewLOFrequency.m_chaStatus, strStatus.c_str());
+    sprintf(oNewLOFrequency.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
@@ -2583,7 +2678,7 @@ void cSpectrometerHDF5OutputFile::addFrequencyLO0Chan1(int64_t i64Timestamp_us, 
     cTimestampedDouble oNewLOFrequency;
     oNewLOFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewLOFrequency.m_dValue = dFrequencyLO0Chan1_Hz;
-    sprintf(oNewLOFrequency.m_chaStatus, strStatus.c_str());
+    sprintf(oNewLOFrequency.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
@@ -2595,7 +2690,7 @@ void cSpectrometerHDF5OutputFile::addFrequencyLO1(int64_t i64Timestamp_us, doubl
     cTimestampedDouble oNewLOFrequency;
     oNewLOFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewLOFrequency.m_dValue = dFrequencyLO1_Hz;
-    sprintf(oNewLOFrequency.m_chaStatus, strStatus.c_str());
+    sprintf(oNewLOFrequency.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
@@ -2609,7 +2704,7 @@ void cSpectrometerHDF5OutputFile::addReceiverBandwidthChan0(int64_t i64Timestamp
     cTimestampedDouble oNewBandwidthIF;
     oNewBandwidthIF.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewBandwidthIF.m_dValue = dReceiverBandwidthChan0_Hz;
-    sprintf(oNewBandwidthIF.m_chaStatus, strStatus.c_str());
+    sprintf(oNewBandwidthIF.m_chaStatus, "%s", strStatus.c_str());
 
     m_voReceiverBandwidthsChan0_Hz.push_back(oNewBandwidthIF);
 }
@@ -2621,10 +2716,35 @@ void cSpectrometerHDF5OutputFile::addReceiverBandwidthChan1(int64_t i64Timestamp
     cTimestampedDouble oNewBandwidthIF;
     oNewBandwidthIF.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewBandwidthIF.m_dValue = dReceiverBandwidthChan1_Hz;
-    sprintf(oNewBandwidthIF.m_chaStatus, strStatus.c_str());
+    sprintf(oNewBandwidthIF.m_chaStatus, "%s", strStatus.c_str());
 
     m_voReceiverBandwidthsChan1_Hz.push_back(oNewBandwidthIF);
 }
+
+void cSpectrometerHDF5OutputFile::addReceiverLcpAttenuation(int64_t i64Timestamp_us, double dReceiverLcpAttenuation_dB, const string &strStatus)
+{
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+
+    cTimestampedDouble oNewAttenuation;
+    oNewAttenuation.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    oNewAttenuation.m_dValue = dReceiverLcpAttenuation_dB;
+    sprintf(oNewAttenuation.m_chaStatus, "%s", strStatus.c_str());
+
+    m_voReceiverLcpAttenuations_dB.push_back(oNewAttenuation);
+}
+
+void cSpectrometerHDF5OutputFile::addReceiverRcpAttenuation(int64_t i64Timestamp_us, double dReceiverRcpAttenuation_dB, const string &strStatus)
+{
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+
+    cTimestampedDouble oNewAttenuation;
+    oNewAttenuation.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    oNewAttenuation.m_dValue = dReceiverRcpAttenuation_dB;
+    sprintf(oNewAttenuation.m_chaStatus, "%s", strStatus.c_str());
+
+    m_voReceiverRcpAttenuations_dB.push_back(oNewAttenuation);
+}
+
 
 void cSpectrometerHDF5OutputFile::addAccumulationLength(int64_t i64Timestamp_us, uint32_t u32NFrames)
 {
