@@ -158,6 +158,12 @@ public:
     void                                    addReceiverLcpAttenuation(int64_t i64Timestamp_us, double dReceiverLcpAttenuation_dB, const std::string &strStatus);
     void                                    addReceiverRcpAttenuation(int64_t i64Timestamp_us, double dReceiverRcpAttenuation_dB, const std::string &strStatus);
 
+    void                                    addWindSpeed(int64_t i64Timestamp_us, double dWindSpeed_mps, const std::string &strStatus);
+    void                                    addWindDirection(int64_t i64Timestamp_us, double dWindDirection_degrees, const std::string &strStatus);
+    void                                    addTemperature(int64_t i64Timestamp_us, double dTemperature_degreesC, const std::string &strStatus);
+    void                                    addAbsolutePressure(int64_t i64Timestamp_us, double dPressure_mbar, const std::string &strStatus);
+    void                                    addRelativeHumidity(int64_t i64Timestamp_us, double dHumidity_percent, const std::string &strStatus);
+
     void                                    addAccumulationLength(int64_t i64Timestamp_us, uint32_t u32NFrames);
     void                                    addCoarseChannelSelect(int64_t i64Timestamp_us, uint32_t u32ChannelNo);
     void                                    setFrequencyFs(double dFrequencyFs_Hz);
@@ -195,6 +201,7 @@ private:
     hid_t                                   m_iH5SensorsGroupHandle;
     hid_t                                   m_iH5SensorsAntennasGroupHandle;
     hid_t                                   m_iH5SensorsRFEGroupHandle;
+    hid_t                                   m_iH5SensorsEnvGroupHandle;
     hid_t                                   m_iH5SensorsDBEGroupHandle;
     hid_t                                   m_iH5SensorsAntennasAntenna1GroupHandle;
     hid_t                                   m_iH5ConfigurationGroupHandle;
@@ -249,6 +256,12 @@ private:
     std::vector<cTimestampedDouble>         m_voReceiverBandwidthsChan1_Hz;
     std::vector<cTimestampedDouble>         m_voReceiverLcpAttenuations_dB;
     std::vector<cTimestampedDouble>         m_voReceiverRcpAttenuations_dB;
+
+    std::vector<cTimestampedDouble>         m_voWindSpeeds_mps;
+    std::vector<cTimestampedDouble>         m_voWindDirections_degrees;
+    std::vector<cTimestampedDouble>         m_voTemperatures_degreesC;
+    std::vector<cTimestampedDouble>         m_voAbsolutePressures_mbar;
+    std::vector<cTimestampedDouble>         m_voRelativeHumidities_percent;
 
     cAntennaConfiguration                   m_oAntennaConfiguration;
     std::vector<double>                     m_vdDelayModelParams;
@@ -315,6 +328,8 @@ private:
     void                                    writeLOFrequencies();
     void                                    writeIFBandwidths();
     void                                    writeReceiverAttenuations();
+
+    void                                    writeEnvironmentData();
 
     void                                    writeROACHNumberChannels();
     void                                    writeROACHAccumulationLengths();
