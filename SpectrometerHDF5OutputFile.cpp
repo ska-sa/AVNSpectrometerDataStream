@@ -2563,7 +2563,7 @@ void cSpectrometerHDF5OutputFile::addMarkupLabel(int64_t i64Timestamp_us, const 
     m_voMarkupLabels.push_back(oNewMarkupLabel);
 }
 
-void cSpectrometerHDF5OutputFile::addRequestedAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addAcsRequestedAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg, const string &strStatus)
 {
     cTimestampedDouble oNewRequestedAntennaAz;
     oNewRequestedAntennaAz.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
@@ -2575,7 +2575,7 @@ void cSpectrometerHDF5OutputFile::addRequestedAntennaAz(int64_t i64Timestamp_us,
     m_voRequestedAntennaAzs_deg.push_back(oNewRequestedAntennaAz);
 }
 
-void cSpectrometerHDF5OutputFile::addRequestedAntennaEl(int64_t i64Timestamp_us, double dElevation_deg, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addAcsRequestedAntennaEl(int64_t i64Timestamp_us, double dElevation_deg, const string &strStatus)
 {
     cTimestampedDouble oNewRequestedAntennaEl;
     oNewRequestedAntennaEl.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
@@ -2587,7 +2587,7 @@ void cSpectrometerHDF5OutputFile::addRequestedAntennaEl(int64_t i64Timestamp_us,
     m_voRequestedAntennaEls_deg.push_back(oNewRequestedAntennaEl);
 }
 
-void cSpectrometerHDF5OutputFile::addActualAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addAcsActualAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg, const string &strStatus)
 {
     cTimestampedDouble oNewActualAntennaAz;
     oNewActualAntennaAz.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
@@ -2599,7 +2599,7 @@ void cSpectrometerHDF5OutputFile::addActualAntennaAz(int64_t i64Timestamp_us, do
     m_voActualAntennaAzs_deg.push_back(oNewActualAntennaAz);
 }
 
-void cSpectrometerHDF5OutputFile::addActualAntennaEl(int64_t i64Timestamp_us, double dElevation_deg, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addAcsActualAntennaEl(int64_t i64Timestamp_us, double dElevation_deg, const string &strStatus)
 {
     cTimestampedDouble oNewActualAntennaEl;
     oNewActualAntennaEl.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
@@ -2611,6 +2611,7 @@ void cSpectrometerHDF5OutputFile::addActualAntennaEl(int64_t i64Timestamp_us, do
     m_voActualAntennaEls_deg.push_back(oNewActualAntennaEl);
 }
 
+/* Marked for removal.
 void cSpectrometerHDF5OutputFile::addActualSourceOffsetAz(int64_t i64Timestamp_us, double dAzimuthOffset_deg, const string &strStatus)
 {
     cTimestampedDouble oNewActualSourceOffsetAz;
@@ -2658,6 +2659,8 @@ void cSpectrometerHDF5OutputFile::addActualAntennaDec(int64_t i64Timestamp_us, d
 
     m_voActualAntennaDecs_deg.push_back(oNewActualAntennaDec);
 }
+*/
+
 
 void cSpectrometerHDF5OutputFile::addAntennaStatus(int64_t i64Timestamp_us, const string &strAntennaStatus, const string &strStatus)
 {
@@ -2673,6 +2676,7 @@ void cSpectrometerHDF5OutputFile::addAntennaStatus(int64_t i64Timestamp_us, cons
     m_voAntennaStatuses.push_back(oNewAntennaStatus);
 }
 
+/* Marked for removal.
 void cSpectrometerHDF5OutputFile::motorTorqueAzMaster(int64_t i64Timestamp_us, double dAzMaster_mNm, const string &strStatus)
 {
     cTimestampedDouble oNewMotorTorque;
@@ -2720,6 +2724,7 @@ void cSpectrometerHDF5OutputFile::motorTorqueElSlave(int64_t i64Timestamp_us, do
 
     m_voMotorTorquesElSlave_mNm.push_back(oNewMotorTorque);
 }
+*/
 
 void cSpectrometerHDF5OutputFile::setAppliedPointingModel(const string &strModelName, const vector<double> &vdPointingModelParams)
 {
@@ -2858,37 +2863,37 @@ void cSpectrometerHDF5OutputFile::addSourceSelection(int64_t i64Timestamp_us, co
 }
 
 //FOOBAR
-void cSpectrometerHDF5OutputFile::addFrequencySelectLCP(int64_t i64Timestamp_us, bool bFrequencySelectLCP, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addFrequencySelectLcp(int64_t i64Timestamp_us, bool bFrequencySelectLcp, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     cTimestampedChar oNewFrequencyLCP;
     oNewFrequencyLCP.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     //oNewFrequencyLCP.m_chaValue = bFreqencySelectLCP;
-    sprintf(oNewFrequencyLCP.m_chaValue, "%s", (bFrequencySelectLCP)?"1":"0");
+    sprintf(oNewFrequencyLCP.m_chaValue, "%s", (bFrequencySelectLcp)?"1":"0");
     sprintf(oNewFrequencyLCP.m_chaStatus, "%s", strStatus.c_str());
 
     m_voFrequencySelectLCP.push_back(oNewFrequencyLCP);
 }
 
-void cSpectrometerHDF5OutputFile::addFrequencySelectRCP(int64_t i64Timestamp_us, bool bFrequencySelectRCP, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addFrequencySelectRcp(int64_t i64Timestamp_us, bool bFrequencySelectRcp, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     cTimestampedChar oNewRFFrequency;
     oNewRFFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     //oNewRFFrequency.m_chaValue = bFrequencySelectRCP;
-    sprintf(oNewRFFrequency.m_chaValue, "%s", (bFrequencySelectRCP)?"1":"0");
+    sprintf(oNewRFFrequency.m_chaValue, "%s", (bFrequencySelectRcp)?"1":"0");
     sprintf(oNewRFFrequency.m_chaStatus, "%s", strStatus.c_str());
 
     m_voFrequencySelectRCP.push_back(oNewRFFrequency);
 }
 
-void cSpectrometerHDF5OutputFile::addFrequencyLO0Chan0(int64_t i64Timestamp_us, double dFrequencyLO0Chan0_Hz, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addFrequencyLO0Lcp(int64_t i64Timestamp_us, double dFrequencyLO0Lcp_Hz, const string &strStatus)
 {
     cTimestampedDouble oNewLOFrequency;
     oNewLOFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewLOFrequency.m_dValue = dFrequencyLO0Chan0_Hz;
+    oNewLOFrequency.m_dValue = dFrequencyLO0Lcp_Hz;
     sprintf(oNewLOFrequency.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
@@ -2896,11 +2901,11 @@ void cSpectrometerHDF5OutputFile::addFrequencyLO0Chan0(int64_t i64Timestamp_us, 
     m_voFrequenciesLO0Chan0_Hz.push_back(oNewLOFrequency);
 }
 
-void cSpectrometerHDF5OutputFile::addFrequencyLO0Chan1(int64_t i64Timestamp_us, double dFrequencyLO0Chan1_Hz, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addFrequencyLO0Rcp(int64_t i64Timestamp_us, double dFrequencyLO0Rcp_MHz, const string &strStatus)
 {
     cTimestampedDouble oNewLOFrequency;
     oNewLOFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewLOFrequency.m_dValue = dFrequencyLO0Chan1_Hz;
+    oNewLOFrequency.m_dValue = dFrequencyLO0Rcp_MHz;
     sprintf(oNewLOFrequency.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
@@ -2920,25 +2925,25 @@ void cSpectrometerHDF5OutputFile::addFrequencyLO1(int64_t i64Timestamp_us, doubl
     m_voFrequenciesLO1_Hz.push_back(oNewLOFrequency);
 }
 
-void cSpectrometerHDF5OutputFile::addReceiverBandwidthChan0(int64_t i64Timestamp_us, double dReceiverBandwidthChan0_Hz, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addReceiverBandwidthLcp(int64_t i64Timestamp_us, double dReceiverBandwidthLcp_MHz, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     cTimestampedDouble oNewBandwidthIF;
     oNewBandwidthIF.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewBandwidthIF.m_dValue = dReceiverBandwidthChan0_Hz;
+    oNewBandwidthIF.m_dValue = dReceiverBandwidthLcp_MHz;
     sprintf(oNewBandwidthIF.m_chaStatus, "%s", strStatus.c_str());
 
     m_voReceiverBandwidthsChan0_Hz.push_back(oNewBandwidthIF);
 }
 
-void cSpectrometerHDF5OutputFile::addReceiverBandwidthChan1(int64_t i64Timestamp_us, double dReceiverBandwidthChan1_Hz, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addReceiverBandwidthRcp(int64_t i64Timestamp_us, double dReceiverBandwidthRcp_MHz, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     cTimestampedDouble oNewBandwidthIF;
     oNewBandwidthIF.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewBandwidthIF.m_dValue = dReceiverBandwidthChan1_Hz;
+    oNewBandwidthIF.m_dValue = dReceiverBandwidthRcp_MHz;
     sprintf(oNewBandwidthIF.m_chaStatus, "%s", strStatus.c_str());
 
     m_voReceiverBandwidthsChan1_Hz.push_back(oNewBandwidthIF);
