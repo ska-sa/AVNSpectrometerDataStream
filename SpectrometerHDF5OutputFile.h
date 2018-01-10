@@ -127,10 +127,17 @@ public:
 
     void                                    addMarkupLabel(int64_t i64Timestamp_us, const std::string &strLabel);
 
+    // Antenna-space values
     void                                    addAcsRequestedAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg, const std::string &strStatus);
     void                                    addAcsRequestedAntennaEl(int64_t i64Timestamp_us, double dElevation_deg, const std::string &strStatus);
     void                                    addAcsActualAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg, const std::string &strStatus);
     void                                    addAcsActualAntennaEl(int64_t i64Timestamp_us, double dElevation_deg, const std::string &strStatus);
+
+    // Sky-space values
+    void                                    addSkyRequestedAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg, const std::string &strStatus);
+    void                                    addSkyRequestedAntennaEl(int64_t i64Timestamp_us, double dElevation_deg, const std::string &strStatus);
+    void                                    addSkyActualAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg, const std::string &strStatus);
+    void                                    addSkyActualAntennaEl(int64_t i64Timestamp_us, double dElevation_deg, const std::string &strStatus);
 
     /* Marked for removal.
     void                                    addActualSourceOffsetAz(int64_t i64Timestamp_us, double dAzimuthOffset_deg, const std::string &strStatus);
@@ -232,20 +239,31 @@ private:
     //Values received from station controller
     std::vector<cMarkupLabels>              m_voMarkupLabels;
 
-    std::vector<cTimestampedDouble>         m_voRequestedAntennaAzs_deg;
-    std::vector<cTimestampedDouble>         m_voRequestedAntennaEls_deg;
-    std::vector<cTimestampedDouble>         m_voActualAntennaAzs_deg;
-    std::vector<cTimestampedDouble>         m_voActualAntennaEls_deg;
+    std::vector<cTimestampedDouble>         m_voAcsRequestedAntennaAzs_deg;
+    std::vector<cTimestampedDouble>         m_voAcsRequestedAntennaEls_deg;
+    std::vector<cTimestampedDouble>         m_voAcsActualAntennaAzs_deg;
+    std::vector<cTimestampedDouble>         m_voAcsActualAntennaEls_deg;
+
+    std::vector<cTimestampedDouble>         m_voSkyRequestedAntennaAzs_deg;
+    std::vector<cTimestampedDouble>         m_voSkyRequestedAntennaEls_deg;
+    std::vector<cTimestampedDouble>         m_voSkyActualAntennaAzs_deg;
+    std::vector<cTimestampedDouble>         m_voSkyActualAntennaEls_deg;
+
+    /* Marked for removal.
     std::vector<cTimestampedDouble>         m_voActualSourceOffsetAzs_deg;
     std::vector<cTimestampedDouble>         m_voActualSourceOffsetEls_deg;
     std::vector<cTimestampedDouble>         m_voActualAntennaRAs_deg;
     std::vector<cTimestampedDouble>         m_voActualAntennaDecs_deg;
+    */
 
     std::vector<cAntennaStatus>             m_voAntennaStatuses;
+
+    /* Marked for removal.
     std::vector<cTimestampedDouble>         m_voMotorTorquesAzMaster_mNm;
     std::vector<cTimestampedDouble>         m_voMotorTorquesAzSlave_mNm;
     std::vector<cTimestampedDouble>         m_voMotorTorquesElMaster_mNm;
     std::vector<cTimestampedDouble>         m_voMotorTorquesElSlave_mNm;
+    */
 
     std::vector<cTimestampedInt>            m_voNoiseDiodeSoftwareStates;
     std::vector<cNoiseDiodeSource>          m_voNoiseDiodeSources;
@@ -253,15 +271,15 @@ private:
 
     std::vector<cSourceSelection>           m_voSelectedSources;
 
-    std::vector<cTimestampedChar>           m_voFrequencySelectLCP;
-    std::vector<cTimestampedChar>           m_voFrequencySelectRCP;
-    std::vector<cTimestampedDouble>         m_voFrequenciesLO0Chan0_Hz;
-    std::vector<cTimestampedDouble>         m_voFrequenciesLO0Chan1_Hz;
+    std::vector<cTimestampedChar>           m_voFrequencySelectLcp;
+    std::vector<cTimestampedChar>           m_voFrequencySelectRcp;
+    std::vector<cTimestampedDouble>         m_voFrequenciesLO0Lcp_Hz;
+    std::vector<cTimestampedDouble>         m_voFrequenciesLO0Rcp_Hz;
     std::vector<cTimestampedDouble>         m_voFrequenciesLO1_Hz;
-    std::vector<cTimestampedDouble>         m_voReceiverBandwidthsChan0_Hz;
-    std::vector<cTimestampedDouble>         m_voReceiverBandwidthsChan1_Hz;
-    std::vector<cTimestampedDouble>         m_voReceiverLcpAttenuations_dB;
-    std::vector<cTimestampedDouble>         m_voReceiverRcpAttenuations_dB;
+    std::vector<cTimestampedDouble>         m_voReceiverBandwidthsLcp_Hz;
+    std::vector<cTimestampedDouble>         m_voReceiverBandwidthsRcp_Hz;
+    std::vector<cTimestampedDouble>         m_voReceiverAttenuationsLcp_dB;
+    std::vector<cTimestampedDouble>         m_voReceiverAttenuationsRcp_dB;
 
     std::vector<cTimestampedDouble>         m_voWindSpeeds_mps;
     std::vector<cTimestampedDouble>         m_voWindDirections_degrees;
@@ -280,8 +298,8 @@ private:
     uint32_t                                m_u32ROACHSizeOfCoarseFFT_nSamp; //Only store most recent version (shouldn't ever change for a given gateware)
     uint32_t                                m_u32ROACHSizeOfFineFFT_nSamp; //Only store most recent version (shouldn't ever change for a given gateware)
     std::vector<cTimestampedUnsignedInt>    m_voROACHCoarseFFTShiftMasks;
-    std::vector<cTimestampedDouble>         m_voROACHADCAttenuationsChan0_dB;
-    std::vector<cTimestampedDouble>         m_voROACHADCAttenuationsChan1_dB;
+    std::vector<cTimestampedDouble>         m_voROACHADCAttenuationsLcp_dB;
+    std::vector<cTimestampedDouble>         m_voROACHADCAttenuationsRcp_dB;
 
     //Other
     cSpectrometerHeader                     m_oLastHeader;
@@ -315,10 +333,15 @@ private:
 
     void                                    writeMarkupLabels();
 
-    void                                    writeRequestedAntennaAzEls();
-    void                                    writeActualAntennaAzEls();
+    void                                    writeAcsRequestedAntennaAzEls();
+    void                                    writeAcsActualAntennaAzEls();
+    void                                    writeSkyRequestedAntennaAzEls();
+    void                                    writeSkyActualAntennaAzEls();
+
+    /* Marked for removal.
     void                                    writeActualSourceOffsetAzEls();
     void                                    writeActualAntennaRADecs();
+    */
 
     void                                    writeAntennaStatuses();
     void                                    writeMotorTorques();
