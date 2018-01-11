@@ -127,16 +127,16 @@ public:
     void                                    addMarkupLabel(int64_t i64Timestamp_us, const std::string &strLabel);
 
     // Antenna-space values
-    void                                    addAcsRequestedAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg, const std::string &strStatus);
-    void                                    addAcsRequestedAntennaEl(int64_t i64Timestamp_us, double dElevation_deg, const std::string &strStatus);
-    void                                    addAcsActualAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg, const std::string &strStatus);
-    void                                    addAcsActualAntennaEl(int64_t i64Timestamp_us, double dElevation_deg, const std::string &strStatus);
+    void                                    addAcsRequestedAz(int64_t i64Timestamp_us, double dAzimuth_deg, const std::string &strStatus);
+    void                                    addAcsRequestedEl(int64_t i64Timestamp_us, double dElevation_deg, const std::string &strStatus);
+    void                                    addAcsActualAz(int64_t i64Timestamp_us, double dAzimuth_deg, const std::string &strStatus);
+    void                                    addAcsActualEl(int64_t i64Timestamp_us, double dElevation_deg, const std::string &strStatus);
 
     // Sky-space values
-    void                                    addSkyRequestedAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg, const std::string &strStatus);
-    void                                    addSkyRequestedAntennaEl(int64_t i64Timestamp_us, double dElevation_deg, const std::string &strStatus);
-    void                                    addSkyActualAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg, const std::string &strStatus);
-    void                                    addSkyActualAntennaEl(int64_t i64Timestamp_us, double dElevation_deg, const std::string &strStatus);
+    void                                    addSkyRequestedAz(int64_t i64Timestamp_us, double dAzimuth_deg, const std::string &strStatus);
+    void                                    addSkyRequestedEl(int64_t i64Timestamp_us, double dElevation_deg, const std::string &strStatus);
+    void                                    addSkyActualAz(int64_t i64Timestamp_us, double dAzimuth_deg, const std::string &strStatus);
+    void                                    addSkyActualEl(int64_t i64Timestamp_us, double dElevation_deg, const std::string &strStatus);
 
     /* Marked for removal.
     void                                    addActualSourceOffsetAz(int64_t i64Timestamp_us, double dAzimuthOffset_deg, const std::string &strStatus);
@@ -162,8 +162,8 @@ public:
 
     void                                    addFrequencySelectLcp(int64_t i64Timestamp_us, bool bFrequencySelectLcp, const std::string &strStatus);
     void                                    addFrequencySelectRcp(int64_t i64Timestamp_us, bool bFrequencySelectRcp, const std::string &strStatus);
-    void                                    addFrequencyLOIntermediate5GHz(int64_t i64Timestamp_us, double dFrequencyLOIntermediate5GHz_Hz, const std::string &strStatus);
-    void                                    addFrequencyLOIntermediate6_7GHz(int64_t i64Timestamp_us, double dFrequencyLOIntermediate6_7GHz_MHz, const std::string &strStatus);
+    void                                    addFrequencyLOIntermed5GHz(int64_t i64Timestamp_us, double dFrequencyLOIntermediate5GHz_Hz, const std::string &strStatus);
+    void                                    addFrequencyLOIntermed6_7GHz(int64_t i64Timestamp_us, double dFrequencyLOIntermediate6_7GHz_MHz, const std::string &strStatus);
     void                                    addFrequencyLOFinal(int64_t i64Timestamp_us, double dFrequencyLOFinal_MHz, const std::string &strStatus);
     void                                    addReceiverBandwidthLcp(int64_t i64Timestamp_us, double dReceiverBandwidthLcp_MHz, const std::string &strStatus);
     void                                    addReceiverBandwidthRcp(int64_t i64Timestamp_us, double dReceiverBandwidthRcp_MHz, const std::string &strStatus);

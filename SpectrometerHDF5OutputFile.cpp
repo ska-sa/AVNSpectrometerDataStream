@@ -2772,7 +2772,7 @@ void cSpectrometerHDF5OutputFile::addMarkupLabel(int64_t i64Timestamp_us, const 
     m_voMarkupLabels.push_back(oNewMarkupLabel);
 }
 
-void cSpectrometerHDF5OutputFile::addAcsRequestedAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addAcsRequestedAz(int64_t i64Timestamp_us, double dAzimuth_deg, const string &strStatus)
 {
     cTimestampedDouble oNewRequestedAntennaAz;
     oNewRequestedAntennaAz.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
@@ -2784,7 +2784,7 @@ void cSpectrometerHDF5OutputFile::addAcsRequestedAntennaAz(int64_t i64Timestamp_
     m_voAcsRequestedAntennaAzs_deg.push_back(oNewRequestedAntennaAz);
 }
 
-void cSpectrometerHDF5OutputFile::addAcsRequestedAntennaEl(int64_t i64Timestamp_us, double dElevation_deg, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addAcsRequestedEl(int64_t i64Timestamp_us, double dElevation_deg, const string &strStatus)
 {
     cTimestampedDouble oNewRequestedAntennaEl;
     oNewRequestedAntennaEl.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
@@ -2796,7 +2796,7 @@ void cSpectrometerHDF5OutputFile::addAcsRequestedAntennaEl(int64_t i64Timestamp_
     m_voAcsRequestedAntennaEls_deg.push_back(oNewRequestedAntennaEl);
 }
 
-void cSpectrometerHDF5OutputFile::addAcsActualAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addAcsActualAz(int64_t i64Timestamp_us, double dAzimuth_deg, const string &strStatus)
 {
     cTimestampedDouble oNewActualAntennaAz;
     oNewActualAntennaAz.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
@@ -2808,7 +2808,7 @@ void cSpectrometerHDF5OutputFile::addAcsActualAntennaAz(int64_t i64Timestamp_us,
     m_voAcsActualAntennaAzs_deg.push_back(oNewActualAntennaAz);
 }
 
-void cSpectrometerHDF5OutputFile::addAcsActualAntennaEl(int64_t i64Timestamp_us, double dElevation_deg, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addAcsActualEl(int64_t i64Timestamp_us, double dElevation_deg, const string &strStatus)
 {
     cTimestampedDouble oNewActualAntennaEl;
     oNewActualAntennaEl.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
@@ -2820,7 +2820,7 @@ void cSpectrometerHDF5OutputFile::addAcsActualAntennaEl(int64_t i64Timestamp_us,
     m_voAcsActualAntennaEls_deg.push_back(oNewActualAntennaEl);
 }
 
-void cSpectrometerHDF5OutputFile::addSkyRequestedAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addSkyRequestedAz(int64_t i64Timestamp_us, double dAzimuth_deg, const string &strStatus)
 {
     cTimestampedDouble oNewRequestedAntennaAz;
     oNewRequestedAntennaAz.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
@@ -2832,7 +2832,7 @@ void cSpectrometerHDF5OutputFile::addSkyRequestedAntennaAz(int64_t i64Timestamp_
     m_voSkyRequestedAntennaAzs_deg.push_back(oNewRequestedAntennaAz);
 }
 
-void cSpectrometerHDF5OutputFile::addSkyRequestedAntennaEl(int64_t i64Timestamp_us, double dElevation_deg, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addSkyRequestedEl(int64_t i64Timestamp_us, double dElevation_deg, const string &strStatus)
 {
     cTimestampedDouble oNewRequestedAntennaEl;
     oNewRequestedAntennaEl.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
@@ -2844,7 +2844,7 @@ void cSpectrometerHDF5OutputFile::addSkyRequestedAntennaEl(int64_t i64Timestamp_
     m_voSkyRequestedAntennaEls_deg.push_back(oNewRequestedAntennaEl);
 }
 
-void cSpectrometerHDF5OutputFile::addSkyActualAntennaAz(int64_t i64Timestamp_us, double dAzimuth_deg, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addSkyActualAz(int64_t i64Timestamp_us, double dAzimuth_deg, const string &strStatus)
 {
     cTimestampedDouble oNewActualAntennaAz;
     oNewActualAntennaAz.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
@@ -2856,7 +2856,7 @@ void cSpectrometerHDF5OutputFile::addSkyActualAntennaAz(int64_t i64Timestamp_us,
     m_voSkyActualAntennaAzs_deg.push_back(oNewActualAntennaAz);
 }
 
-void cSpectrometerHDF5OutputFile::addSkyActualAntennaEl(int64_t i64Timestamp_us, double dElevation_deg, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addSkyActualEl(int64_t i64Timestamp_us, double dElevation_deg, const string &strStatus)
 {
     cTimestampedDouble oNewActualAntennaEl;
     oNewActualAntennaEl.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
@@ -3147,7 +3147,7 @@ void cSpectrometerHDF5OutputFile::addFrequencySelectRcp(int64_t i64Timestamp_us,
     m_voFrequencySelectRcp.push_back(oNewRFFrequency);
 }
 
-void cSpectrometerHDF5OutputFile::addFrequencyLOIntermediate5GHz(int64_t i64Timestamp_us, double dFrequencyLOIntermediate5GHz_Hz, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addFrequencyLOIntermed5GHz(int64_t i64Timestamp_us, double dFrequencyLOIntermediate5GHz_Hz, const string &strStatus)
 {
     cTimestampedDouble oNewLOFrequency;
     oNewLOFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
@@ -3159,7 +3159,7 @@ void cSpectrometerHDF5OutputFile::addFrequencyLOIntermediate5GHz(int64_t i64Time
     m_voFrequenciesLOIntermediate5GHz_Hz.push_back(oNewLOFrequency);
 }
 
-void cSpectrometerHDF5OutputFile::addFrequencyLOIntermediate6_7GHz(int64_t i64Timestamp_us, double dFrequencyLOIntermediate6_7GHz_MHz, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addFrequencyLOIntermed6_7GHz(int64_t i64Timestamp_us, double dFrequencyLOIntermediate6_7GHz_MHz, const string &strStatus)
 {
     cTimestampedDouble oNewLOFrequency;
     oNewLOFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
