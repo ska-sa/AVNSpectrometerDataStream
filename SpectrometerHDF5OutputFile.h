@@ -113,7 +113,6 @@ class cSpectrometerHDF5OutputFile
         char                m_chaAntennaLongitude_deg[16];
         char                m_chaAntennaLatitude_deg[16];
         char                m_chaAntennaAltitude_m[8];
-        char                m_chaPointModelName[16]; //TODO: Remove this, I don't think it's necessary at all.
     } cAntennaConfiguration;
 
 
@@ -163,9 +162,9 @@ public:
 
     void                                    addFrequencySelectLcp(int64_t i64Timestamp_us, bool bFrequencySelectLcp, const std::string &strStatus);
     void                                    addFrequencySelectRcp(int64_t i64Timestamp_us, bool bFrequencySelectRcp, const std::string &strStatus);
-    void                                    addFrequencyLO0Lcp(int64_t i64Timestamp_us, double dFrequencyLO0Lcp_Hz, const std::string &strStatus);
-    void                                    addFrequencyLO0Rcp(int64_t i64Timestamp_us, double dFrequencyLO0Rcp_MHz, const std::string &strStatus);
-    void                                    addFrequencyLO1(int64_t i64Timestamp_us, double dFrequencyLO1_MHz, const std::string &strStatus);
+    void                                    addFrequencyLOIntermediate5GHz(int64_t i64Timestamp_us, double dFrequencyLOIntermediate5GHz_Hz, const std::string &strStatus);
+    void                                    addFrequencyLOIntermediate6_7GHz(int64_t i64Timestamp_us, double dFrequencyLOIntermediate6_7GHz_MHz, const std::string &strStatus);
+    void                                    addFrequencyLOFinal(int64_t i64Timestamp_us, double dFrequencyLOFinal_MHz, const std::string &strStatus);
     void                                    addReceiverBandwidthLcp(int64_t i64Timestamp_us, double dReceiverBandwidthLcp_MHz, const std::string &strStatus);
     void                                    addReceiverBandwidthRcp(int64_t i64Timestamp_us, double dReceiverBandwidthRcp_MHz, const std::string &strStatus);
     void                                    addReceiverLcpAttenuation(int64_t i64Timestamp_us, double dReceiverLcpAttenuation_dB, const std::string &strStatus);
@@ -273,9 +272,9 @@ private:
 
     std::vector<cTimestampedChar>           m_voFrequencySelectLcp;
     std::vector<cTimestampedChar>           m_voFrequencySelectRcp;
-    std::vector<cTimestampedDouble>         m_voFrequenciesLO0Lcp_Hz;
-    std::vector<cTimestampedDouble>         m_voFrequenciesLO0Rcp_Hz;
-    std::vector<cTimestampedDouble>         m_voFrequenciesLO1_Hz;
+    std::vector<cTimestampedDouble>         m_voFrequenciesLOIntermediate5GHz_Hz;
+    std::vector<cTimestampedDouble>         m_voFrequenciesLOIntermediate6_7GHz_Hz;
+    std::vector<cTimestampedDouble>         m_voFrequenciesLOFinal_Hz;
     std::vector<cTimestampedDouble>         m_voReceiverBandwidthsLcp_Hz;
     std::vector<cTimestampedDouble>         m_voReceiverBandwidthsRcp_Hz;
     std::vector<cTimestampedDouble>         m_voReceiverAttenuationsLcp_dB;
