@@ -54,6 +54,13 @@ class cSpectrometerHDF5OutputFile
         char                m_chaStatus[7];
     } cTimestampedChar;
 
+    typedef struct cTimestampedBool
+    {
+        double              m_dTimestamp_s;
+        bool                m_bValue;
+        char                m_chaStatus[7];
+    } cTimestampedBool;
+
     typedef struct cSourceSelection
     {
         double              m_dTimestamp_s;
@@ -138,25 +145,15 @@ public:
     void                                    addSkyActualAz(int64_t i64Timestamp_us, double dAzimuth_deg, const std::string &strStatus);
     void                                    addSkyActualEl(int64_t i64Timestamp_us, double dElevation_deg, const std::string &strStatus);
 
-    /* Marked for removal.
-    void                                    addActualSourceOffsetAz(int64_t i64Timestamp_us, double dAzimuthOffset_deg, const std::string &strStatus);
-    void                                    addActualSourceOffsetEl(int64_t i64Timestamp_us, double dElevationOffset_deg, const std::string &strStatus);
-    void                                    addActualAntennaRA(int64_t i64Timestamp_us, double dRighAscension_deg, const std::string &strStatus);
-    void                                    addActualAntennaDec(int64_t i64Timestamp_us, double dDeclination_deg, const std::string &strStatus);
-    */
-
     void                                    addAntennaStatus(int64_t i64Timestamp_us, const std::string &strAntennaStatus, const std::string &strStatus);
 
-    /* Marked for removal.
-    void                                    motorTorqueAzMaster(int64_t i64Timestamp_us, double dAzMaster_mNm, const std::string &strStatus);
-    void                                    motorTorqueAzSlave(int64_t i64Timestamp_us, double dAzSlave_mNm, const std::string &strStatus);
-    void                                    motorTorqueElMaster(int64_t i64Timestamp_us, double dElMaster_mNm, const std::string &strStatus);
-    void                                    motorTorqueElSlave(int64_t i64Timestamp_us, double dElSlave_mNm, const std::string &strStatus);
-    */
+    void                                    addNoiseDiodeInputSource(int64_t i64Timestamp_us, const std::string &strNoiseDiodeInputSource, const std::string &strStatus);
+    void                                    addNoiseDiodeEnable(int64_t i64Timestamp_us, bool bNoiseDiodeEnable, const std::string &strStatus);
+    void                                    addNoiseDiodeSelect(int64_t i64Timestamp_us, int32_t i32NoiseDiodeSelect, const std::string &strStatus);
+    void                                    addNoiseDiodePWMMark(int64_t i64Timestamp_us, int32_t i32NoiseDiodePWMMark, const std::string &strStatus);
+    void                                    addNoiseDiodePWMFrequency(int64_t i64Timestamp_us, double dNoiseDiodePWMFrequency, const std::string &strStatus);
 
-    void                                    addNoiseDiodeSoftwareState(int64_t i64Timestamp_us, int32_t i32NoiseDiodeState, const std::string &strStatus);
-    void                                    addNoiseDiodeSource(int64_t i64Timestamp_us, const std::string &strNoiseSource, const std::string &strStatus);
-    void                                    addNoiseDiodeCurrent(int64_t i64Timestamp_us, double dNoiseDiodeCurrent_A, const std::string &strStatus);
+
 
     void                                    addSourceSelection(int64_t i64Timestamp_us, const std::string &strSourceName, double dRighAscension_deg, double dDeclination_deg);
 
@@ -264,9 +261,11 @@ private:
     std::vector<cTimestampedDouble>         m_voMotorTorquesElSlave_mNm;
     */
 
-    std::vector<cTimestampedInt>            m_voNoiseDiodeSoftwareStates;
-    std::vector<cNoiseDiodeSource>          m_voNoiseDiodeSources;
-    std::vector<cTimestampedDouble>         m_voNoiseDiodeCurrents;
+    std::vector<cNoiseDiodeSource>          m_voNoiseDiodeInputSource;
+    std::vector<cTimestampedBool>           m_voNoiseDiodeEnable;
+    std::vector<cTimestampedInt>            m_voNoiseDiodeSelect;
+    std::vector<cTimestampedInt>            m_voNoiseDiodePWMMark;
+    std::vector<cTimestampedDouble>         m_voNoiseDiodePWMFrequency;
 
     std::vector<cSourceSelection>           m_voSelectedSources;
 
@@ -346,7 +345,7 @@ private:
     void                                    writeMotorTorques();
     void                                    writeAntennaConfiguration();
 
-    void                                    writeNoiseDiodeSoftwareStates();
+    void                                    writeNoiseDiodeInformation();
     void                                    writeNoiseDiodeSources();
     void                                    writeNoideDiodeCurrents();
 
