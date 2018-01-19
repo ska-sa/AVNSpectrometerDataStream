@@ -112,17 +112,6 @@ cSpectrometerHDF5OutputFile::cSpectrometerHDF5OutputFile(const std::string &strF
     setAntennaAltitude(ObsInfo.get<string>("Antenna.altitude"));
     setAntennaDiameter(ObsInfo.get<string>("Antenna.diameter"));
     setAntennaBeamwidth(ObsInfo.get<string>("Antenna.beamwidth"));
-
-    //Assume zero delay and pointing models. Maybe incorporate in config file in future?
-    vector<double> vdZeroModelParams;
-    for(int ui = 0; ui < 22; ui++)
-    {
-        vdZeroModelParams.push_back(0.0);
-        if (ui == 2) // i.e. we've reached the third one.
-            setAntennaDelayModel(vdZeroModelParams);
-    }
-    setAppliedPointingModel("vlbi", vdZeroModelParams);
-
 }
 
 cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
@@ -894,12 +883,11 @@ void cSpectrometerHDF5OutputFile::writeAntennaStatuses()
 void cSpectrometerHDF5OutputFile::writeAntennaConfiguration()
 {
     //TODO: this might be a bit naive. I suspect that there's more complexity in this than the other datasets.
-    if (m_vdPointingModelParams.size())
     {
-        hsize_t dimension = m_vdPointingModelParams.size();
+        hsize_t dimension = 30;
         string strDatasetName("pointing-model-params");
 
-        herr_t err = H5LTmake_dataset(m_iH5ConfigurationAntennasAntenna1GroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_DOUBLE, &m_vdPointingModelParams.front());
+        herr_t err = H5LTmake_dataset(m_iH5ConfigurationAntennasAntenna1GroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_DOUBLE, m_adPointingModelParams);
 
         if(err < 0)
         {
@@ -907,7 +895,7 @@ void cSpectrometerHDF5OutputFile::writeAntennaConfiguration()
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeAppliedPointingModel(): Wrote " << m_vdPointingModelParams.size() << " pointing model parameters to file." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeAppliedPointingModel(): Wrote 30 pointing model parameters to file." << endl;
         }
 
         /*//Add pointing model name as data attribute
@@ -920,23 +908,6 @@ void cSpectrometerHDF5OutputFile::writeAntennaConfiguration()
         addAttributeToDataSet(oSS.str(), strDatasetName, string("string"), string(""), dataset_id);
 
         H5Dclose(dataset_id);*/
-    }
-
-    if (m_vdDelayModelParams.size())
-    {
-        hsize_t dimension = m_vdDelayModelParams.size();
-        string strDatasetName("delay-model-params");
-
-        herr_t err = H5LTmake_dataset(m_iH5ConfigurationAntennasAntenna1GroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_DOUBLE, &m_vdDelayModelParams.front());
-
-        if(err < 0)
-        {
-            cout << "cSpectrometerHDF5OutputFile::writeAntennaConfiguration(): HDF5 make dataset error." << endl;
-        }
-        else
-        {
-            cout << "cSpectrometerHDF5OutputFile::writeAntennaConfiguration(): Wrote " << m_vdDelayModelParams.size() << " delay model parameters to file." << endl;
-        }
     }
 
     {
@@ -2582,55 +2553,12 @@ void cSpectrometerHDF5OutputFile::addSkyActualEl(int64_t i64Timestamp_us, double
 }
 
 
-/* Marked for removal.
-void cSpectrometerHDF5OutputFile::addActualSourceOffsetAz(int64_t i64Timestamp_us, double dAzimuthOffset_deg, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addPointingModelParameter(uint8_t ui8ParameterNumber, double dParameterValue)
 {
-    cTimestampedDouble oNewActualSourceOffsetAz;
-    oNewActualSourceOffsetAz.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewActualSourceOffsetAz.m_dValue = dAzimuthOffset_deg;
-    sprintf(oNewActualSourceOffsetAz.m_chaStatus, "%s", strStatus.c_str());
+    boost::unique_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
-    m_voActualSourceOffsetAzs_deg.push_back(oNewActualSourceOffsetAz);
+    m_adPointingModelParams[ui8ParameterNumber] = dParameterValue;
 }
-
-void cSpectrometerHDF5OutputFile::addActualSourceOffsetEl(int64_t i64Timestamp_us, double dElevationOffset_deg, const string &strStatus)
-{
-    cTimestampedDouble oNewActualSourceOffsetEl;
-    oNewActualSourceOffsetEl.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewActualSourceOffsetEl.m_dValue = dElevationOffset_deg;
-    sprintf(oNewActualSourceOffsetEl.m_chaStatus, "%s", strStatus.c_str());
-
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
-    m_voActualSourceOffsetEls_deg.push_back(oNewActualSourceOffsetEl);
-}
-
-void cSpectrometerHDF5OutputFile::addActualAntennaRA(int64_t i64Timestamp_us, double dRighAscension_deg, const string &strStatus)
-{
-    cTimestampedDouble oNewActualAntennaRA;
-    oNewActualAntennaRA.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewActualAntennaRA.m_dValue = dRighAscension_deg;
-    sprintf(oNewActualAntennaRA.m_chaStatus, "%s", strStatus.c_str());
-
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
-    m_voActualAntennaRAs_deg.push_back(oNewActualAntennaRA);
-}
-
-void cSpectrometerHDF5OutputFile::addActualAntennaDec(int64_t i64Timestamp_us, double dDeclination_deg, const string &strStatus)
-{
-    cTimestampedDouble oNewActualAntennaDec;
-    oNewActualAntennaDec.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewActualAntennaDec.m_dValue = dDeclination_deg;
-    sprintf(oNewActualAntennaDec.m_chaStatus, "%s", strStatus.c_str());
-
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
-    m_voActualAntennaDecs_deg.push_back(oNewActualAntennaDec);
-}
-*/
 
 
 void cSpectrometerHDF5OutputFile::addAntennaStatus(int64_t i64Timestamp_us, const string &strAntennaStatus, const string &strStatus)
@@ -2696,17 +2624,6 @@ void cSpectrometerHDF5OutputFile::motorTorqueElSlave(int64_t i64Timestamp_us, do
     m_voMotorTorquesElSlave_mNm.push_back(oNewMotorTorque);
 }
 */
-
-void cSpectrometerHDF5OutputFile::setAppliedPointingModel(const string &strModelName, const vector<double> &vdPointingModelParams)
-{
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
-    //This only a single set of values, not a history of values.
-    //Update the current record whenever a new value is received
-
-    //m_vdPointingModelParams = vdPointingModelParams;
-    //sprintf(m_oAntennaConfiguration.m_chaPointModelName, "%s", strModelName.c_str());
-}
 
 void cSpectrometerHDF5OutputFile::setAntennaName(const string &strAntennaName)
 {

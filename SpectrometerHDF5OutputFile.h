@@ -145,6 +145,8 @@ public:
     void                                    addSkyActualAz(int64_t i64Timestamp_us, double dAzimuth_deg, const std::string &strStatus);
     void                                    addSkyActualEl(int64_t i64Timestamp_us, double dElevation_deg, const std::string &strStatus);
 
+    void                                    addPointingModelParameter(uint8_t ui8ParameterNumber, double dParameterValue);
+
     void                                    addAntennaStatus(int64_t i64Timestamp_us, const std::string &strAntennaStatus, const std::string &strStatus);
 
     void                                    addNoiseDiodeInputSource(int64_t i64Timestamp_us, const std::string &strNoiseDiodeInputSource, const std::string &strStatus);
@@ -190,8 +192,6 @@ public:
     void                                    setAntennaLongitude(const std::string &strAntennaLongitude_deg);
 
     void                                    setAntennaDelayModel(const std::vector<double> &vdDelayModelParams);
-    void                                    setAppliedPointingModel(const std::string &strModelName, const std::vector<double> &vdPointingModelParams);
-
 
     std::string                             getFilename() const;
 
@@ -287,7 +287,7 @@ private:
 
     cAntennaConfiguration                   m_oAntennaConfiguration;
     std::vector<double>                     m_vdDelayModelParams;
-    std::vector<double>                     m_vdPointingModelParams; //Only store most recent version
+    double                                  m_adPointingModelParams[30]; //Only store most recent version
 
     //Values received from ROACH TCPBorphServer
     std::vector<cTimestampedUnsignedInt>    m_voROACHAccumulationLengths_nFrames;
