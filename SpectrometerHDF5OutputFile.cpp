@@ -178,6 +178,7 @@ cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
     //Level 3
     H5Gclose(m_iH5SensorsAntennasGroupHandle);
     H5Gclose(m_iH5SensorsRFEGroupHandle);
+    H5Gclose(m_iH5SensorsEnvGroupHandle);
     H5Gclose(m_iH5SensorsDBEGroupHandle);
     H5Gclose(m_iH5ConfigurationAntennasGroupHandle);
     H5Gclose(m_iH5ConfigurationObservationGroupHandle);
