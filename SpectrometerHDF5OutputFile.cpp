@@ -154,6 +154,8 @@ cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
     writeIFBandwidths();
     writeReceiverAttenuations();
 
+    writeEnvironmentData();
+
     writeROACHAccumulationLengths();
     writeROACHNBNarrowbandSelections();
     writeROACHSamplingFreqBandwidth();
