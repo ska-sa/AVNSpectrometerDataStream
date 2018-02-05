@@ -1022,7 +1022,7 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
         H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedBool, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
 
         // Add to compound data type: noise diode enabled boolean state.
-        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedBool, m_bValue), H5T_NATIVE_HBOOL);
+        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedBool, m_i32Value), H5T_NATIVE_INT32);
 
         //Add to compound data type: the status of the noise diode equiptment (string typically containing "nominal")
         hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
@@ -1131,7 +1131,7 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
             cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): Wrote " << m_voNoiseDiodePWMMark.size() << " noise diode PWM marks to dataset." << endl;
         }
 
-        addAttributeToDataSet(string("noise diode pwm mark"), strDatasetName, string("int"), string(""), dataset);
+        addAttributeToDataSet(string("noise diode pwm mark"), strDatasetName, string("int"), string("duty cycle, fraction out of 64"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -1141,25 +1141,25 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
 
     if (m_voNoiseDiodePWMFrequency.size())
     {
-        string strDatasetName("noise-diode.pwm-frequenct");
+        string strDatasetName("noise-diode.pwm-frequency");
 
         //Create the data space
         hsize_t dimension[] = { m_voNoiseDiodePWMFrequency.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
-        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedInt));
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
 
         //Add to compound data type: a timestamp (double)
-        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedInt, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
 
         //Add to compound data type: the noise diode pwm frequency (double).
-        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedInt, m_i32Value), H5T_NATIVE_DOUBLE);
+        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
 
         //Add to compound data type: the status of the noise diode equiptment (string typically containing "nominal")
         hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
-        H5Tset_size(stringTypeStatus, sizeof(cTimestampedInt::m_chaStatus));
-        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedInt, m_chaStatus), stringTypeStatus);
+        H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
 
         //Create the data set of of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
@@ -1175,7 +1175,7 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
             cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): Wrote " << m_voNoiseDiodePWMFrequency.size() << " noise diode frequencies to dataset." << endl;
         }
 
-        addAttributeToDataSet(string("noise diode pwm frequency"), strDatasetName, string("double"), string(""), dataset);
+        addAttributeToDataSet(string("noise diode pwm frequency"), strDatasetName, string("double"), string("Hz"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -1245,10 +1245,10 @@ void cSpectrometerHDF5OutputFile::writeRFFrequencies()
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
-        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedChar));
 
         //Add to compound data type: a timestamp (double)
-        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedChar, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
 
         //Add to compound data type: the FrequencySelectLCP state (string of 1 character "0" or "1")
         // Zero means 5 GHz, 1 means 6.7 GHz.
@@ -1293,10 +1293,10 @@ void cSpectrometerHDF5OutputFile::writeRFFrequencies()
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
-        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedChar));
 
         //Add to compound data type: a timestamp (double)
-        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedChar, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
 
         //Add to compound data type: the FrequencySelectLCP state (string of 1 character "0" or "1")
         // Zero means 5 GHz, 1 means 6.7 GHz.
@@ -2697,7 +2697,7 @@ void cSpectrometerHDF5OutputFile::addNoiseDiodeEnable(int64_t i64Timestamp_us, b
 
     cTimestampedBool oNewNoiseDiodeEnable;
     oNewNoiseDiodeEnable.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewNoiseDiodeEnable.m_bValue = bNoiseDiodeEnable;
+    oNewNoiseDiodeEnable.m_i32Value = bNoiseDiodeEnable;
     sprintf(oNewNoiseDiodeEnable.m_chaStatus, "%s", strStatus.c_str());
 
     m_voNoiseDiodeEnable.push_back(oNewNoiseDiodeEnable);

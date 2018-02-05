@@ -57,7 +57,7 @@ class cSpectrometerHDF5OutputFile
     typedef struct cTimestampedBool
     {
         double              m_dTimestamp_s;
-        bool                m_bValue;
+        int32_t             m_i32Value;
         char                m_chaStatus[7];
     } cTimestampedBool;
 
