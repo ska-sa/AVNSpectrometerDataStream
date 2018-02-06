@@ -674,7 +674,7 @@ void cSpectrometerHDF5OutputFile::writeSkyRequestedAntennaAzEls()
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeRequestedAntennaAzEls(): Wrote " << m_voSkyRequestedAntennaAzs_deg.size() << " requested antenna azimuths to dataset." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeRequestedAntennaAzEls(): Wrote " << m_voSkyRequestedAntennaAzs_deg.size() << " requested sky azimuths to dataset." << endl;
         }
 
         addAttributeToDataSet(string("Requested sky-space azimuth"), strDatasetName, string("double"), string("deg"), dataset);
@@ -720,7 +720,7 @@ void cSpectrometerHDF5OutputFile::writeSkyRequestedAntennaAzEls()
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeRequestedAntennaAzEls(): Wrote " << m_voSkyRequestedAntennaEls_deg.size() << " requested antenna elevations to dataset." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeRequestedAntennaAzEls(): Wrote " << m_voSkyRequestedAntennaEls_deg.size() << " requested sky elevations to dataset." << endl;
         }
 
         addAttributeToDataSet(string("Requested sky-space elevation"), strDatasetName, string("double"), string("deg"), dataset);
@@ -775,7 +775,7 @@ void cSpectrometerHDF5OutputFile::writeSkyActualAntennaAzEls()
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeActualAntennaAzEls(): Wrote " << m_voSkyActualAntennaAzs_deg.size() << " actual antenna azimuths to dataset." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeActualAntennaAzEls(): Wrote " << m_voSkyActualAntennaAzs_deg.size() << " actual sky azimuths to dataset." << endl;
         }
 
         addAttributeToDataSet(string("Actual sky-space azimuth"), strDatasetName, string("double"), string("deg"), dataset);
@@ -821,7 +821,7 @@ void cSpectrometerHDF5OutputFile::writeSkyActualAntennaAzEls()
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeActualAntennaAzEls(): Wrote " << m_voSkyActualAntennaEls_deg.size() << " actual antenna elevations to dataset." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeActualAntennaAzEls(): Wrote " << m_voSkyActualAntennaEls_deg.size() << " actual sky elevations to dataset." << endl;
         }
 
         addAttributeToDataSet(string("Actual sky-space elevation"), strDatasetName, string("double"), string("deg"), dataset);
