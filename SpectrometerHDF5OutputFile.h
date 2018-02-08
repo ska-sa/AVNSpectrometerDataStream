@@ -157,7 +157,7 @@ public:
 
 
 
-    void                                    addSourceSelection(int64_t i64Timestamp_us, const std::string &strSourceName, double dRighAscension_deg, double dDeclination_deg);
+    void                                    addSourceSelection(int64_t i64Timestamp_us, const std::string &strSourceName, const std::string &strStatus);
 
     void                                    addFrequencySelectLcp(int64_t i64Timestamp_us, bool bFrequencySelectLcp, const std::string &strStatus);
     void                                    addFrequencySelectRcp(int64_t i64Timestamp_us, bool bFrequencySelectRcp, const std::string &strStatus);

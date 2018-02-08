@@ -2739,10 +2739,11 @@ void cSpectrometerHDF5OutputFile::addNoiseDiodePWMFrequency(int64_t i64Timestamp
     m_voNoiseDiodePWMFrequency.push_back(oNewNoiseDiodePWMFrequency);
 }
 
-void cSpectrometerHDF5OutputFile::addSourceSelection(int64_t i64Timestamp_us, const string &strSourceName, double dRighAscension_deg, double dDeclination_deg)
+void cSpectrometerHDF5OutputFile::addSourceSelection(int64_t i64Timestamp_us, const string &strSourceName, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
+    /*
     //Construct as per KAT7 standard
     //Source name if available, RA and Dec in DMS
 
@@ -2766,12 +2767,13 @@ void cSpectrometerHDF5OutputFile::addSourceSelection(int64_t i64Timestamp_us, co
     oSS << "radec, ";
     oSS << i32RA_deg << ":" << i32RA_min << ":" << dRA_s << ", ";
     oSS << i32Dec_deg << ":" << i32Dec_min << ":" << dDec_s;
+    */
 
     cSourceSelection oNewSourceSelection;
 
     oNewSourceSelection.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     sprintf(oNewSourceSelection.m_chaSource, "%s", oSS.str().substr(0, sizeof(oNewSourceSelection.m_chaSource)).c_str() ); //Limit to size of the char array
-    sprintf(oNewSourceSelection.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
+    sprintf(oNewSourceSelection.m_chaStatus, "%s", strStatus.c_str()); 
 
     m_voSelectedSources.push_back(oNewSourceSelection);
 }
