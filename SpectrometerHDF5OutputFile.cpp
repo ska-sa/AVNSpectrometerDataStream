@@ -121,7 +121,18 @@ cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
     // TODO: This data needs to be retrieved from the KatCP server. Somewhere.
     string strExperimentID("test_experiment");
     addAttributesToFile("2.5", strExperimentID, AVN::getTimeNow_us(), 0, m_iH5FileHandle); // Zero errors, because our software is perfect!
-    addAttributesToObservation("script name", "script arguments", "Observer name", strExperimentID, "description", "ant1", "start time", "end time", "noise diode params", "rf params", "status", m_iH5ConfigurationObservationGroupHandle);
+    addAttributesToObservation("script name",
+                               "script arguments",
+                               "Observer name",
+                               strExperimentID,
+                               "description",
+                               "ant1",
+                               to_string(*m_vdSampleDataTimestamps_s.begin()), // start time
+                               to_string(*(m_vdSampleDataTimestamps_s.end() - 1)), // end time
+                               "noise diode params",
+                               "rf params",
+                               "status",
+                               m_iH5ConfigurationObservationGroupHandle);
     addAttributesToDBE("ll,rr", "q,u", m_iH5ConfigurationDBEGroupHandle);
 
     writeMarkupLabels();
