@@ -64,7 +64,7 @@ class cSpectrometerHDF5OutputFile
     typedef struct cSourceSelection
     {
         double              m_dTimestamp_s;
-        char                m_chaSource[64];
+        char                m_chaSource[128];
         char                m_chaStatus[7];
     } cSourceSelection;
 

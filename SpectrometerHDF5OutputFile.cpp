@@ -2772,7 +2772,8 @@ void cSpectrometerHDF5OutputFile::addSourceSelection(int64_t i64Timestamp_us, co
     cSourceSelection oNewSourceSelection;
 
     oNewSourceSelection.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    sprintf(oNewSourceSelection.m_chaSource, "%s", oSS.str().substr(0, sizeof(oNewSourceSelection.m_chaSource)).c_str() ); //Limit to size of the char array
+    // TODO: Try to prevent this from writing past the length of the string.
+    sprintf(oNewSourceSelection.m_chaSource, "%s", strSourceName.c_str() );
     sprintf(oNewSourceSelection.m_chaStatus, "%s", strStatus.c_str()); 
 
     m_voSelectedSources.push_back(oNewSourceSelection);
