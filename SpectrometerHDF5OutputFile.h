@@ -181,6 +181,7 @@ public:
     void                                    setSizeOfCoarseFFT(uint32_t u32SizeOfCoarseFFT_nSamp);
     void                                    setSizeOfFineFFT(uint32_t u32SizeOfFineFFT_nSamp);
     void                                    addCoarseFFTShiftMask(int64_t i64Timestamp_us, uint32_t u32ShiftMask);
+    void                                    addDspGain(int64_t i64Timestamp_us, double dDspGain);
     void                                    addAttenuationADCChan0(int64_t i64Timestamp_us, double dADCAttenuationChan0_dB);
     void                                    addAttenuationADCChan1(int64_t i64Timestamp_us, double dADCAttenuationChan1_dB);
 
@@ -295,6 +296,7 @@ private:
     double                                  m_dROACHFrequencyFs_Hz; //Only store most recent version (shouldn't ever change from 800 MHz)
     uint32_t                                m_u32ROACHSizeOfCoarseFFT_nSamp; //Only store most recent version (shouldn't ever change for a given gateware)
     uint32_t                                m_u32ROACHSizeOfFineFFT_nSamp; //Only store most recent version (shouldn't ever change for a given gateware)
+    std::vector<cTimestampedDouble>         m_voROACHDspGains;
     std::vector<cTimestampedUnsignedInt>    m_voROACHCoarseFFTShiftMasks;
     std::vector<cTimestampedDouble>         m_voROACHADCAttenuationsLcp_dB;
     std::vector<cTimestampedDouble>         m_voROACHADCAttenuationsRcp_dB;
@@ -364,6 +366,7 @@ private:
     void                                    writeROACHSamplingFreqBandwidth();
     void                                    writeROACHSizeOfFFTs();
     void                                    writeROACHCoarseFFTShiftMask();
+    void                                    writeROACHDspGains();
     void                                    writeROACHAdcAttentuations();
 
 };

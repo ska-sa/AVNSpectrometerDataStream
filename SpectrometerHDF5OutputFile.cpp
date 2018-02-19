@@ -2188,6 +2188,50 @@ void cSpectrometerHDF5OutputFile::writeROACHCoarseFFTShiftMask()
     H5Dclose(dataset);
 }
 
+void cSpectrometerHDF5OutputFile::writeROACHDspGains()
+{
+    string strDatasetName("dbe.dsp-gain");
+
+    //Create the data space
+    hsize_t dimension[] = { m_voROACHDspGains.size() };
+    hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
+
+    //Create a compound data type consisting of different native types per entry:
+    hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
+
+    //Add to compound data type: a timestamp (double)
+    H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+
+    //Add to compound data type: the ADC attenuation (double)
+    H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
+
+    //Add to compound data type: the status of the sensor (string typically containing "nominal")
+    hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
+    H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
+    H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
+
+    //Create the data set of of the new compound datatype
+    hid_t dataset = H5Dcreate1(m_iH5SensorsDBEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
+
+    herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voROACHDspGains.front());
+
+    if(err < 0)
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeROACHDspGains(): HDF5 make dataset error" << endl;
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeROACHDspGains(): Wrote " << m_voROACHDspGains.size() << " DSP gain values." << endl;
+    }
+
+    addAttributeToDataSet(string("DSP gain for signal-chain"), strDatasetName, string("double"), string(""), dataset);
+
+    H5Tclose(stringTypeStatus);
+    H5Tclose(compoundDataType);
+    H5Sclose(dataspace);
+    H5Dclose(dataset);
+}
+
 void cSpectrometerHDF5OutputFile::writeROACHAdcAttentuations()
 {
     {
@@ -2218,11 +2262,11 @@ void cSpectrometerHDF5OutputFile::writeROACHAdcAttentuations()
 
     if(err < 0)
     {
-        cout << "cSpectrometerHDF5OutputFile::writeLOFrequencies(): HDF5 make dataset error" << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeROACHAdcAttentuations(): HDF5 make dataset error" << endl;
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeLOFrequencies(): Wrote " << m_voROACHADCAttenuationsLcp_dB.size() << " ADC attenuations for chan0." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeROACHAdcAttentuations(): Wrote " << m_voROACHADCAttenuationsLcp_dB.size() << " ADC attenuations for chan0." << endl;
     }
 
     addAttributeToDataSet(string("attenuation at input to ADC chan0"), strDatasetName, string("double"), string("dB"), dataset);
@@ -2261,11 +2305,11 @@ void cSpectrometerHDF5OutputFile::writeROACHAdcAttentuations()
 
     if(err < 0)
     {
-        cout << "cSpectrometerHDF5OutputFile::writeLOFrequencies(): HDF5 make dataset error" << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeROACHAdcAttentuations(): HDF5 make dataset error" << endl;
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeLOFrequencies(): Wrote " << m_voROACHADCAttenuationsRcp_dB.size() << " ADC attenuations for chan1." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeROACHAdcAttentuations(): Wrote " << m_voROACHADCAttenuationsRcp_dB.size() << " ADC attenuations for chan1." << endl;
     }
 
     addAttributeToDataSet(string("attenuation at input to ADC chan1"), strDatasetName, string("double"), string("dB"), dataset);
@@ -3030,6 +3074,21 @@ void cSpectrometerHDF5OutputFile::addCoarseFFTShiftMask(int64_t i64Timestamp_us,
         boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
         m_voROACHCoarseFFTShiftMasks.push_back(oNewCoarseFFTShift);
+    }
+}
+
+void cSpectrometerHDF5OutputFile::addDspGain(int64_t i64Timestamp_us, double dDspGain)
+{
+    if (!m_voROACHDspGains.size() || dDspGain != m_voROACHDspGains[m_voROACHDspGains.size() - 1].m_dValue)
+    {
+        cTimestampedDouble oNewDspGain;
+        oNewDspGain.m_dTimestamp_s = i64Timestamp_us / 1e6;
+        oNewDspGain.m_dValue = dDspGain;
+        sprintf(oNewDspGain.m_chaStatus, "nominal"); // Hardcoded at nominal for katdal compatibility.
+
+        boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+
+        m_voROACHDspGains.push_back(oNewDspGain);
     }
 }
 
