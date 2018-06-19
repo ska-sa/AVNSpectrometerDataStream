@@ -148,6 +148,7 @@ public:
     void                                    addPointingModelParameter(uint8_t ui8ParameterNumber, double dParameterValue);
 
     void                                    addAntennaStatus(int64_t i64Timestamp_us, const std::string &strAntennaStatus, const std::string &strStatus);
+    void                                    addObservationStatus(int64_t i64Timestamp_us, const std::string &strObservationStatus, const std::string &strStatus);
 
     void                                    addNoiseDiodeInputSource(int64_t i64Timestamp_us, const std::string &strNoiseDiodeInputSource, const std::string &strStatus);
     void                                    addNoiseDiodeEnable(int64_t i64Timestamp_us, bool bNoiseDiodeEnable, const std::string &strStatus);
@@ -254,6 +255,7 @@ private:
     */
 
     std::vector<cAntennaStatus>             m_voAntennaStatuses;
+    std::vector<cAntennaStatus>             m_voObservationStatuses; // Same datatype as above.
 
     /* Marked for removal.
     std::vector<cTimestampedDouble>         m_voMotorTorquesAzMaster_mNm;

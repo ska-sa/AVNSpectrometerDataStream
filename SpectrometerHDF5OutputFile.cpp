@@ -2633,6 +2633,18 @@ void cSpectrometerHDF5OutputFile::addAntennaStatus(int64_t i64Timestamp_us, cons
     m_voAntennaStatuses.push_back(oNewAntennaStatus);
 }
 
+void cSpectrometerHDF5OutputFile::addObservationStatus(int64_t i64Timestamp_us, const string &strObservationStatus, const string &strStatus)
+{
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+
+    cMarkupLabels oNewMarkupLabel; // At this point we move from AVN-speak to Katdal-speak.
+    oNewMarkupLabel.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    sprintf( oNewMarkupLabel.m_chaLabel, "%s", strObservationStatus.substr(0, sizeof(oNewMarkupLabel.m_chaLabel)).c_str() ); //Limit to size of the char array
+    // Don't use status in this dataset.
+
+    m_voMarkupLabels.push_back(oNewMarkupLabel);
+}
+
 /* Marked for removal.
 void cSpectrometerHDF5OutputFile::motorTorqueAzMaster(int64_t i64Timestamp_us, double dAzMaster_mNm, const string &strStatus)
 {
