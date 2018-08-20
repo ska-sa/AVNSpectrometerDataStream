@@ -136,12 +136,16 @@ public:
     // Antenna-space values
     void                                    addAcsRequestedAz(int64_t i64Timestamp_us, double dAzimuth_deg, const std::string &strStatus);
     void                                    addAcsRequestedEl(int64_t i64Timestamp_us, double dElevation_deg, const std::string &strStatus);
+    void                                    addAcsDesiredAz(int64_t i64Timestamp_us, double dAzimuth_deg, const std::string &strStatus);
+    void                                    addAcsDesiredEl(int64_t i64Timestamp_us, double dElevation_deg, const std::string &strStatus);
     void                                    addAcsActualAz(int64_t i64Timestamp_us, double dAzimuth_deg, const std::string &strStatus);
     void                                    addAcsActualEl(int64_t i64Timestamp_us, double dElevation_deg, const std::string &strStatus);
 
     // Sky-space values
     void                                    addSkyRequestedAz(int64_t i64Timestamp_us, double dAzimuth_deg, const std::string &strStatus);
     void                                    addSkyRequestedEl(int64_t i64Timestamp_us, double dElevation_deg, const std::string &strStatus);
+    void                                    addSkyDesiredAz(int64_t i64Timestamp_us, double dAzimuth_deg, const std::string &strStatus);
+    void                                    addSkyDesiredEl(int64_t i64Timestamp_us, double dElevation_deg, const std::string &strStatus);
     void                                    addSkyActualAz(int64_t i64Timestamp_us, double dAzimuth_deg, const std::string &strStatus);
     void                                    addSkyActualEl(int64_t i64Timestamp_us, double dElevation_deg, const std::string &strStatus);
 
@@ -238,11 +242,15 @@ private:
 
     std::vector<cTimestampedDouble>         m_voAcsRequestedAntennaAzs_deg;
     std::vector<cTimestampedDouble>         m_voAcsRequestedAntennaEls_deg;
+    std::vector<cTimestampedDouble>         m_voAcsDesiredAntennaAzs_deg;
+    std::vector<cTimestampedDouble>         m_voAcsDesiredAntennaEls_deg;
     std::vector<cTimestampedDouble>         m_voAcsActualAntennaAzs_deg;
     std::vector<cTimestampedDouble>         m_voAcsActualAntennaEls_deg;
 
     std::vector<cTimestampedDouble>         m_voSkyRequestedAntennaAzs_deg;
     std::vector<cTimestampedDouble>         m_voSkyRequestedAntennaEls_deg;
+    std::vector<cTimestampedDouble>         m_voSkyDesiredAntennaAzs_deg;
+    std::vector<cTimestampedDouble>         m_voSkyDesiredAntennaEls_deg;
     std::vector<cTimestampedDouble>         m_voSkyActualAntennaAzs_deg;
     std::vector<cTimestampedDouble>         m_voSkyActualAntennaEls_deg;
 
@@ -334,8 +342,10 @@ private:
     void                                    writeMarkupLabels();
 
     void                                    writeAcsRequestedAntennaAzEls();
+    void                                    writeAcsDesiredAntennaAzEls();
     void                                    writeAcsActualAntennaAzEls();
     void                                    writeSkyRequestedAntennaAzEls();
+    void                                    writeSkyDesiredAntennaAzEls();
     void                                    writeSkyActualAntennaAzEls();
 
     /* Marked for removal.

@@ -544,6 +544,105 @@ void cSpectrometerHDF5OutputFile::writeAcsRequestedAntennaAzEls()
     }
 }
 
+void cSpectrometerHDF5OutputFile::writeAcsDesiredAntennaAzEls()
+{
+    //Requested values to motor drive after pointing model
+    //As per KAT7 Azimuth and elevation are in seperate datasets
+
+    //Azimuth:
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    if (m_voAcsDesiredAntennaAzs_deg.size())
+    {
+        string strDatasetName("pos.desired-pointm-azim");
+
+        //Create the data space
+        hsize_t dimension[] = { m_voAcsDesiredAntennaAzs_deg.size() };
+        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
+
+        //Create a compound data type consisting of different native types per entry:
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
+
+        //Add to compound data type: a timestamp (double)
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the azimuth value (double)
+        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the status of the elevation sensor (string typically containing "nominal")
+        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
+
+        //Create the data set of of the new compound datatype
+        hid_t dataset = H5Dcreate1(m_iH5SensorsAntennasAntenna1GroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
+
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voAcsDesiredAntennaAzs_deg.front());
+
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeAcsDesiredAntennaAzEls(): HDF5 make dataset error" << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeAcsDesiredAntennaAzEls(): Wrote " << m_voAcsDesiredAntennaAzs_deg.size() << " desired antenna azimuths to dataset." << endl;
+        }
+
+        addAttributeToDataSet(string("Desired antenna-space azimuth"), strDatasetName, string("double"), string("deg"), dataset);
+
+        H5Tclose(stringTypeStatus);
+        H5Tclose(compoundDataType);
+        H5Sclose(dataspace);
+        H5Dclose(dataset);
+    }
+
+    //Elevation:
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    if (m_voAcsDesiredAntennaEls_deg.size())
+    {
+        string strDatasetName("pos.desired-pointm-elev");
+
+        //Create the data space
+        hsize_t dimension[] = { m_voAcsDesiredAntennaEls_deg.size() };
+        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
+
+        //Create a compound data type consisting of different native types per entry:
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
+
+        //Add to compound data type: a timestamp (double)
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the elevation value (double)
+        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the status of the elevation sensor (string typically containing "nominal")
+        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
+
+        //Create the data set of of the new compound datatype
+        hid_t dataset = H5Dcreate1(m_iH5SensorsAntennasAntenna1GroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
+
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voAcsDesiredAntennaEls_deg.front());
+
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeAcsDesiredAntennaAzEls(): HDF5 make dataset error" << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeAcsDesiredAntennaAzEls(): Wrote " << m_voAcsDesiredAntennaEls_deg.size() << " desired antenna elevations to dataset." << endl;
+        }
+
+        addAttributeToDataSet(string("Desired antenna-space elevation"), strDatasetName, string("double"), string("deg"), dataset);
+
+        H5Tclose(stringTypeStatus);
+        H5Tclose(compoundDataType);
+        H5Sclose(dataspace);
+        H5Dclose(dataset);
+    }
+}
+
+
 void cSpectrometerHDF5OutputFile::writeAcsActualAntennaAzEls()
 {
     //Values return from drive about current Az/El
@@ -735,6 +834,104 @@ void cSpectrometerHDF5OutputFile::writeSkyRequestedAntennaAzEls()
         }
 
         addAttributeToDataSet(string("Requested sky-space elevation"), strDatasetName, string("double"), string("deg"), dataset);
+
+        H5Tclose(stringTypeStatus);
+        H5Tclose(compoundDataType);
+        H5Sclose(dataspace);
+        H5Dclose(dataset);
+    }
+}
+
+void cSpectrometerHDF5OutputFile::writeSkyDesiredAntennaAzEls()
+{
+    //Requested values to motor drive after pointing model
+    //As per KAT7 Azimuth and elevation are in seperate datasets
+
+    //Azimuth:
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    if (m_voSkyDesiredAntennaAzs_deg.size())
+    {
+        string strDatasetName("pos.desired-scan-azim");
+
+        //Create the data space
+        hsize_t dimension[] = { m_voSkyDesiredAntennaAzs_deg.size() };
+        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
+
+        //Create a compound data type consisting of different native types per entry:
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
+
+        //Add to compound data type: a timestamp (double)
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the azimuth value (double)
+        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the status of the elevation sensor (string typically containing "nominal")
+        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
+
+        //Create the data set of of the new compound datatype
+        hid_t dataset = H5Dcreate1(m_iH5SensorsAntennasAntenna1GroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
+
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voSkyDesiredAntennaAzs_deg.front());
+
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeSkyDesiredAntennaAzEls(): HDF5 make dataset error" << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeSkyDesiredAntennaAzEls(): Wrote " << m_voSkyDesiredAntennaAzs_deg.size() << " desired sky azimuths to dataset." << endl;
+        }
+
+        addAttributeToDataSet(string("Desired sky-space azimuth"), strDatasetName, string("double"), string("deg"), dataset);
+
+        H5Tclose(stringTypeStatus);
+        H5Tclose(compoundDataType);
+        H5Sclose(dataspace);
+        H5Dclose(dataset);
+    }
+
+    //Elevation:
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    if (m_voSkyDesiredAntennaEls_deg.size())
+    {
+        string strDatasetName("pos.desired-scan-elev");
+
+        //Create the data space
+        hsize_t dimension[] = { m_voSkyDesiredAntennaEls_deg.size() };
+        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
+
+        //Create a compound data type consisting of different native types per entry:
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
+
+        //Add to compound data type: a timestamp (double)
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the elevation value (double)
+        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the status of the elevation sensor (string typically containing "nominal")
+        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
+
+        //Create the data set of of the new compound datatype
+        hid_t dataset = H5Dcreate1(m_iH5SensorsAntennasAntenna1GroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
+
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voSkyDesiredAntennaEls_deg.front());
+
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeSkyDesiredAntennaAzEls(): HDF5 make dataset error" << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeSkyDesiredAntennaAzEls(): Wrote " << m_voSkyDesiredAntennaEls_deg.size() << " desired sky elevations to dataset." << endl;
+        }
+
+        addAttributeToDataSet(string("Desired sky-space elevation"), strDatasetName, string("double"), string("deg"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -2538,6 +2735,30 @@ void cSpectrometerHDF5OutputFile::addAcsRequestedEl(int64_t i64Timestamp_us, dou
     m_voAcsRequestedAntennaEls_deg.push_back(oNewRequestedAntennaEl);
 }
 
+void cSpectrometerHDF5OutputFile::addAcsDesiredAz(int64_t i64Timestamp_us, double dAzimuth_deg, const string &strStatus)
+{
+    cTimestampedDouble oNewDesiredAntennaAz;
+    oNewDesiredAntennaAz.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    oNewDesiredAntennaAz.m_dValue = dAzimuth_deg;
+    sprintf(oNewDesiredAntennaAz.m_chaStatus, "%s", strStatus.c_str());
+
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+
+    m_voAcsDesiredAntennaAzs_deg.push_back(oNewDesiredAntennaAz);
+}
+
+void cSpectrometerHDF5OutputFile::addAcsDesiredEl(int64_t i64Timestamp_us, double dElevation_deg, const string &strStatus)
+{
+    cTimestampedDouble oNewDesiredAntennaEl;
+    oNewDesiredAntennaEl.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    oNewDesiredAntennaEl.m_dValue = dElevation_deg;
+    sprintf(oNewDesiredAntennaEl.m_chaStatus, "%s", strStatus.c_str());
+
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+
+    m_voAcsDesiredAntennaEls_deg.push_back(oNewDesiredAntennaEl);
+}
+
 void cSpectrometerHDF5OutputFile::addAcsActualAz(int64_t i64Timestamp_us, double dAzimuth_deg, const string &strStatus)
 {
     cTimestampedDouble oNewActualAntennaAz;
@@ -2585,6 +2806,31 @@ void cSpectrometerHDF5OutputFile::addSkyRequestedEl(int64_t i64Timestamp_us, dou
 
     m_voSkyRequestedAntennaEls_deg.push_back(oNewRequestedAntennaEl);
 }
+
+void cSpectrometerHDF5OutputFile::addSkyDesiredAz(int64_t i64Timestamp_us, double dAzimuth_deg, const string &strStatus)
+{
+    cTimestampedDouble oNewDesiredAntennaAz;
+    oNewDesiredAntennaAz.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    oNewDesiredAntennaAz.m_dValue = dAzimuth_deg;
+    sprintf(oNewDesiredAntennaAz.m_chaStatus, "%s", strStatus.c_str());
+
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+
+    m_voSkyDesiredAntennaAzs_deg.push_back(oNewDesiredAntennaAz);
+}
+
+void cSpectrometerHDF5OutputFile::addSkyDesiredEl(int64_t i64Timestamp_us, double dElevation_deg, const string &strStatus)
+{
+    cTimestampedDouble oNewDesiredAntennaEl;
+    oNewDesiredAntennaEl.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    oNewDesiredAntennaEl.m_dValue = dElevation_deg;
+    sprintf(oNewDesiredAntennaEl.m_chaStatus, "%s", strStatus.c_str());
+
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+
+    m_voSkyDesiredAntennaEls_deg.push_back(oNewDesiredAntennaEl);
+}
+
 
 void cSpectrometerHDF5OutputFile::addSkyActualAz(int64_t i64Timestamp_us, double dAzimuth_deg, const string &strStatus)
 {
