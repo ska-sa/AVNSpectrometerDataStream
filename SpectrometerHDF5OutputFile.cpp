@@ -444,6 +444,10 @@ void cSpectrometerHDF5OutputFile::writeMarkupLabels()
         H5Sclose(dataspace);
         H5Dclose(dataset);
     }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeMarkupLabels(): WARNING, vector m_voMarkupLabels empty." << endl;
+    }
 }
 
 void cSpectrometerHDF5OutputFile::writeAcsRequestedAntennaAzEls()
@@ -496,6 +500,10 @@ void cSpectrometerHDF5OutputFile::writeAcsRequestedAntennaAzEls()
         H5Sclose(dataspace);
         H5Dclose(dataset);
     }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeAcsRequestedAntennaAzEls(): WARNING, vector m_voAcsRequestedAntennaAzs_deg empty." << endl;
+    }
 
     //Elevation:
     ////////////////////////////////////////////////////////////////////////////////////////////
@@ -541,6 +549,10 @@ void cSpectrometerHDF5OutputFile::writeAcsRequestedAntennaAzEls()
         H5Tclose(compoundDataType);
         H5Sclose(dataspace);
         H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeAcsRequestedAntennaAzEls(): WARNING, vector m_voAcsRequestedAntennaEls_deg empty." << endl;
     }
 }
 
@@ -594,6 +606,10 @@ void cSpectrometerHDF5OutputFile::writeAcsDesiredAntennaAzEls()
         H5Sclose(dataspace);
         H5Dclose(dataset);
     }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeAcsDesiredAntennaAzEls(): WARNING, vector m_voAcsDesiredAntennaAzs_deg empty." << endl;
+    }
 
     //Elevation:
     ////////////////////////////////////////////////////////////////////////////////////////////
@@ -639,6 +655,10 @@ void cSpectrometerHDF5OutputFile::writeAcsDesiredAntennaAzEls()
         H5Tclose(compoundDataType);
         H5Sclose(dataspace);
         H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeAcsDesiredAntennaAzEls(): WARNING, vector m_voAcsDesiredAntennaEls_deg empty." << endl;
     }
 }
 
@@ -696,6 +716,10 @@ void cSpectrometerHDF5OutputFile::writeAcsActualAntennaAzEls()
         H5Sclose(dataspace);
         H5Dclose(dataset);
     }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeAcsActualAntennaAzEls(): WARNING, vector m_voAcsActualAntennaAzs_deg empty." << endl;
+    }
 
     //Elevation:
     ////////////////////////////////////////////////////////////////////////////////////////////
@@ -741,6 +765,10 @@ void cSpectrometerHDF5OutputFile::writeAcsActualAntennaAzEls()
         H5Tclose(compoundDataType);
         H5Sclose(dataspace);
         H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeAcsActualAntennaAzEls(): WARNING, vector m_voAcsActualAntennaEls_deg empty." << endl;
     }
 }
 
@@ -794,6 +822,10 @@ void cSpectrometerHDF5OutputFile::writeSkyRequestedAntennaAzEls()
         H5Sclose(dataspace);
         H5Dclose(dataset);
     }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeSkyRequestedAntennaAzEls(): WARNING, vector m_voSkyRequestedAntennaAzs_deg empty." << endl;
+    }
 
     //Elevation:
     ////////////////////////////////////////////////////////////////////////////////////////////
@@ -839,6 +871,10 @@ void cSpectrometerHDF5OutputFile::writeSkyRequestedAntennaAzEls()
         H5Tclose(compoundDataType);
         H5Sclose(dataspace);
         H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeSkyRequestedAntennaAzEls(): WARNING, vector m_voSkyRequestedAntennaEls_deg empty." << endl;
     }
 }
 
@@ -892,6 +928,10 @@ void cSpectrometerHDF5OutputFile::writeSkyDesiredAntennaAzEls()
         H5Sclose(dataspace);
         H5Dclose(dataset);
     }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeSkyDesiredAntennaAzEls(): WARNING, vector m_voSkyDesiredAntennaAzs_deg empty." << endl;
+    }
 
     //Elevation:
     ////////////////////////////////////////////////////////////////////////////////////////////
@@ -937,6 +977,10 @@ void cSpectrometerHDF5OutputFile::writeSkyDesiredAntennaAzEls()
         H5Tclose(compoundDataType);
         H5Sclose(dataspace);
         H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeSkyDesiredAntennaAzEls(): WARNING, vector m_voSkyDesiredAntennaEls_deg empty." << endl;
     }
 }
 
@@ -993,6 +1037,10 @@ void cSpectrometerHDF5OutputFile::writeSkyActualAntennaAzEls()
         H5Sclose(dataspace);
         H5Dclose(dataset);
     }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeSkyActualAntennaAzEls(): WARNING, vector m_voSkyActualAntennaAzs_deg empty." << endl;
+    }
 
     //Elevation:
     ////////////////////////////////////////////////////////////////////////////////////////////
@@ -1038,6 +1086,10 @@ void cSpectrometerHDF5OutputFile::writeSkyActualAntennaAzEls()
         H5Tclose(compoundDataType);
         H5Sclose(dataspace);
         H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeSkyActualAntennaAzEls(): WARNING, vector m_voSkyActualAntennaEls_deg empty." << endl;
     }
 }
 
@@ -1087,6 +1139,10 @@ void cSpectrometerHDF5OutputFile::writeAntennaStatuses()
         H5Tclose(compoundDataType);
         H5Sclose(dataspace);
         H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeAntennaStatuses(): WARNING, vector m_voAntennaStatuses empty." << endl;
     }
 }
 
@@ -1214,6 +1270,10 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
         H5Sclose(dataspace);
         H5Dclose(dataset);
     }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): WARNING, vector m_voNoiseDiodeInputSource empty." << endl;
+    }
 
     if (m_voNoiseDiodeEnable.size())
     {
@@ -1257,6 +1317,10 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
         H5Tclose(compoundDataType);
         H5Sclose(dataspace);
         H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): WARNING, vector m_voNoiseDiodeEnable empty." << endl;
     }
 
     if (m_voNoiseDiodeSelect.size())
@@ -1302,6 +1366,10 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
         H5Sclose(dataspace);
         H5Dclose(dataset);
     }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): WARNING, vector m_voNoiseDiodeSelect empty." << endl;
+    }
 
     if (m_voNoiseDiodePWMMark.size())
     {
@@ -1346,6 +1414,10 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
         H5Sclose(dataspace);
         H5Dclose(dataset);
     }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): WARNING, vector m_voNoiseDiodePWMMark empty." << endl;
+    }
 
     if (m_voNoiseDiodePWMFrequency.size())
     {
@@ -1389,6 +1461,10 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
         H5Tclose(compoundDataType);
         H5Sclose(dataspace);
         H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): WARNING, vector m_voNoiseDiodePWMFrequency empty." << endl;
     }
 }
 
@@ -1439,6 +1515,10 @@ void cSpectrometerHDF5OutputFile::writeSelectedSources()
         H5Tclose(compoundDataType);
         H5Sclose(dataspace);
         H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeSelectedSources(): WARNING, vector m_voSelectedSources empty." << endl;
     }
 }
 
@@ -1491,6 +1571,10 @@ void cSpectrometerHDF5OutputFile::writeRFFrequencies()
         H5Sclose(dataspace);
         H5Dclose(dataset);
     }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeRFFrequencies(): WARNING, vector m_voFrequencySelectLcp empty." << endl;
+    }
 
     if (m_voFrequencySelectRcp.size())
     {
@@ -1528,7 +1612,7 @@ void cSpectrometerHDF5OutputFile::writeRFFrequencies()
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeRFFrequencies(): Wrote " << m_voFrequencySelectLcp.size() << " RF band selections for RCP." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeRFFrequencies(): Wrote " << m_voFrequencySelectRcp.size() << " RF band selections for RCP." << endl;
         }
 
         addAttributeToDataSet(string("RF band selection for LCP (0 - 5GHz, 1 - 6.7 GHz)"), strDatasetName, string("boolean"), string(""), dataset);
@@ -1538,6 +1622,10 @@ void cSpectrometerHDF5OutputFile::writeRFFrequencies()
         H5Tclose(compoundDataType);
         H5Sclose(dataspace);
         H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeRFFrequencies(): WARNING, vector m_voFrequencySelectRcp empty." << endl;
     }
 }
 
@@ -1586,6 +1674,10 @@ void cSpectrometerHDF5OutputFile::writeLOFrequencies()
         H5Sclose(dataspace);
         H5Dclose(dataset);
     }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeLOFrequencies(): WARNING, vector m_voFrequenciesLOIntermediate5GHz_Hz empty." << endl;
+    }
 
     if (m_voFrequenciesLOIntermediate6_7GHz_Hz.size())
     {
@@ -1629,6 +1721,10 @@ void cSpectrometerHDF5OutputFile::writeLOFrequencies()
         H5Tclose(compoundDataType);
         H5Sclose(dataspace);
         H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeLOFrequencies(): WARNING, vector m_voFrequenciesLOIntermediate6_7GHz_Hz empty." << endl;
     }
 
     if (m_voFrequenciesLOFinal_Hz.size())
@@ -1674,6 +1770,11 @@ void cSpectrometerHDF5OutputFile::writeLOFrequencies()
         H5Sclose(dataspace);
         H5Dclose(dataset);
     }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeLOFrequencies(): WARNING, vector m_voFrequenciesLOFinal_Hz empty." << endl;
+    }
+
 }
 
 
@@ -1722,6 +1823,10 @@ void cSpectrometerHDF5OutputFile::writeIFBandwidths()
         H5Sclose(dataspace);
         H5Dclose(dataset);
     }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeIFBandwidths(): WARNING, vector m_voReceiverBandwidthsLcp_Hz empty." << endl;
+    }
 
     if (m_voReceiverBandwidthsRcp_Hz.size())
     {
@@ -1765,6 +1870,10 @@ void cSpectrometerHDF5OutputFile::writeIFBandwidths()
         H5Tclose(compoundDataType);
         H5Sclose(dataspace);
         H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeIFBandwidths(): WARNING, vector m_voReceiverBandwidthsRcp_Hz empty." << endl;
     }
 }
 
@@ -1814,6 +1923,10 @@ void cSpectrometerHDF5OutputFile::writeReceiverAttenuations()
         H5Sclose(dataspace);
         H5Dclose(dataset);
     }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeReceiverAttenuations(): WARNING, vector m_voReceiverAttenuationsLcp_dB empty." << endl;
+    }
 
     if (m_voReceiverAttenuationsRcp_dB.size())
     {
@@ -1858,229 +1971,253 @@ void cSpectrometerHDF5OutputFile::writeReceiverAttenuations()
         H5Sclose(dataspace);
         H5Dclose(dataset);
     }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeReceiverAttenuations(): WARNING, vector m_voReceiverAttenuationsRcp_dB empty." << endl;
+    }
 }
 
 void cSpectrometerHDF5OutputFile::writeEnvironmentData()
 {
     if (m_voWindSpeeds_mps.size())
+    {
+        string strDatasetName("wind.speed");
+
+        //Create the data space
+        hsize_t dimension[] = { m_voWindSpeeds_mps.size() };
+        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
+
+        //Create a compound data type consisting of different native types per entry:
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
+
+        //Add to compound data type: a timestamp (double)
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the receiver bandwidth (double)
+        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the status of the sensor (string typically containing "nominal")
+        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
+
+        //Create the data set of of the new compound datatype
+        hid_t dataset = H5Dcreate1(m_iH5SensorsEnvGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
+
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voWindSpeeds_mps.front());
+
+        if(err < 0)
         {
-            string strDatasetName("wind.speed");
-
-            //Create the data space
-            hsize_t dimension[] = { m_voWindSpeeds_mps.size() };
-            hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
-
-            //Create a compound data type consisting of different native types per entry:
-            hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
-
-            //Add to compound data type: a timestamp (double)
-            H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
-
-            //Add to compound data type: the receiver bandwidth (double)
-            H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
-
-            //Add to compound data type: the status of the sensor (string typically containing "nominal")
-            hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
-            H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
-            H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
-
-            //Create the data set of of the new compound datatype
-            hid_t dataset = H5Dcreate1(m_iH5SensorsEnvGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
-
-            herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voWindSpeeds_mps.front());
-
-            if(err < 0)
-            {
-                cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): HDF5 make dataset error" << endl;
-            }
-            else
-            {
-                cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): Wrote " << m_voWindSpeeds_mps.size() << " wind speed values." << endl;
-            }
-
-            addAttributeToDataSet(string("Wind speed."), strDatasetName, string("double"), string("m/s"), dataset);
-
-            H5Tclose(stringTypeStatus);
-            H5Tclose(compoundDataType);
-            H5Sclose(dataspace);
-            H5Dclose(dataset);
+            cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): HDF5 make dataset error" << endl;
         }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): Wrote " << m_voWindSpeeds_mps.size() << " wind speed values." << endl;
+        }
+
+        addAttributeToDataSet(string("Wind speed."), strDatasetName, string("double"), string("m/s"), dataset);
+
+        H5Tclose(stringTypeStatus);
+        H5Tclose(compoundDataType);
+        H5Sclose(dataspace);
+        H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): WARNING, vector m_voWindSpeeds_mps empty." << endl;
+    }
 
     if (m_voWindDirections_degrees.size())
+    {
+        string strDatasetName("wind.direction");
+
+        //Create the data space
+        hsize_t dimension[] = { m_voWindDirections_degrees.size() };
+        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
+
+        //Create a compound data type consisting of different native types per entry:
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
+
+        //Add to compound data type: a timestamp (double)
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the receiver bandwidth (double)
+        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the status of the sensor (string typically containing "nominal")
+        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
+
+        //Create the data set of of the new compound datatype
+        hid_t dataset = H5Dcreate1(m_iH5SensorsEnvGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
+
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voWindDirections_degrees.front());
+
+        if(err < 0)
         {
-            string strDatasetName("wind.direction");
-
-            //Create the data space
-            hsize_t dimension[] = { m_voWindDirections_degrees.size() };
-            hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
-
-            //Create a compound data type consisting of different native types per entry:
-            hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
-
-            //Add to compound data type: a timestamp (double)
-            H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
-
-            //Add to compound data type: the receiver bandwidth (double)
-            H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
-
-            //Add to compound data type: the status of the sensor (string typically containing "nominal")
-            hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
-            H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
-            H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
-
-            //Create the data set of of the new compound datatype
-            hid_t dataset = H5Dcreate1(m_iH5SensorsEnvGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
-
-            herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voWindDirections_degrees.front());
-
-            if(err < 0)
-            {
-                cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): HDF5 make dataset error" << endl;
-            }
-            else
-            {
-                cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): Wrote " << m_voWindDirections_degrees.size() << " wind direction values." << endl;
-            }
-
-            addAttributeToDataSet(string("Wind direction."), strDatasetName, string("double"), string("deg"), dataset);
-
-            H5Tclose(stringTypeStatus);
-            H5Tclose(compoundDataType);
-            H5Sclose(dataspace);
-            H5Dclose(dataset);
+            cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): HDF5 make dataset error" << endl;
         }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): Wrote " << m_voWindDirections_degrees.size() << " wind direction values." << endl;
+        }
+
+        addAttributeToDataSet(string("Wind direction."), strDatasetName, string("double"), string("deg"), dataset);
+
+        H5Tclose(stringTypeStatus);
+        H5Tclose(compoundDataType);
+        H5Sclose(dataspace);
+        H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): WARNING, vector m_voWindDirections_degrees empty." << endl;
+    }
 
     if (m_voTemperatures_degreesC.size())
+    {
+        string strDatasetName("air.temperature");
+
+        //Create the data space
+        hsize_t dimension[] = { m_voTemperatures_degreesC.size() };
+        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
+
+        //Create a compound data type consisting of different native types per entry:
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
+
+        //Add to compound data type: a timestamp (double)
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the receiver bandwidth (double)
+        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the status of the sensor (string typically containing "nominal")
+        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
+
+        //Create the data set of of the new compound datatype
+        hid_t dataset = H5Dcreate1(m_iH5SensorsEnvGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
+
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voTemperatures_degreesC.front());
+
+        if(err < 0)
         {
-            string strDatasetName("air.temperature");
-
-            //Create the data space
-            hsize_t dimension[] = { m_voTemperatures_degreesC.size() };
-            hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
-
-            //Create a compound data type consisting of different native types per entry:
-            hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
-
-            //Add to compound data type: a timestamp (double)
-            H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
-
-            //Add to compound data type: the receiver bandwidth (double)
-            H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
-
-            //Add to compound data type: the status of the sensor (string typically containing "nominal")
-            hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
-            H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
-            H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
-
-            //Create the data set of of the new compound datatype
-            hid_t dataset = H5Dcreate1(m_iH5SensorsEnvGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
-
-            herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voTemperatures_degreesC.front());
-
-            if(err < 0)
-            {
-                cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): HDF5 make dataset error" << endl;
-            }
-            else
-            {
-                cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): Wrote " << m_voTemperatures_degreesC.size() << " air temperature values." << endl;
-            }
-
-            addAttributeToDataSet(string("Air temperature."), strDatasetName, string("double"), string("degC"), dataset);
-
-            H5Tclose(stringTypeStatus);
-            H5Tclose(compoundDataType);
-            H5Sclose(dataspace);
-            H5Dclose(dataset);
+            cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): HDF5 make dataset error" << endl;
         }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): Wrote " << m_voTemperatures_degreesC.size() << " air temperature values." << endl;
+        }
+
+        addAttributeToDataSet(string("Air temperature."), strDatasetName, string("double"), string("degC"), dataset);
+
+        H5Tclose(stringTypeStatus);
+        H5Tclose(compoundDataType);
+        H5Sclose(dataspace);
+        H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): WARNING, vector m_voTemperatures_degreesC empty." << endl;
+    }
 
     if (m_voAbsolutePressures_mbar.size())
+    {
+        string strDatasetName("air.pressure");
+
+        //Create the data space
+        hsize_t dimension[] = { m_voAbsolutePressures_mbar.size() };
+        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
+
+        //Create a compound data type consisting of different native types per entry:
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
+
+        //Add to compound data type: a timestamp (double)
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the receiver bandwidth (double)
+        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the status of the sensor (string typically containing "nominal")
+        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
+
+        //Create the data set of of the new compound datatype
+        hid_t dataset = H5Dcreate1(m_iH5SensorsEnvGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
+
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voAbsolutePressures_mbar.front());
+
+        if(err < 0)
         {
-            string strDatasetName("air.pressure");
-
-            //Create the data space
-            hsize_t dimension[] = { m_voAbsolutePressures_mbar.size() };
-            hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
-
-            //Create a compound data type consisting of different native types per entry:
-            hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
-
-            //Add to compound data type: a timestamp (double)
-            H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
-
-            //Add to compound data type: the receiver bandwidth (double)
-            H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
-
-            //Add to compound data type: the status of the sensor (string typically containing "nominal")
-            hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
-            H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
-            H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
-
-            //Create the data set of of the new compound datatype
-            hid_t dataset = H5Dcreate1(m_iH5SensorsEnvGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
-
-            herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voAbsolutePressures_mbar.front());
-
-            if(err < 0)
-            {
-                cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): HDF5 make dataset error" << endl;
-            }
-            else
-            {
-                cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): Wrote " << m_voAbsolutePressures_mbar.size() << " air pressure values." << endl;
-            }
-
-            addAttributeToDataSet(string("Air pressure."), strDatasetName, string("double"), string("mbar"), dataset);
-
-            H5Tclose(stringTypeStatus);
-            H5Tclose(compoundDataType);
-            H5Sclose(dataspace);
-            H5Dclose(dataset);
+            cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): HDF5 make dataset error" << endl;
         }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): Wrote " << m_voAbsolutePressures_mbar.size() << " air pressure values." << endl;
+        }
+
+        addAttributeToDataSet(string("Air pressure."), strDatasetName, string("double"), string("mbar"), dataset);
+
+        H5Tclose(stringTypeStatus);
+        H5Tclose(compoundDataType);
+        H5Sclose(dataspace);
+        H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): WARNING, vector m_voAbsolutePressures_mbar empty." << endl;
+    }
 
     if (m_voRelativeHumidities_percent.size())
+    {
+        string strDatasetName("relative.humidity");
+
+        //Create the data space
+        hsize_t dimension[] = { m_voRelativeHumidities_percent.size() };
+        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
+
+        //Create a compound data type consisting of different native types per entry:
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
+
+        //Add to compound data type: a timestamp (double)
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the receiver bandwidth (double)
+        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the status of the sensor (string typically containing "nominal")
+        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
+
+        //Create the data set of of the new compound datatype
+        hid_t dataset = H5Dcreate1(m_iH5SensorsEnvGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
+
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voRelativeHumidities_percent.front());
+
+        if(err < 0)
         {
-            string strDatasetName("relative.humidity");
-
-            //Create the data space
-            hsize_t dimension[] = { m_voRelativeHumidities_percent.size() };
-            hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
-
-            //Create a compound data type consisting of different native types per entry:
-            hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
-
-            //Add to compound data type: a timestamp (double)
-            H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
-
-            //Add to compound data type: the receiver bandwidth (double)
-            H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
-
-            //Add to compound data type: the status of the sensor (string typically containing "nominal")
-            hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
-            H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
-            H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
-
-            //Create the data set of of the new compound datatype
-            hid_t dataset = H5Dcreate1(m_iH5SensorsEnvGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
-
-            herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voRelativeHumidities_percent.front());
-
-            if(err < 0)
-            {
-                cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): HDF5 make dataset error" << endl;
-            }
-            else
-            {
-                cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): Wrote " << m_voRelativeHumidities_percent.size() << " relative humidity values." << endl;
-            }
-
-            addAttributeToDataSet(string("Relative humidity."), strDatasetName, string("double"), string("percent"), dataset);
-
-            H5Tclose(stringTypeStatus);
-            H5Tclose(compoundDataType);
-            H5Sclose(dataspace);
-            H5Dclose(dataset);
+            cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): HDF5 make dataset error" << endl;
         }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): Wrote " << m_voRelativeHumidities_percent.size() << " relative humidity values." << endl;
+        }
+
+        addAttributeToDataSet(string("Relative humidity."), strDatasetName, string("double"), string("percent"), dataset);
+
+        H5Tclose(stringTypeStatus);
+        H5Tclose(compoundDataType);
+        H5Sclose(dataspace);
+        H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeEnvironmentData(): WARNING, vector m_voRelativeHumidities_percent empty." << endl;
+    }
 }
 
 void cSpectrometerHDF5OutputFile::writeROACHNumberChannels()
@@ -2233,6 +2370,10 @@ void cSpectrometerHDF5OutputFile::writeROACHNBNarrowbandSelections()
         H5Tclose(compoundDataType);
         H5Sclose(dataspace);
         H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeROACHNBNarrowbandSelections(): WARNING, vector m_voROACHNBChannelSelects empty." << endl;
     }
 }
 
