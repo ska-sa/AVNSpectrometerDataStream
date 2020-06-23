@@ -105,7 +105,7 @@ cSpectrometerHDF5OutputFile::cSpectrometerHDF5OutputFile(const std::string &strF
 
     //Read antenna config information from ini file
     pt::ptree ObsInfo;
-    pt::ini_parser::read_ini("ObservatoryInfo.ini", ObsInfo); // TODO: Think about not hardcoding this.
+    pt::ini_parser::read_ini("/etc/ObservatoryInfo.ini", ObsInfo); // TODO: Think about not hardcoding this.
     setAntennaName(ObsInfo.get<string>("Antenna.name"));
     setAntennaLatitude(ObsInfo.get<string>("Antenna.latitude"));
     setAntennaLongitude(ObsInfo.get<string>("Antenna.longitude"));
