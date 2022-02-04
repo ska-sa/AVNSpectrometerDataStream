@@ -162,7 +162,7 @@ cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
 
     writeRFBandSelects();
     writeSkyFrequencies();
-    writeReceiverAttenuations();
+    writeReceiverGains();
 
     writeEnvironmentData();
 
@@ -1666,7 +1666,7 @@ void cSpectrometerHDF5OutputFile::writeSkyFrequencies()
             cout << "cSpectrometerHDF5OutputFile::writeSkyFrequencies(): Wrote " << m_voFrequenciesSky5GHz_Hz.size() << " band 1 sky frequencies." << endl;
         }
 
-        addAttributeToDataSet(string("Sky frequency for band1 (5 GHz receiver)"), strDatasetName, string("double"), string("Hz"), dataset);
+        addAttributeToDataSet(string("Sky frequency for band1 (5 GHz receiver)"), strDatasetName, string("double"), string("MHz"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -1714,7 +1714,7 @@ void cSpectrometerHDF5OutputFile::writeSkyFrequencies()
             cout << "cSpectrometerHDF5OutputFile::writeSkyFrequencies(): Wrote " << m_voFrequenciesSky6_7GHz_Hz.size() << " LO0 chan 1 frequencies." << endl;
         }
 
-        addAttributeToDataSet(string("Sky frequency for band2 (6.7 GHz receiver)"), strDatasetName, string("double"), string("Hz"), dataset);
+        addAttributeToDataSet(string("Sky frequency for band2 (6.7 GHz receiver)"), strDatasetName, string("double"), string("MHz"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -1727,23 +1727,19 @@ void cSpectrometerHDF5OutputFile::writeSkyFrequencies()
     }
 }
 
-void cSpectrometerHDF5OutputFile::writeReceiverAttenuations()
+void cSpectrometerHDF5OutputFile::writeReceiverGains()
 {
-    if (m_voReceiverAttenuationsLcp_dB.size())
+    if (m_voReceiverGain5GHzLcp_dB.size())
     {
-        string strDatasetName("rfe.LCP.attenuation");
+        string strDatasetName("rx.fe.gain.band1-lcp");
 
         //Create the data space
-        hsize_t dimension[] = { m_voReceiverAttenuationsLcp_dB.size() };
+        hsize_t dimension[] = { m_voReceiverGain5GHzLcp_dB.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
         hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
-
-        //Add to compound data type: a timestamp (double)
         H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
-
-        //Add to compound data type: the LCP attenuation (double)
         H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
 
         //Add to compound data type: the status of the sensor (string typically containing "nominal")
@@ -1754,18 +1750,18 @@ void cSpectrometerHDF5OutputFile::writeReceiverAttenuations()
         //Create the data set of of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voReceiverAttenuationsLcp_dB.front());
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voReceiverGain5GHzLcp_dB.front());
 
         if(err < 0)
         {
-            cout << "cSpectrometerHDF5OutputFile::writeReceiverAttenuations(): HDF5 make dataset error" << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeReceiverGains(): HDF5 make dataset error" << endl;
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeReceiverAttenuations(): Wrote " << m_voReceiverAttenuationsLcp_dB.size() << " receiver LCP attenuation values." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeReceiverGains(): Wrote " << m_voReceiverGain5GHzLcp_dB.size() << " 5 GHz LCP Rx gain values." << endl;
         }
 
-        addAttributeToDataSet(string("Receiver chain LCP variable attenuator setting."), strDatasetName, string("double"), string("dB"), dataset);
+        addAttributeToDataSet(string("Receiver chain 5 GHz LCP gain setting."), strDatasetName, string("double"), string("dB"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -1774,24 +1770,20 @@ void cSpectrometerHDF5OutputFile::writeReceiverAttenuations()
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeReceiverAttenuations(): WARNING, vector m_voReceiverAttenuationsLcp_dB empty." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeReceiverGains(): WARNING, vector m_voReceiverGain5GHzLcp_dB empty." << endl;
     }
 
-    if (m_voReceiverAttenuationsRcp_dB.size())
+    if (m_voReceiverGain5GHzRcp_dB.size())
     {
-        string strDatasetName("rfe.RCP.attenuation");
+        string strDatasetName("rx.fe.gain.band1-rcp");
 
         //Create the data space
-        hsize_t dimension[] = { m_voReceiverAttenuationsRcp_dB.size() };
+        hsize_t dimension[] = { m_voReceiverGain5GHzRcp_dB.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
         hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
-
-        //Add to compound data type: a timestamp (double)
         H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
-
-        //Add to compound data type: the RCP attenuation (double)
         H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
 
         //Add to compound data type: the status of the sensor (string typically containing "nominal")
@@ -1802,18 +1794,18 @@ void cSpectrometerHDF5OutputFile::writeReceiverAttenuations()
         //Create the data set of of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voReceiverAttenuationsRcp_dB.front());
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voReceiverGain5GHzRcp_dB.front());
 
         if(err < 0)
         {
-            cout << "cSpectrometerHDF5OutputFile::writeReceiverAttenuations(): HDF5 make dataset error" << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeReceiverGains(): HDF5 make dataset error" << endl;
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeReceiverAttenuations(): Wrote " << m_voReceiverAttenuationsRcp_dB.size() << " receiver RCP attenuation values." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeReceiverGains(): Wrote " << m_voReceiverGain5GHzRcp_dB.size() << " 5 GHz RCP Rx gain values." << endl;
         }
 
-        addAttributeToDataSet(string("Receiver chain RCP variable attenuator setting."), strDatasetName, string("double"), string("dB"), dataset);
+        addAttributeToDataSet(string("Receiver chain 5 GHz RCP gain setting."), strDatasetName, string("double"), string("dB"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -1822,7 +1814,96 @@ void cSpectrometerHDF5OutputFile::writeReceiverAttenuations()
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeReceiverAttenuations(): WARNING, vector m_voReceiverAttenuationsRcp_dB empty." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeReceiverGains(): WARNING, vector m_voReceiverGain5GHzRcp_dB empty." << endl;
+    }
+
+
+    if (m_voReceiverGain6_7GHzLcp_dB.size())
+    {
+        string strDatasetName("rx.fe.gain.band2-lcp");
+
+        //Create the data space
+        hsize_t dimension[] = { m_voReceiverGain6_7GHzLcp_dB.size() };
+        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
+
+        //Create a compound data type consisting of different native types per entry:
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the status of the sensor (string typically containing "nominal")
+        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
+
+        //Create the data set of of the new compound datatype
+        hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
+
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voReceiverGain6_7GHzLcp_dB.front());
+
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeReceiverGains(): HDF5 make dataset error" << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeReceiverGains(): Wrote " << m_voReceiverGain6_7GHzLcp_dB.size() << " 6.7 GHz LCP Rx gain values." << endl;
+        }
+
+        addAttributeToDataSet(string("Receiver chain 6.7 GHz LCP gain setting."), strDatasetName, string("double"), string("dB"), dataset);
+
+        H5Tclose(stringTypeStatus);
+        H5Tclose(compoundDataType);
+        H5Sclose(dataspace);
+        H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeReceiverGains(): WARNING, vector m_voReceiverGain6_7GHzLcp_dB empty." << endl;
+    }
+
+    if (m_voReceiverGain6_7GHzRcp_dB.size())
+    {
+        string strDatasetName("rx.fe.gain.band2-rcp");
+
+        //Create the data space
+        hsize_t dimension[] = { m_voReceiverGain6_7GHzRcp_dB.size() };
+        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
+
+        //Create a compound data type consisting of different native types per entry:
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the status of the sensor (string typically containing "nominal")
+        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
+
+        //Create the data set of of the new compound datatype
+        hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
+
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voReceiverGain6_7GHzRcp_dB.front());
+
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeReceiverGains(): HDF5 make dataset error" << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeReceiverGains(): Wrote " << m_voReceiverGain6_7GHzRcp_dB.size() << " 6.7 GHz RCP Rx gain values." << endl;
+        }
+
+        addAttributeToDataSet(string("Receiver chain 6.7 GHz RCP gain setting."), strDatasetName, string("double"), string("dB"), dataset);
+
+        H5Tclose(stringTypeStatus);
+        H5Tclose(compoundDataType);
+        H5Sclose(dataspace);
+        H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeReceiverGains(): WARNING, vector m_voReceiverGain6_7GHzRcp_dB empty." << endl;
     }
 }
 
@@ -3131,28 +3212,52 @@ void cSpectrometerHDF5OutputFile::addFrequencySky6_7GHz(int64_t i64Timestamp_us,
     m_voFrequenciesSky6_7GHz_Hz.push_back(oNewSkyFrequency);
 }
 
-void cSpectrometerHDF5OutputFile::addReceiverLcpAttenuation(int64_t i64Timestamp_us, double dReceiverLcpAttenuation_dB, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addReceiverGain5GHzLcp(int64_t i64Timestamp_us, double dGain_dB, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
-    cTimestampedDouble oNewAttenuation;
-    oNewAttenuation.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewAttenuation.m_dValue = dReceiverLcpAttenuation_dB;
-    sprintf(oNewAttenuation.m_chaStatus, "%s", strStatus.c_str());
+    cTimestampedDouble oNewGain;
+    oNewGain.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    oNewGain.m_dValue = dGain_dB;
+    sprintf(oNewGain.m_chaStatus, "%s", strStatus.c_str());
 
-    m_voReceiverAttenuationsLcp_dB.push_back(oNewAttenuation);
+    m_voReceiverGain5GHzLcp_dB.push_back(oNewGain);
 }
 
-void cSpectrometerHDF5OutputFile::addReceiverRcpAttenuation(int64_t i64Timestamp_us, double dReceiverRcpAttenuation_dB, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addReceiverGain5GHzRcp(int64_t i64Timestamp_us, double dGain_dB, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
-    cTimestampedDouble oNewAttenuation;
-    oNewAttenuation.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewAttenuation.m_dValue = dReceiverRcpAttenuation_dB;
-    sprintf(oNewAttenuation.m_chaStatus, "%s", strStatus.c_str());
+    cTimestampedDouble oNewGain;
+    oNewGain.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    oNewGain.m_dValue = dGain_dB;
+    sprintf(oNewGain.m_chaStatus, "%s", strStatus.c_str());
 
-    m_voReceiverAttenuationsRcp_dB.push_back(oNewAttenuation);
+    m_voReceiverGain5GHzRcp_dB.push_back(oNewGain);
+}
+
+void cSpectrometerHDF5OutputFile::addReceiverGain6_7GHzLcp(int64_t i64Timestamp_us, double dGain_dB, const string &strStatus)
+{
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+
+    cTimestampedDouble oNewGain;
+    oNewGain.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    oNewGain.m_dValue = dGain_dB;
+    sprintf(oNewGain.m_chaStatus, "%s", strStatus.c_str());
+
+    m_voReceiverGain6_7GHzLcp_dB.push_back(oNewGain);
+}
+
+void cSpectrometerHDF5OutputFile::addReceiverGain6_7GHzRcp(int64_t i64Timestamp_us, double dGain_dB, const string &strStatus)
+{
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+
+    cTimestampedDouble oNewGain;
+    oNewGain.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    oNewGain.m_dValue = dGain_dB;
+    sprintf(oNewGain.m_chaStatus, "%s", strStatus.c_str());
+
+    m_voReceiverGain6_7GHzRcp_dB.push_back(oNewGain);
 }
 
 // Env values

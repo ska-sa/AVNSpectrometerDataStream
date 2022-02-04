@@ -168,8 +168,10 @@ public:
     void                                    addBandSelectRcp(int64_t i64Timestamp_us, bool bBandSelectRcp, const std::string &strStatus);
     void                                    addFrequencySky5GHz(int64_t i64Timestamp_us, double dFrequencySky5GHz_Hz, const std::string &strStatus);
     void                                    addFrequencySky6_7GHz(int64_t i64Timestamp_us, double dFrequencySky6_7GHz_MHz, const std::string &strStatus);
-    void                                    addReceiverLcpAttenuation(int64_t i64Timestamp_us, double dReceiverLcpAttenuation_dB, const std::string &strStatus);
-    void                                    addReceiverRcpAttenuation(int64_t i64Timestamp_us, double dReceiverRcpAttenuation_dB, const std::string &strStatus);
+    void                                    addReceiverGain5GHzLcp(int64_t i64Timestamp_us, double dGain_dB, const std::string &strStatus);
+    void                                    addReceiverGain5GHzRcp(int64_t i64Timestamp_us, double dGain_dB, const std::string &strStatus);
+    void                                    addReceiverGain6_7GHzLcp(int64_t i64Timestamp_us, double dGain_dB, const std::string &strStatus);
+    void                                    addReceiverGain6_7GHzRcp(int64_t i64Timestamp_us, double dGain_dB, const std::string &strStatus);
 
     void                                    addWindSpeed(int64_t i64Timestamp_us, double dWindSpeed_mps, const std::string &strStatus);
     void                                    addWindDirection(int64_t i64Timestamp_us, double dWindDirection_degrees, const std::string &strStatus);
@@ -281,8 +283,10 @@ private:
     std::vector<cTimestampedChar>           m_voBandSelectRcp;
     std::vector<cTimestampedDouble>         m_voFrequenciesSky5GHz_Hz;
     std::vector<cTimestampedDouble>         m_voFrequenciesSky6_7GHz_Hz;
-    std::vector<cTimestampedDouble>         m_voReceiverAttenuationsLcp_dB;
-    std::vector<cTimestampedDouble>         m_voReceiverAttenuationsRcp_dB;
+    std::vector<cTimestampedDouble>         m_voReceiverGain5GHzLcp_dB;
+    std::vector<cTimestampedDouble>         m_voReceiverGain5GHzRcp_dB;
+    std::vector<cTimestampedDouble>         m_voReceiverGain6_7GHzLcp_dB;
+    std::vector<cTimestampedDouble>         m_voReceiverGain6_7GHzRcp_dB;
 
     std::vector<cTimestampedDouble>         m_voWindSpeeds_mps;
     std::vector<cTimestampedDouble>         m_voWindDirections_degrees;
@@ -361,7 +365,7 @@ private:
 
     void                                    writeRFBandSelects();
     void                                    writeSkyFrequencies();
-    void                                    writeReceiverAttenuations();
+    void                                    writeReceiverGains();
 
     void                                    writeEnvironmentData();
 
