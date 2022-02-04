@@ -166,8 +166,8 @@ public:
 
     void                                    addBandSelectLcp(int64_t i64Timestamp_us, bool bBandSelectLcp, const std::string &strStatus);
     void                                    addBandSelectRcp(int64_t i64Timestamp_us, bool bBandSelectRcp, const std::string &strStatus);
-    void                                    addFrequencyLOIntermed5GHz(int64_t i64Timestamp_us, double dFrequencyLOIntermediate5GHz_Hz, const std::string &strStatus);
-    void                                    addFrequencyLOIntermed6_7GHz(int64_t i64Timestamp_us, double dFrequencyLOIntermediate6_7GHz_MHz, const std::string &strStatus);
+    void                                    addFrequencySky5GHz(int64_t i64Timestamp_us, double dFrequencySky5GHz_Hz, const std::string &strStatus);
+    void                                    addFrequencySky6_7GHz(int64_t i64Timestamp_us, double dFrequencySky6_7GHz_MHz, const std::string &strStatus);
     void                                    addReceiverBandwidthLcp(int64_t i64Timestamp_us, double dReceiverBandwidthLcp_MHz, const std::string &strStatus);
     void                                    addReceiverBandwidthRcp(int64_t i64Timestamp_us, double dReceiverBandwidthRcp_MHz, const std::string &strStatus);
     void                                    addReceiverLcpAttenuation(int64_t i64Timestamp_us, double dReceiverLcpAttenuation_dB, const std::string &strStatus);
@@ -281,8 +281,8 @@ private:
 
     std::vector<cTimestampedChar>           m_voBandSelectLcp;
     std::vector<cTimestampedChar>           m_voBandSelectRcp;
-    std::vector<cTimestampedDouble>         m_voFrequenciesLOIntermediate5GHz_Hz;
-    std::vector<cTimestampedDouble>         m_voFrequenciesLOIntermediate6_7GHz_Hz;
+    std::vector<cTimestampedDouble>         m_voFrequenciesSky5GHz_Hz;
+    std::vector<cTimestampedDouble>         m_voFrequenciesSky6_7GHz_Hz;
     std::vector<cTimestampedDouble>         m_voReceiverBandwidthsLcp_Hz;
     std::vector<cTimestampedDouble>         m_voReceiverBandwidthsRcp_Hz;
     std::vector<cTimestampedDouble>         m_voReceiverAttenuationsLcp_dB;
@@ -364,7 +364,7 @@ private:
     void                                    writeSelectedSources();
 
     void                                    writeRFFrequencies();
-    void                                    writeLOFrequencies();
+    void                                    writeSkyFrequencies();
     void                                    writeIFBandwidths();
     void                                    writeReceiverAttenuations();
 

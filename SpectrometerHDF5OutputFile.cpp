@@ -161,7 +161,7 @@ cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
     writeSelectedSources();
 
     writeRFFrequencies();
-    writeLOFrequencies();
+    writeSkyFrequencies();
     writeIFBandwidths();
     writeReceiverAttenuations();
 
@@ -1629,14 +1629,14 @@ void cSpectrometerHDF5OutputFile::writeRFFrequencies()
     }
 }
 
-void cSpectrometerHDF5OutputFile::writeLOFrequencies()
+void cSpectrometerHDF5OutputFile::writeSkyFrequencies()
 {
-    if (m_voFrequenciesLOIntermediate5GHz_Hz.size())
+    if (m_voFrequenciesSky5GHz_Hz.size())
     {
-        string strDatasetName("rfe.lo-intermediate.5GHz.frequency"); // chan 0 is the 5 GHz receiver
+        string strDatasetName("rx.fe.freq.band1"); // chan 0 is the 5 GHz receiver
 
         //Create the data space
-        hsize_t dimension[] = { m_voFrequenciesLOIntermediate5GHz_Hz.size() };
+        hsize_t dimension[] = { m_voFrequenciesSky5GHz_Hz.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
@@ -1645,7 +1645,7 @@ void cSpectrometerHDF5OutputFile::writeLOFrequencies()
         //Add to compound data type: a timestamp (double)
         H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
 
-        //Add to compound data type: the chan 0 LO0 frequency (double)
+        //Add to compound data type: the band1 sky frequency (double)
         H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
 
         //Add to compound data type: the status of the sensor (string typically containing "nominal")
@@ -1656,18 +1656,18 @@ void cSpectrometerHDF5OutputFile::writeLOFrequencies()
         //Create the data set of of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voFrequenciesLOIntermediate5GHz_Hz.front());
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voFrequenciesSky5GHz_Hz.front());
 
         if(err < 0)
         {
-            cout << "cSpectrometerHDF5OutputFile::writeLOFrequencies(): HDF5 make dataset error" << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeSkyFrequencies(): HDF5 make dataset error" << endl;
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeLOFrequencies(): Wrote " << m_voFrequenciesLOIntermediate5GHz_Hz.size() << " LO0 chan 0 frequencies." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeSkyFrequencies(): Wrote " << m_voFrequenciesSky5GHz_Hz.size() << " band 1 sky frequencies." << endl;
         }
 
-        addAttributeToDataSet(string("frequency of synth a, valon 0 (5 GHz LO)"), strDatasetName, string("double"), string("Hz"), dataset);
+        addAttributeToDataSet(string("Sky frequency for band1 (5 GHz receiver)"), strDatasetName, string("double"), string("Hz"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -1676,15 +1676,15 @@ void cSpectrometerHDF5OutputFile::writeLOFrequencies()
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeLOFrequencies(): WARNING, vector m_voFrequenciesLOIntermediate5GHz_Hz empty." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeSkyFrequencies(): WARNING, vector m_voFrequenciesSky5GHz_Hz empty." << endl;
     }
 
-    if (m_voFrequenciesLOIntermediate6_7GHz_Hz.size())
+    if (m_voFrequenciesSky6_7GHz_Hz.size())
     {
-        string strDatasetName("rfe.lo-intermediate.6_7GHz.frequency"); // chan1 is the 6.7 GHz receiver
+        string strDatasetName("rx.fe.freq.band1"); // chan1 is the 6.7 GHz receiver
 
         //Create the data space
-        hsize_t dimension[] = { m_voFrequenciesLOIntermediate6_7GHz_Hz.size() };
+        hsize_t dimension[] = { m_voFrequenciesSky6_7GHz_Hz.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
@@ -1693,7 +1693,7 @@ void cSpectrometerHDF5OutputFile::writeLOFrequencies()
         //Add to compound data type: a timestamp (double)
         H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
 
-        //Add to compound data type: the chan 1 LO0 frequency (double)
+        //Add to compound data type: the band2 sky frequency (double)
         H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
 
         //Add to compound data type: the status of the sensor (string typically containing "nominal")
@@ -1704,18 +1704,18 @@ void cSpectrometerHDF5OutputFile::writeLOFrequencies()
         //Create the data set of of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voFrequenciesLOIntermediate6_7GHz_Hz.front());
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voFrequenciesSky6_7GHz_Hz.front());
 
         if(err < 0)
         {
-            cout << "cSpectrometerHDF5OutputFile::writeLOFrequencies(): HDF5 make dataset error" << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeSkyFrequencies(): HDF5 make dataset error" << endl;
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeLOFrequencies(): Wrote " << m_voFrequenciesLOIntermediate6_7GHz_Hz.size() << " LO0 chan 1 frequencies." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeSkyFrequencies(): Wrote " << m_voFrequenciesSky6_7GHz_Hz.size() << " LO0 chan 1 frequencies." << endl;
         }
 
-        addAttributeToDataSet(string("frequency of synth b, valon 0 (6.7 GHz LO)"), strDatasetName, string("double"), string("Hz"), dataset);
+        addAttributeToDataSet(string("Sky frequency for band2 (6.7 GHz receiver)"), strDatasetName, string("double"), string("Hz"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -1724,7 +1724,7 @@ void cSpectrometerHDF5OutputFile::writeLOFrequencies()
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeLOFrequencies(): WARNING, vector m_voFrequenciesLOIntermediate6_7GHz_Hz empty." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeSkyFrequencies(): WARNING, vector m_voFrequenciesSky6_7GHz_Hz empty." << endl;
     }
 }
 
@@ -3209,28 +3209,28 @@ void cSpectrometerHDF5OutputFile::addBandSelectRcp(int64_t i64Timestamp_us, bool
     m_voBandSelectRcp.push_back(oNewBandSelect);
 }
 
-void cSpectrometerHDF5OutputFile::addFrequencyLOIntermed5GHz(int64_t i64Timestamp_us, double dFrequencyLOIntermediate5GHz_Hz, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addFrequencySky5GHz(int64_t i64Timestamp_us, double dFrequencySky5GHz_Hz, const string &strStatus)
 {
-    cTimestampedDouble oNewLOFrequency;
-    oNewLOFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewLOFrequency.m_dValue = dFrequencyLOIntermediate5GHz_Hz;
-    sprintf(oNewLOFrequency.m_chaStatus, "%s", strStatus.c_str());
+    cTimestampedDouble oNewSkyFrequency;
+    oNewSkyFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    oNewSkyFrequency.m_dValue = dFrequencySky5GHz_Hz;
+    sprintf(oNewSkyFrequency.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
-    m_voFrequenciesLOIntermediate5GHz_Hz.push_back(oNewLOFrequency);
+    m_voFrequenciesSky5GHz_Hz.push_back(oNewSkyFrequency);
 }
 
-void cSpectrometerHDF5OutputFile::addFrequencyLOIntermed6_7GHz(int64_t i64Timestamp_us, double dFrequencyLOIntermediate6_7GHz_MHz, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addFrequencySky6_7GHz(int64_t i64Timestamp_us, double dFrequencySky6_7GHz_MHz, const string &strStatus)
 {
-    cTimestampedDouble oNewLOFrequency;
-    oNewLOFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewLOFrequency.m_dValue = dFrequencyLOIntermediate6_7GHz_MHz;
-    sprintf(oNewLOFrequency.m_chaStatus, "%s", strStatus.c_str());
+    cTimestampedDouble oNewSkyFrequency;
+    oNewSkyFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    oNewSkyFrequency.m_dValue = dFrequencySky6_7GHz_MHz;
+    sprintf(oNewSkyFrequency.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
-    m_voFrequenciesLOIntermediate6_7GHz_Hz.push_back(oNewLOFrequency);
+    m_voFrequenciesSky6_7GHz_Hz.push_back(oNewSkyFrequency);
 }
 
 void cSpectrometerHDF5OutputFile::addReceiverBandwidthLcp(int64_t i64Timestamp_us, double dReceiverBandwidthLcp_MHz, const string &strStatus)
