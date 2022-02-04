@@ -1525,7 +1525,7 @@ void cSpectrometerHDF5OutputFile::writeRFBandSelects()
 {
     if (m_voBandSelectLcp.size())
     {
-        string strDatasetName("rfe.band.select.LCP");
+        string strDatasetName("rx.fe.lcp-band-select");
 
         //Create the data space
         hsize_t dimension[] = { m_voBandSelectLcp.size() };
@@ -1577,7 +1577,7 @@ void cSpectrometerHDF5OutputFile::writeRFBandSelects()
 
     if (m_voBandSelectRcp.size())
     {
-        string strDatasetName("rfe.band.select.RCP");
+        string strDatasetName("rx.fe.rcp-band-select");
 
         //Create the data space
         hsize_t dimension[] = { m_voBandSelectRcp.size() };
