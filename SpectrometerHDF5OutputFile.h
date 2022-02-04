@@ -168,8 +168,6 @@ public:
     void                                    addBandSelectRcp(int64_t i64Timestamp_us, bool bBandSelectRcp, const std::string &strStatus);
     void                                    addFrequencySky5GHz(int64_t i64Timestamp_us, double dFrequencySky5GHz_Hz, const std::string &strStatus);
     void                                    addFrequencySky6_7GHz(int64_t i64Timestamp_us, double dFrequencySky6_7GHz_MHz, const std::string &strStatus);
-    void                                    addReceiverBandwidthLcp(int64_t i64Timestamp_us, double dReceiverBandwidthLcp_MHz, const std::string &strStatus);
-    void                                    addReceiverBandwidthRcp(int64_t i64Timestamp_us, double dReceiverBandwidthRcp_MHz, const std::string &strStatus);
     void                                    addReceiverLcpAttenuation(int64_t i64Timestamp_us, double dReceiverLcpAttenuation_dB, const std::string &strStatus);
     void                                    addReceiverRcpAttenuation(int64_t i64Timestamp_us, double dReceiverRcpAttenuation_dB, const std::string &strStatus);
 
@@ -283,8 +281,6 @@ private:
     std::vector<cTimestampedChar>           m_voBandSelectRcp;
     std::vector<cTimestampedDouble>         m_voFrequenciesSky5GHz_Hz;
     std::vector<cTimestampedDouble>         m_voFrequenciesSky6_7GHz_Hz;
-    std::vector<cTimestampedDouble>         m_voReceiverBandwidthsLcp_Hz;
-    std::vector<cTimestampedDouble>         m_voReceiverBandwidthsRcp_Hz;
     std::vector<cTimestampedDouble>         m_voReceiverAttenuationsLcp_dB;
     std::vector<cTimestampedDouble>         m_voReceiverAttenuationsRcp_dB;
 
@@ -363,9 +359,8 @@ private:
 
     void                                    writeSelectedSources();
 
-    void                                    writeRFFrequencies();
+    void                                    writeRFBandSelects();
     void                                    writeSkyFrequencies();
-    void                                    writeIFBandwidths();
     void                                    writeReceiverAttenuations();
 
     void                                    writeEnvironmentData();

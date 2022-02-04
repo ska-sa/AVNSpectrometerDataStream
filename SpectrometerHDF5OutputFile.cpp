@@ -160,9 +160,8 @@ cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
 
     writeSelectedSources();
 
-    writeRFFrequencies();
+    writeRFBandSelects();
     writeSkyFrequencies();
-    writeIFBandwidths();
     writeReceiverAttenuations();
 
     writeEnvironmentData();
@@ -1522,7 +1521,7 @@ void cSpectrometerHDF5OutputFile::writeSelectedSources()
     }
 }
 
-void cSpectrometerHDF5OutputFile::writeRFFrequencies()
+void cSpectrometerHDF5OutputFile::writeRFBandSelects()
 {
     if (m_voBandSelectLcp.size())
     {
@@ -1556,11 +1555,11 @@ void cSpectrometerHDF5OutputFile::writeRFFrequencies()
 
         if(err < 0)
         {
-            cout << "cSpectrometerHDF5OutputFile::writeRFFrequencies(): HDF5 make dataset error" << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeRFBandSelects(): HDF5 make dataset error" << endl;
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeRFFrequencies(): Wrote " << m_voBandSelectLcp.size() << " RF band selections for LCP." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeRFBandSelects(): Wrote " << m_voBandSelectLcp.size() << " RF band selections for LCP." << endl;
         }
 
         addAttributeToDataSet(string("RF band selection for LCP (0 - 5GHz, 1 - 6.7 GHz)"), strDatasetName, string("boolean"), string(""), dataset);
@@ -1573,7 +1572,7 @@ void cSpectrometerHDF5OutputFile::writeRFFrequencies()
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeRFFrequencies(): WARNING, vector m_voBandSelectLcp empty." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeRFBandSelects(): WARNING, vector m_voBandSelectLcp empty." << endl;
     }
 
     if (m_voBandSelectRcp.size())
@@ -1608,11 +1607,11 @@ void cSpectrometerHDF5OutputFile::writeRFFrequencies()
 
         if(err < 0)
         {
-            cout << "cSpectrometerHDF5OutputFile::writeRFFrequencies(): HDF5 make dataset error" << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeRFBandSelects(): HDF5 make dataset error" << endl;
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeRFFrequencies(): Wrote " << m_voBandSelectRcp.size() << " RF band selections for RCP." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeRFBandSelects(): Wrote " << m_voBandSelectRcp.size() << " RF band selections for RCP." << endl;
         }
 
         addAttributeToDataSet(string("RF band selection for RCP (0 - 5GHz, 1 - 6.7 GHz)"), strDatasetName, string("boolean"), string(""), dataset);
@@ -1625,7 +1624,7 @@ void cSpectrometerHDF5OutputFile::writeRFFrequencies()
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeRFFrequencies(): WARNING, vector m_voBandSelectRcp empty." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeRFBandSelects(): WARNING, vector m_voBandSelectRcp empty." << endl;
     }
 }
 
@@ -1728,107 +1727,6 @@ void cSpectrometerHDF5OutputFile::writeSkyFrequencies()
     }
 }
 
-
-void cSpectrometerHDF5OutputFile::writeIFBandwidths()
-{
-    if (m_voReceiverBandwidthsLcp_Hz.size())
-    {
-        string strDatasetName("rfe.if.chan0.receiver_bandwidth");
-
-        //Create the data space
-        hsize_t dimension[] = { m_voReceiverBandwidthsLcp_Hz.size() };
-        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
-
-        //Create a compound data type consisting of different native types per entry:
-        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
-
-        //Add to compound data type: a timestamp (double)
-        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
-
-        //Add to compound data type: the receiver bandwidth (double)
-        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
-
-        //Add to compound data type: the status of the sensor (string typically containing "nominal")
-        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
-        H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
-        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
-
-        //Create the data set of of the new compound datatype
-        hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
-
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voReceiverBandwidthsLcp_Hz.front());
-
-        if(err < 0)
-        {
-            cout << "cSpectrometerHDF5OutputFile::writeIFBandwidths(): HDF5 make dataset error" << endl;
-        }
-        else
-        {
-            cout << "cSpectrometerHDF5OutputFile::writeIFBandwidths(): Wrote " << m_voReceiverBandwidthsLcp_Hz.size() << " chan0 receiver bandwidths." << endl;
-        }
-
-        addAttributeToDataSet(string("Analogue 3 dB bandwidth available to the ADC chan0"), strDatasetName, string("double"), string("Hz"), dataset);
-
-        H5Tclose(stringTypeStatus);
-        H5Tclose(compoundDataType);
-        H5Sclose(dataspace);
-        H5Dclose(dataset);
-    }
-    else
-    {
-        cout << "cSpectrometerHDF5OutputFile::writeIFBandwidths(): WARNING, vector m_voReceiverBandwidthsLcp_Hz empty." << endl;
-    }
-
-    if (m_voReceiverBandwidthsRcp_Hz.size())
-    {
-        string strDatasetName("rfe.if.chan1.receiver_bandwidth");
-
-        //Create the data space
-        hsize_t dimension[] = { m_voReceiverBandwidthsRcp_Hz.size() };
-        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
-
-        //Create a compound data type consisting of different native types per entry:
-        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
-
-        //Add to compound data type: a timestamp (double)
-        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
-
-        //Add to compound data type: the receiver bandwidth (double)
-        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
-
-        //Add to compound data type: the status of the sensor (string typically containing "nominal")
-        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
-        H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
-        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
-
-        //Create the data set of of the new compound datatype
-        hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
-
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voReceiverBandwidthsRcp_Hz.front());
-
-        if(err < 0)
-        {
-            cout << "cSpectrometerHDF5OutputFile::writeIFBandwidths(): HDF5 make dataset error" << endl;
-        }
-        else
-        {
-            cout << "cSpectrometerHDF5OutputFile::writeIFBandwidths(): Wrote " << m_voReceiverBandwidthsRcp_Hz.size() << " chan1 receiver bandwidths." << endl;
-        }
-
-        addAttributeToDataSet(string("Analogue 3 dB bandwidth available to the ADC chan1"), strDatasetName, string("double"), string("Hz"), dataset);
-
-        H5Tclose(stringTypeStatus);
-        H5Tclose(compoundDataType);
-        H5Sclose(dataspace);
-        H5Dclose(dataset);
-    }
-    else
-    {
-        cout << "cSpectrometerHDF5OutputFile::writeIFBandwidths(): WARNING, vector m_voReceiverBandwidthsRcp_Hz empty." << endl;
-    }
-}
-
-
 void cSpectrometerHDF5OutputFile::writeReceiverAttenuations()
 {
     if (m_voReceiverAttenuationsLcp_dB.size())
@@ -1845,7 +1743,7 @@ void cSpectrometerHDF5OutputFile::writeReceiverAttenuations()
         //Add to compound data type: a timestamp (double)
         H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
 
-        //Add to compound data type: the receiver bandwidth (double)
+        //Add to compound data type: the LCP attenuation (double)
         H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
 
         //Add to compound data type: the status of the sensor (string typically containing "nominal")
@@ -1893,7 +1791,7 @@ void cSpectrometerHDF5OutputFile::writeReceiverAttenuations()
         //Add to compound data type: a timestamp (double)
         H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
 
-        //Add to compound data type: the receiver bandwidth (double)
+        //Add to compound data type: the RCP attenuation (double)
         H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
 
         //Add to compound data type: the status of the sensor (string typically containing "nominal")
@@ -1944,7 +1842,7 @@ void cSpectrometerHDF5OutputFile::writeEnvironmentData()
         //Add to compound data type: a timestamp (double)
         H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
 
-        //Add to compound data type: the receiver bandwidth (double)
+        //Add to compound data type: the wind speed (double)
         H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
 
         //Add to compound data type: the status of the sensor (string typically containing "nominal")
@@ -1992,7 +1890,7 @@ void cSpectrometerHDF5OutputFile::writeEnvironmentData()
         //Add to compound data type: a timestamp (double)
         H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
 
-        //Add to compound data type: the receiver bandwidth (double)
+        //Add to compound data type: the wind direction (double)
         H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
 
         //Add to compound data type: the status of the sensor (string typically containing "nominal")
@@ -2040,7 +1938,7 @@ void cSpectrometerHDF5OutputFile::writeEnvironmentData()
         //Add to compound data type: a timestamp (double)
         H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
 
-        //Add to compound data type: the receiver bandwidth (double)
+        //Add to compound data type: the air temperature (double)
         H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
 
         //Add to compound data type: the status of the sensor (string typically containing "nominal")
@@ -2088,7 +1986,7 @@ void cSpectrometerHDF5OutputFile::writeEnvironmentData()
         //Add to compound data type: a timestamp (double)
         H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
 
-        //Add to compound data type: the receiver bandwidth (double)
+        //Add to compound data type: the air pressure (double)
         H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
 
         //Add to compound data type: the status of the sensor (string typically containing "nominal")
@@ -2136,7 +2034,7 @@ void cSpectrometerHDF5OutputFile::writeEnvironmentData()
         //Add to compound data type: a timestamp (double)
         H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
 
-        //Add to compound data type: the receiver bandwidth (double)
+        //Add to compound data type: the relative humidity (double)
         H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
 
         //Add to compound data type: the status of the sensor (string typically containing "nominal")
@@ -3231,30 +3129,6 @@ void cSpectrometerHDF5OutputFile::addFrequencySky6_7GHz(int64_t i64Timestamp_us,
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     m_voFrequenciesSky6_7GHz_Hz.push_back(oNewSkyFrequency);
-}
-
-void cSpectrometerHDF5OutputFile::addReceiverBandwidthLcp(int64_t i64Timestamp_us, double dReceiverBandwidthLcp_MHz, const string &strStatus)
-{
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
-    cTimestampedDouble oNewBandwidthIF;
-    oNewBandwidthIF.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewBandwidthIF.m_dValue = dReceiverBandwidthLcp_MHz;
-    sprintf(oNewBandwidthIF.m_chaStatus, "%s", strStatus.c_str());
-
-    m_voReceiverBandwidthsLcp_Hz.push_back(oNewBandwidthIF);
-}
-
-void cSpectrometerHDF5OutputFile::addReceiverBandwidthRcp(int64_t i64Timestamp_us, double dReceiverBandwidthRcp_MHz, const string &strStatus)
-{
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
-    cTimestampedDouble oNewBandwidthIF;
-    oNewBandwidthIF.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewBandwidthIF.m_dValue = dReceiverBandwidthRcp_MHz;
-    sprintf(oNewBandwidthIF.m_chaStatus, "%s", strStatus.c_str());
-
-    m_voReceiverBandwidthsRcp_Hz.push_back(oNewBandwidthIF);
 }
 
 void cSpectrometerHDF5OutputFile::addReceiverLcpAttenuation(int64_t i64Timestamp_us, double dReceiverLcpAttenuation_dB, const string &strStatus)
