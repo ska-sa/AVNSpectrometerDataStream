@@ -1223,21 +1223,17 @@ void cSpectrometerHDF5OutputFile::writeAntennaConfiguration()
 
 void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
 {
-    if (m_voNoiseDiodeInputSource.size())
+    if (m_voNoiseDiode5GHzInputSource.size())
     {
-        string strDatasetName("noise-diode.control-source");
+        string strDatasetName("noise-diode.5ghz.control-source");
 
         //Create the data space
-        hsize_t dimension[] = { m_voNoiseDiodeInputSource.size() };
+        hsize_t dimension[] = { m_voNoiseDiode5GHzInputSource.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
         hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cNoiseDiodeSource));
-
-        //Add to compound data type: a timestamp (double)
         H5Tinsert(compoundDataType, "timestamp", HOFFSET(cNoiseDiodeSource, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
-
-        //Add to compound data type: the noise diode source (an 8-character string).
         hid_t stringTypeValue = H5Tcopy (H5T_C_S1);
         H5Tset_size(stringTypeValue, sizeof(cNoiseDiodeSource::m_chaSource));
         H5Tinsert(compoundDataType, "value", HOFFSET(cNoiseDiodeSource, m_chaSource), stringTypeValue);
@@ -1250,7 +1246,7 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
         //Create the data set of of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voNoiseDiodeInputSource.front());
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voNoiseDiode5GHzInputSource.front());
 
         if(err < 0)
         {
@@ -1258,10 +1254,10 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): Wrote " << m_voNoiseDiodeInputSource.size() << " noise diode input sources to dataset." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): Wrote " << m_voNoiseDiode5GHzInputSource.size() << " 5GHz noise diode input sources to dataset." << endl;
         }
 
-        addAttributeToDataSet(string("noise diode input source"), strDatasetName, string("string"), string(""), dataset);
+        addAttributeToDataSet(string("5 GHz noise diode input source"), strDatasetName, string("string"), string(""), dataset);
 
         H5Tclose(stringTypeValue);
         H5Tclose(stringTypeStatus);
@@ -1271,72 +1267,20 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): WARNING, vector m_voNoiseDiodeInputSource empty." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): WARNING, vector m_voNoiseDiode5GHzInputSource empty." << endl;
     }
 
-    if (m_voNoiseDiodeEnable.size())
+    if (m_voNoiseDiode5GHzLevel.size())
     {
-        string strDatasetName("noise-diode.enabled");
+        string strDatasetName("noise-diode.5ghz.level");
 
         //Create the data space
-        hsize_t dimension[] = { m_voNoiseDiodeEnable.size() };
-        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
-
-        //Create a compound data type consisting of different native types per entry:
-        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedBool));
-
-        //Add to compound data type: a timestamp (double)
-        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedBool, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
-
-        // Add to compound data type: noise diode enabled boolean state.
-        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedBool, m_i32Value), H5T_NATIVE_INT32);
-
-        //Add to compound data type: the status of the noise diode equiptment (string typically containing "nominal")
-        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
-        H5Tset_size(stringTypeStatus, sizeof(cTimestampedBool::m_chaStatus));
-        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedBool, m_chaStatus), stringTypeStatus);
-
-        //Create the data set of of the new compound datatype
-        hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
-
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voNoiseDiodeEnable.front());
-
-        if(err < 0)
-        {
-            cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): HDF5 make dataset error: " << strDatasetName  << endl;
-        }
-        else
-        {
-            cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): Wrote " << m_voNoiseDiodeEnable.size() << " noise diode enableds to dataset." << endl;
-        }
-
-        addAttributeToDataSet(string("noise diode enabled"), strDatasetName, string("boolean"), string(""), dataset);
-
-        H5Tclose(stringTypeStatus);
-        H5Tclose(compoundDataType);
-        H5Sclose(dataspace);
-        H5Dclose(dataset);
-    }
-    else
-    {
-        cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): WARNING, vector m_voNoiseDiodeEnable empty." << endl;
-    }
-
-    if (m_voNoiseDiodeSelect.size())
-    {
-        string strDatasetName("noise-diode.select");
-
-        //Create the data space
-        hsize_t dimension[] = { m_voNoiseDiodeSelect.size() };
+        hsize_t dimension[] = { m_voNoiseDiode5GHzLevel.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
         hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedInt));
-
-        //Add to compound data type: a timestamp (double)
         H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedInt, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
-
-        //Add to compound data type: the noise diode selection (integer).
         H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedInt, m_i32Value), H5T_NATIVE_INT32);
 
         //Add to compound data type: the status of the noise diode equiptment (string typically containing "nominal")
@@ -1347,7 +1291,7 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
         //Create the data set of of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voNoiseDiodeSelect.front());
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voNoiseDiode5GHzLevel.front());
 
         if(err < 0)
         {
@@ -1355,10 +1299,10 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): Wrote " << m_voNoiseDiodeSelect.size() << " noise diode selections to dataset." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): Wrote " << m_voNoiseDiode5GHzLevel.size() << " 5GHz noise diode levels to dataset." << endl;
         }
 
-        addAttributeToDataSet(string("noise diode selection"), strDatasetName, string("int"), string(""), dataset);
+        addAttributeToDataSet(string("5GHz noise diode level"), strDatasetName, string("int"), string(""), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -1367,24 +1311,20 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): WARNING, vector m_voNoiseDiodeSelect empty." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): WARNING, vector m_voNoiseDiode5GHzLevel empty." << endl;
     }
 
-    if (m_voNoiseDiodePWMMark.size())
+    if (m_voNoiseDiode5GHzPWMMark.size())
     {
-        string strDatasetName("noise-diode.pwm-mark");
+        string strDatasetName("noise-diode.5ghz.pwm-mark");
 
         //Create the data space
-        hsize_t dimension[] = { m_voNoiseDiodePWMMark.size() };
+        hsize_t dimension[] = { m_voNoiseDiode5GHzPWMMark.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
         hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedInt));
-
-        //Add to compound data type: a timestamp (double)
         H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedInt, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
-
-        //Add to compound data type: the noise diode pwm mark (integer).
         H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedInt, m_i32Value), H5T_NATIVE_INT32);
 
         //Add to compound data type: the status of the noise diode equiptment (string typically containing "nominal")
@@ -1395,7 +1335,7 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
         //Create the data set of of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voNoiseDiodePWMMark.front());
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voNoiseDiode5GHzPWMMark.front());
 
         if(err < 0)
         {
@@ -1403,10 +1343,10 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): Wrote " << m_voNoiseDiodePWMMark.size() << " noise diode PWM marks to dataset." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): Wrote " << m_voNoiseDiode5GHzPWMMark.size() << " 5GHz noise diode PWM marks to dataset." << endl;
         }
 
-        addAttributeToDataSet(string("noise diode pwm mark"), strDatasetName, string("int"), string("duty cycle, fraction out of 64"), dataset);
+        addAttributeToDataSet(string("5GHz noise diode pwm mark"), strDatasetName, string("int"), string("duty cycle, fraction out of 10"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -1415,15 +1355,15 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): WARNING, vector m_voNoiseDiodePWMMark empty." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): WARNING, vector m_voNoiseDiode5GHzPWMMark empty." << endl;
     }
 
-    if (m_voNoiseDiodePWMFrequency.size())
+    if (m_voNoiseDiode5GHzPWMFrequency.size())
     {
         string strDatasetName("noise-diode.pwm-frequency");
 
         //Create the data space
-        hsize_t dimension[] = { m_voNoiseDiodePWMFrequency.size() };
+        hsize_t dimension[] = { m_voNoiseDiode5GHzPWMFrequency.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
@@ -1443,7 +1383,7 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
         //Create the data set of of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voNoiseDiodePWMFrequency.front());
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voNoiseDiode5GHzPWMFrequency.front());
 
         if(err < 0)
         {
@@ -1451,10 +1391,10 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): Wrote " << m_voNoiseDiodePWMFrequency.size() << " noise diode frequencies to dataset." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): Wrote " << m_voNoiseDiode5GHzPWMFrequency.size() << " 5GHz noise diode pwm frequencies to dataset." << endl;
         }
 
-        addAttributeToDataSet(string("noise diode pwm frequency"), strDatasetName, string("double"), string("Hz"), dataset);
+        addAttributeToDataSet(string("5GHz noise diode pwm frequency"), strDatasetName, string("double"), string("Hz"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -1463,7 +1403,190 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): WARNING, vector m_voNoiseDiodePWMFrequency empty." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): WARNING, vector m_voNoiseDiode5GHzPWMFrequency empty." << endl;
+    }
+
+        if (m_voNoiseDiode6_7GHzInputSource.size())
+    {
+        string strDatasetName("noise-diode.6.7GHz.control-source");
+
+        //Create the data space
+        hsize_t dimension[] = { m_voNoiseDiode6_7GHzInputSource.size() };
+        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
+
+        //Create a compound data type consisting of different native types per entry:
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cNoiseDiodeSource));
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cNoiseDiodeSource, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+        hid_t stringTypeValue = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeValue, sizeof(cNoiseDiodeSource::m_chaSource));
+        H5Tinsert(compoundDataType, "value", HOFFSET(cNoiseDiodeSource, m_chaSource), stringTypeValue);
+
+        //Add to compound data type: the status of the noise diode equiptment (string typically containing "nominal")
+        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeStatus, sizeof(cNoiseDiodeSource::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cNoiseDiodeSource, m_chaStatus), stringTypeStatus);
+
+        //Create the data set of of the new compound datatype
+        hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
+
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voNoiseDiode6_7GHzInputSource.front());
+
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): HDF5 make dataset error" << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): Wrote " << m_voNoiseDiode6_7GHzInputSource.size() << " 6.7GHz noise diode input sources to dataset." << endl;
+        }
+
+        addAttributeToDataSet(string("5 GHz noise diode input source"), strDatasetName, string("string"), string(""), dataset);
+
+        H5Tclose(stringTypeValue);
+        H5Tclose(stringTypeStatus);
+        H5Tclose(compoundDataType);
+        H5Sclose(dataspace);
+        H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): WARNING, vector m_voNoiseDiode6_7GHzInputSource empty." << endl;
+    }
+
+    if (m_voNoiseDiode6_7GHzLevel.size())
+    {
+        string strDatasetName("noise-diode.6-7GHz.level");
+
+        //Create the data space
+        hsize_t dimension[] = { m_voNoiseDiode6_7GHzLevel.size() };
+        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
+
+        //Create a compound data type consisting of different native types per entry:
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedInt));
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedInt, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedInt, m_i32Value), H5T_NATIVE_INT32);
+
+        //Add to compound data type: the status of the noise diode equiptment (string typically containing "nominal")
+        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeStatus, sizeof(cTimestampedInt::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedInt, m_chaStatus), stringTypeStatus);
+
+        //Create the data set of of the new compound datatype
+        hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
+
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voNoiseDiode6_7GHzLevel.front());
+
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): HDF5 make dataset error: " << strDatasetName << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): Wrote " << m_voNoiseDiode6_7GHzLevel.size() << " 6.7GHz noise diode levels to dataset." << endl;
+        }
+
+        addAttributeToDataSet(string("6.7GHz noise diode level"), strDatasetName, string("int"), string(""), dataset);
+
+        H5Tclose(stringTypeStatus);
+        H5Tclose(compoundDataType);
+        H5Sclose(dataspace);
+        H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): WARNING, vector m_voNoiseDiode6_7GHzLevel empty." << endl;
+    }
+
+    if (m_voNoiseDiode6_7GHzPWMMark.size())
+    {
+        string strDatasetName("noise-diode.6-7GHz.pwm-mark");
+
+        //Create the data space
+        hsize_t dimension[] = { m_voNoiseDiode6_7GHzPWMMark.size() };
+        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
+
+        //Create a compound data type consisting of different native types per entry:
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedInt));
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedInt, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedInt, m_i32Value), H5T_NATIVE_INT32);
+
+        //Add to compound data type: the status of the noise diode equiptment (string typically containing "nominal")
+        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeStatus, sizeof(cTimestampedInt::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedInt, m_chaStatus), stringTypeStatus);
+
+        //Create the data set of of the new compound datatype
+        hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
+
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voNoiseDiode6_7GHzPWMMark.front());
+
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): HDF5 make dataset error: " << strDatasetName << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): Wrote " << m_voNoiseDiode6_7GHzPWMMark.size() << " 6.7GHz noise diode PWM marks to dataset." << endl;
+        }
+
+        addAttributeToDataSet(string("6.7GHz noise diode pwm mark"), strDatasetName, string("int"), string("duty cycle, fraction out of 10"), dataset);
+
+        H5Tclose(stringTypeStatus);
+        H5Tclose(compoundDataType);
+        H5Sclose(dataspace);
+        H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): WARNING, vector m_voNoiseDiode6_7GHzPWMMark empty." << endl;
+    }
+
+    if (m_voNoiseDiode6_7GHzPWMFrequency.size())
+    {
+        string strDatasetName("noise-diode.6-7GHz.pwm-frequency");
+
+        //Create the data space
+        hsize_t dimension[] = { m_voNoiseDiode6_7GHzPWMFrequency.size() };
+        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
+
+        //Create a compound data type consisting of different native types per entry:
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
+
+        //Add to compound data type: a timestamp (double)
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the noise diode pwm frequency (double).
+        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the status of the noise diode equiptment (string typically containing "nominal")
+        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
+
+        //Create the data set of of the new compound datatype
+        hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
+
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voNoiseDiode6_7GHzPWMFrequency.front());
+
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): HDF5 make dataset error: " << strDatasetName << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): Wrote " << m_voNoiseDiode6_7GHzPWMFrequency.size() << " 6.7GHz noise diode pwm frequencies to dataset." << endl;
+        }
+
+        addAttributeToDataSet(string("6.7GHz noise diode pwm frequency"), strDatasetName, string("double"), string("Hz"), dataset);
+
+        H5Tclose(stringTypeStatus);
+        H5Tclose(compoundDataType);
+        H5Sclose(dataspace);
+        H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation(): WARNING, vector m_voNoiseDiode6_7GHzPWMFrequency empty." << endl;
     }
 }
 
@@ -3063,7 +3186,7 @@ void cSpectrometerHDF5OutputFile::setAntennaDelayModel(const vector<double> &vdD
     m_vdDelayModelParams = vdDelayModelParams;
 }
 
-void cSpectrometerHDF5OutputFile::addNoiseDiodeInputSource(int64_t i64Timestamp_us, const string &strNoiseDiodeInputSource, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addNoiseDiode5GHzInputSource(int64_t i64Timestamp_us, const string &strNoiseDiodeInputSource, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
@@ -3072,46 +3195,34 @@ void cSpectrometerHDF5OutputFile::addNoiseDiodeInputSource(int64_t i64Timestamp_
     sprintf(oNewNoiseDiodeInputSource.m_chaSource, "%s", strNoiseDiodeInputSource.c_str());
     sprintf(oNewNoiseDiodeInputSource.m_chaStatus, "%s", strStatus.c_str());
 
-    m_voNoiseDiodeInputSource.push_back(oNewNoiseDiodeInputSource);
+    m_voNoiseDiode5GHzInputSource.push_back(oNewNoiseDiodeInputSource);
 }
 
-void cSpectrometerHDF5OutputFile::addNoiseDiodeEnable(int64_t i64Timestamp_us, bool bNoiseDiodeEnable, const string &strStatus)
-{
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
-    cTimestampedBool oNewNoiseDiodeEnable;
-    oNewNoiseDiodeEnable.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewNoiseDiodeEnable.m_i32Value = bNoiseDiodeEnable;
-    sprintf(oNewNoiseDiodeEnable.m_chaStatus, "%s", strStatus.c_str());
-
-    m_voNoiseDiodeEnable.push_back(oNewNoiseDiodeEnable);
-}
-
-void cSpectrometerHDF5OutputFile::addNoiseDiodeSelect(int64_t i64Timestamp_us, int32_t i32NoiseDiodeSelect, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addNoiseDiode5GHzLevel(int64_t i64Timestamp_us, int32_t i32NoiseDiodeLevel, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     cTimestampedInt oNewNoiseDiodeSelect;
     oNewNoiseDiodeSelect.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewNoiseDiodeSelect.m_i32Value = i32NoiseDiodeSelect & 0x0000000f;
+    oNewNoiseDiodeSelect.m_i32Value = i32NoiseDiodeLevel;
     sprintf(oNewNoiseDiodeSelect.m_chaStatus, "%s", strStatus.c_str());
 
-    m_voNoiseDiodeSelect.push_back(oNewNoiseDiodeSelect);
+    m_voNoiseDiode5GHzLevel.push_back(oNewNoiseDiodeSelect);
 }
 
-void cSpectrometerHDF5OutputFile::addNoiseDiodePWMMark(int64_t i64Timestamp_us, int32_t i32NoiseDiodePWMMark, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addNoiseDiode5GHzPWMMark(int64_t i64Timestamp_us, int32_t i32NoiseDiodePWMMark, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     cTimestampedInt oNewNoiseDiodePWMMark;
     oNewNoiseDiodePWMMark.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewNoiseDiodePWMMark.m_i32Value = i32NoiseDiodePWMMark & 0x003f;
+    oNewNoiseDiodePWMMark.m_i32Value = i32NoiseDiodePWMMark;
     sprintf(oNewNoiseDiodePWMMark.m_chaStatus, "%s", strStatus.c_str());
 
-    m_voNoiseDiodePWMMark.push_back(oNewNoiseDiodePWMMark);
+    m_voNoiseDiode5GHzPWMMark.push_back(oNewNoiseDiodePWMMark);
 }
 
-void cSpectrometerHDF5OutputFile::addNoiseDiodePWMFrequency(int64_t i64Timestamp_us, double dNoiseDiodePWMFrequency, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addNoiseDiode5GHzPWMFrequency(int64_t i64Timestamp_us, double dNoiseDiodePWMFrequency, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
@@ -3120,38 +3231,60 @@ void cSpectrometerHDF5OutputFile::addNoiseDiodePWMFrequency(int64_t i64Timestamp
     oNewNoiseDiodePWMFrequency.m_dValue = dNoiseDiodePWMFrequency;
     sprintf(oNewNoiseDiodePWMFrequency.m_chaStatus, "%s", strStatus.c_str());
 
-    m_voNoiseDiodePWMFrequency.push_back(oNewNoiseDiodePWMFrequency);
+    m_voNoiseDiode5GHzPWMFrequency.push_back(oNewNoiseDiodePWMFrequency);
+}
+
+void cSpectrometerHDF5OutputFile::addNoiseDiode6_7GHzInputSource(int64_t i64Timestamp_us, const string &strNoiseDiodeInputSource, const string &strStatus)
+{
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+
+    cNoiseDiodeSource oNewNoiseDiodeInputSource;
+    oNewNoiseDiodeInputSource.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    sprintf(oNewNoiseDiodeInputSource.m_chaSource, "%s", strNoiseDiodeInputSource.c_str());
+    sprintf(oNewNoiseDiodeInputSource.m_chaStatus, "%s", strStatus.c_str());
+
+    m_voNoiseDiode6_7GHzInputSource.push_back(oNewNoiseDiodeInputSource);
+}
+
+void cSpectrometerHDF5OutputFile::addNoiseDiode6_7GHzLevel(int64_t i64Timestamp_us, int32_t i32NoiseDiodeLevel, const string &strStatus)
+{
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+
+    cTimestampedInt oNewNoiseDiodeSelect;
+    oNewNoiseDiodeSelect.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    oNewNoiseDiodeSelect.m_i32Value = i32NoiseDiodeLevel;
+    sprintf(oNewNoiseDiodeSelect.m_chaStatus, "%s", strStatus.c_str());
+
+    m_voNoiseDiode6_7GHzLevel.push_back(oNewNoiseDiodeSelect);
+}
+
+void cSpectrometerHDF5OutputFile::addNoiseDiode6_7GHzPWMMark(int64_t i64Timestamp_us, int32_t i32NoiseDiodePWMMark, const string &strStatus)
+{
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+
+    cTimestampedInt oNewNoiseDiodePWMMark;
+    oNewNoiseDiodePWMMark.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    oNewNoiseDiodePWMMark.m_i32Value = i32NoiseDiodePWMMark;
+    sprintf(oNewNoiseDiodePWMMark.m_chaStatus, "%s", strStatus.c_str());
+
+    m_voNoiseDiode6_7GHzPWMMark.push_back(oNewNoiseDiodePWMMark);
+}
+
+void cSpectrometerHDF5OutputFile::addNoiseDiode6_7GHzPWMFrequency(int64_t i64Timestamp_us, double dNoiseDiodePWMFrequency, const string &strStatus)
+{
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+
+    cTimestampedDouble oNewNoiseDiodePWMFrequency;
+    oNewNoiseDiodePWMFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    oNewNoiseDiodePWMFrequency.m_dValue = dNoiseDiodePWMFrequency;
+    sprintf(oNewNoiseDiodePWMFrequency.m_chaStatus, "%s", strStatus.c_str());
+
+    m_voNoiseDiode6_7GHzPWMFrequency.push_back(oNewNoiseDiodePWMFrequency);
 }
 
 void cSpectrometerHDF5OutputFile::addSourceSelection(int64_t i64Timestamp_us, const string &strSourceName, const string &strStatus)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
-    /*
-    //Construct as per KAT7 standard
-    //Source name if available, RA and Dec in DMS
-
-    int32_t i32RA_deg;
-    int32_t i32RA_min;
-    double dRA_s;
-    AVN::cCoordinatePosition::decimalDegreesToDMS(dRighAscension_deg, i32RA_deg, i32RA_min, dRA_s);
-
-    int32_t i32Dec_deg;
-    int32_t i32Dec_min;
-    double dDec_s;
-    AVN::cCoordinatePosition::decimalDegreesToDMS(dDeclination_deg, i32Dec_deg, i32Dec_min, dDec_s);
-
-    stringstream oSS;
-    if(strSourceName.length())
-    {
-        oSS << strSourceName;
-        oSS << ", ";
-    }
-
-    oSS << "radec, ";
-    oSS << i32RA_deg << ":" << i32RA_min << ":" << dRA_s << ", ";
-    oSS << i32Dec_deg << ":" << i32Dec_min << ":" << dDec_s;
-    */
 
     cSourceSelection oNewSourceSelection;
 

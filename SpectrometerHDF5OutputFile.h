@@ -154,12 +154,14 @@ public:
     void                                    addAntennaStatus(int64_t i64Timestamp_us, const std::string &strAntennaStatus, const std::string &strStatus);
     void                                    addObservationStatus(int64_t i64Timestamp_us, const std::string &strObservationStatus, const std::string &strStatus);
 
-    void                                    addNoiseDiodeInputSource(int64_t i64Timestamp_us, const std::string &strNoiseDiodeInputSource, const std::string &strStatus);
-    void                                    addNoiseDiodeEnable(int64_t i64Timestamp_us, bool bNoiseDiodeEnable, const std::string &strStatus);
-    void                                    addNoiseDiodeSelect(int64_t i64Timestamp_us, int32_t i32NoiseDiodeSelect, const std::string &strStatus);
-    void                                    addNoiseDiodePWMMark(int64_t i64Timestamp_us, int32_t i32NoiseDiodePWMMark, const std::string &strStatus);
-    void                                    addNoiseDiodePWMFrequency(int64_t i64Timestamp_us, double dNoiseDiodePWMFrequency, const std::string &strStatus);
-
+    void                                    addNoiseDiode5GHzInputSource(int64_t i64Timestamp_us, const std::string &strNoiseDiodeInputSource, const std::string &strStatus);
+    void                                    addNoiseDiode5GHzLevel(int64_t i64Timestamp_us, int32_t i32NoiseDiodeLevel, const std::string &strStatus);
+    void                                    addNoiseDiode5GHzPWMMark(int64_t i64Timestamp_us, int32_t i32NoiseDiodePWMMark, const std::string &strStatus);
+    void                                    addNoiseDiode5GHzPWMFrequency(int64_t i64Timestamp_us, double dNoiseDiodePWMFrequency, const std::string &strStatus);
+    void                                    addNoiseDiode6_7GHzInputSource(int64_t i64Timestamp_us, const std::string &strNoiseDiodeInputSource, const std::string &strStatus);
+    void                                    addNoiseDiode6_7GHzLevel(int64_t i64Timestamp_us, int32_t i32NoiseDiodeLevel, const std::string &strStatus);
+    void                                    addNoiseDiode6_7GHzPWMMark(int64_t i64Timestamp_us, int32_t i32NoiseDiodePWMMark, const std::string &strStatus);
+    void                                    addNoiseDiode6_7GHzPWMFrequency(int64_t i64Timestamp_us, double dNoiseDiodePWMFrequency, const std::string &strStatus);
 
 
     void                                    addSourceSelection(int64_t i64Timestamp_us, const std::string &strSourceName, const std::string &strStatus);
@@ -254,28 +256,17 @@ private:
     std::vector<cTimestampedDouble>         m_voSkyActualAntennaAzs_deg;
     std::vector<cTimestampedDouble>         m_voSkyActualAntennaEls_deg;
 
-    /* Marked for removal.
-    std::vector<cTimestampedDouble>         m_voActualSourceOffsetAzs_deg;
-    std::vector<cTimestampedDouble>         m_voActualSourceOffsetEls_deg;
-    std::vector<cTimestampedDouble>         m_voActualAntennaRAs_deg;
-    std::vector<cTimestampedDouble>         m_voActualAntennaDecs_deg;
-    */
-
     std::vector<cAntennaStatus>             m_voAntennaStatuses;
     std::vector<cAntennaStatus>             m_voObservationStatuses; // Same datatype as above.
 
-    /* Marked for removal.
-    std::vector<cTimestampedDouble>         m_voMotorTorquesAzMaster_mNm;
-    std::vector<cTimestampedDouble>         m_voMotorTorquesAzSlave_mNm;
-    std::vector<cTimestampedDouble>         m_voMotorTorquesElMaster_mNm;
-    std::vector<cTimestampedDouble>         m_voMotorTorquesElSlave_mNm;
-    */
-
-    std::vector<cNoiseDiodeSource>          m_voNoiseDiodeInputSource;
-    std::vector<cTimestampedBool>           m_voNoiseDiodeEnable;
-    std::vector<cTimestampedInt>            m_voNoiseDiodeSelect;
-    std::vector<cTimestampedInt>            m_voNoiseDiodePWMMark;
-    std::vector<cTimestampedDouble>         m_voNoiseDiodePWMFrequency;
+    std::vector<cNoiseDiodeSource>          m_voNoiseDiode5GHzInputSource;
+    std::vector<cTimestampedInt>            m_voNoiseDiode5GHzLevel;
+    std::vector<cTimestampedInt>            m_voNoiseDiode5GHzPWMMark;
+    std::vector<cTimestampedDouble>         m_voNoiseDiode5GHzPWMFrequency;
+    std::vector<cNoiseDiodeSource>          m_voNoiseDiode6_7GHzInputSource;
+    std::vector<cTimestampedInt>            m_voNoiseDiode6_7GHzLevel;
+    std::vector<cTimestampedInt>            m_voNoiseDiode6_7GHzPWMMark;
+    std::vector<cTimestampedDouble>         m_voNoiseDiode6_7GHzPWMFrequency;
 
     std::vector<cSourceSelection>           m_voSelectedSources;
 
