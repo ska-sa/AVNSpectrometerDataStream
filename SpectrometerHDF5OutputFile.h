@@ -164,11 +164,10 @@ public:
 
     void                                    addSourceSelection(int64_t i64Timestamp_us, const std::string &strSourceName, const std::string &strStatus);
 
-    void                                    addFrequencySelectLcp(int64_t i64Timestamp_us, bool bFrequencySelectLcp, const std::string &strStatus);
-    void                                    addFrequencySelectRcp(int64_t i64Timestamp_us, bool bFrequencySelectRcp, const std::string &strStatus);
+    void                                    addBandSelectLcp(int64_t i64Timestamp_us, bool bBandSelectLcp, const std::string &strStatus);
+    void                                    addBandSelectRcp(int64_t i64Timestamp_us, bool bBandSelectRcp, const std::string &strStatus);
     void                                    addFrequencyLOIntermed5GHz(int64_t i64Timestamp_us, double dFrequencyLOIntermediate5GHz_Hz, const std::string &strStatus);
     void                                    addFrequencyLOIntermed6_7GHz(int64_t i64Timestamp_us, double dFrequencyLOIntermediate6_7GHz_MHz, const std::string &strStatus);
-    void                                    addFrequencyLOFinal(int64_t i64Timestamp_us, double dFrequencyLOFinal_MHz, const std::string &strStatus);
     void                                    addReceiverBandwidthLcp(int64_t i64Timestamp_us, double dReceiverBandwidthLcp_MHz, const std::string &strStatus);
     void                                    addReceiverBandwidthRcp(int64_t i64Timestamp_us, double dReceiverBandwidthRcp_MHz, const std::string &strStatus);
     void                                    addReceiverLcpAttenuation(int64_t i64Timestamp_us, double dReceiverLcpAttenuation_dB, const std::string &strStatus);
@@ -280,11 +279,10 @@ private:
 
     std::vector<cSourceSelection>           m_voSelectedSources;
 
-    std::vector<cTimestampedChar>           m_voFrequencySelectLcp;
-    std::vector<cTimestampedChar>           m_voFrequencySelectRcp;
+    std::vector<cTimestampedChar>           m_voBandSelectLcp;
+    std::vector<cTimestampedChar>           m_voBandSelectRcp;
     std::vector<cTimestampedDouble>         m_voFrequenciesLOIntermediate5GHz_Hz;
     std::vector<cTimestampedDouble>         m_voFrequenciesLOIntermediate6_7GHz_Hz;
-    std::vector<cTimestampedDouble>         m_voFrequenciesLOFinal_Hz;
     std::vector<cTimestampedDouble>         m_voReceiverBandwidthsLcp_Hz;
     std::vector<cTimestampedDouble>         m_voReceiverBandwidthsRcp_Hz;
     std::vector<cTimestampedDouble>         m_voReceiverAttenuationsLcp_dB;
