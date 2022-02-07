@@ -1360,7 +1360,7 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
 
     if (m_voNoiseDiode5GHzPWMFrequency.size())
     {
-        string strDatasetName("noise-diode.pwm-frequency");
+        string strDatasetName("noise-diode.5GHz.pwm-frequency");
 
         //Create the data space
         hsize_t dimension[] = { m_voNoiseDiode5GHzPWMFrequency.size() };
@@ -1408,7 +1408,7 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
 
         if (m_voNoiseDiode6_7GHzInputSource.size())
     {
-        string strDatasetName("noise-diode.6.7GHz.control-source");
+        string strDatasetName("noise-diode.6-7GHz.control-source");
 
         //Create the data space
         hsize_t dimension[] = { m_voNoiseDiode6_7GHzInputSource.size() };
@@ -1803,7 +1803,7 @@ void cSpectrometerHDF5OutputFile::writeSkyFrequencies()
 
     if (m_voFrequenciesSky6_7GHz_Hz.size())
     {
-        string strDatasetName("rx.fe.freq.band1"); // chan1 is the 6.7 GHz receiver
+        string strDatasetName("rx.fe.freq.band2"); // chan1 is the 6.7 GHz receiver
 
         //Create the data space
         hsize_t dimension[] = { m_voFrequenciesSky6_7GHz_Hz.size() };
