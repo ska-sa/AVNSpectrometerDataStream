@@ -2901,7 +2901,6 @@ void cSpectrometerHDF5OutputFile::addMarkupLabel(int64_t i64Timestamp_us, const 
     sprintf(oNewMarkupLabel.m_chaLabel, "%s", strLabel.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     m_voMarkupLabels.push_back(oNewMarkupLabel);
 }
 
@@ -2913,7 +2912,6 @@ void cSpectrometerHDF5OutputFile::addAcsRequestedAz(int64_t i64Timestamp_us, dou
     sprintf(oNewRequestedAntennaAz.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     m_voAcsRequestedAntennaAzs_deg.push_back(oNewRequestedAntennaAz);
 }
 
@@ -2925,7 +2923,6 @@ void cSpectrometerHDF5OutputFile::addAcsRequestedEl(int64_t i64Timestamp_us, dou
     sprintf(oNewRequestedAntennaEl.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     m_voAcsRequestedAntennaEls_deg.push_back(oNewRequestedAntennaEl);
 }
 
@@ -2937,7 +2934,6 @@ void cSpectrometerHDF5OutputFile::addAcsDesiredAz(int64_t i64Timestamp_us, doubl
     sprintf(oNewDesiredAntennaAz.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     m_voAcsDesiredAntennaAzs_deg.push_back(oNewDesiredAntennaAz);
 }
 
@@ -2949,7 +2945,6 @@ void cSpectrometerHDF5OutputFile::addAcsDesiredEl(int64_t i64Timestamp_us, doubl
     sprintf(oNewDesiredAntennaEl.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     m_voAcsDesiredAntennaEls_deg.push_back(oNewDesiredAntennaEl);
 }
 
@@ -2961,7 +2956,6 @@ void cSpectrometerHDF5OutputFile::addAcsActualAz(int64_t i64Timestamp_us, double
     sprintf(oNewActualAntennaAz.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     m_voAcsActualAntennaAzs_deg.push_back(oNewActualAntennaAz);
 }
 
@@ -2973,7 +2967,6 @@ void cSpectrometerHDF5OutputFile::addAcsActualEl(int64_t i64Timestamp_us, double
     sprintf(oNewActualAntennaEl.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     m_voAcsActualAntennaEls_deg.push_back(oNewActualAntennaEl);
 }
 
@@ -2985,7 +2978,6 @@ void cSpectrometerHDF5OutputFile::addSkyRequestedAz(int64_t i64Timestamp_us, dou
     sprintf(oNewRequestedAntennaAz.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     m_voSkyRequestedAntennaAzs_deg.push_back(oNewRequestedAntennaAz);
 }
 
@@ -2997,7 +2989,6 @@ void cSpectrometerHDF5OutputFile::addSkyRequestedEl(int64_t i64Timestamp_us, dou
     sprintf(oNewRequestedAntennaEl.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     m_voSkyRequestedAntennaEls_deg.push_back(oNewRequestedAntennaEl);
 }
 
@@ -3009,7 +3000,6 @@ void cSpectrometerHDF5OutputFile::addSkyDesiredAz(int64_t i64Timestamp_us, doubl
     sprintf(oNewDesiredAntennaAz.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     m_voSkyDesiredAntennaAzs_deg.push_back(oNewDesiredAntennaAz);
 }
 
@@ -3021,7 +3011,6 @@ void cSpectrometerHDF5OutputFile::addSkyDesiredEl(int64_t i64Timestamp_us, doubl
     sprintf(oNewDesiredAntennaEl.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     m_voSkyDesiredAntennaEls_deg.push_back(oNewDesiredAntennaEl);
 }
 
@@ -3034,7 +3023,6 @@ void cSpectrometerHDF5OutputFile::addSkyActualAz(int64_t i64Timestamp_us, double
     sprintf(oNewActualAntennaAz.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     m_voSkyActualAntennaAzs_deg.push_back(oNewActualAntennaAz);
 }
 
@@ -3046,7 +3034,6 @@ void cSpectrometerHDF5OutputFile::addSkyActualEl(int64_t i64Timestamp_us, double
     sprintf(oNewActualAntennaEl.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     m_voSkyActualAntennaEls_deg.push_back(oNewActualAntennaEl);
 }
 
@@ -3054,14 +3041,12 @@ void cSpectrometerHDF5OutputFile::addSkyActualEl(int64_t i64Timestamp_us, double
 void cSpectrometerHDF5OutputFile::addPointingModelParameter(uint8_t ui8ParameterNumber, double dParameterValue)
 {
     boost::unique_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     m_adPointingModelParams[ui8ParameterNumber] = dParameterValue;
 }
 
 
 void cSpectrometerHDF5OutputFile::addAntennaStatus(int64_t i64Timestamp_us, const string &strAntennaStatus, const string &strStatus)
 {
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     cAntennaStatus oNewAntennaStatus;
     oNewAntennaStatus.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
@@ -3069,71 +3054,20 @@ void cSpectrometerHDF5OutputFile::addAntennaStatus(int64_t i64Timestamp_us, cons
     sprintf( oNewAntennaStatus.m_chaStatus, "%s", strStatus.c_str());
 
     //The numerical value is not used here
-
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     m_voAntennaStatuses.push_back(oNewAntennaStatus);
 }
 
 void cSpectrometerHDF5OutputFile::addObservationStatus(int64_t i64Timestamp_us, const string &strObservationStatus, const string &strStatus)
 {
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     cMarkupLabels oNewMarkupLabel; // At this point we move from AVN-speak to Katdal-speak.
     oNewMarkupLabel.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     sprintf( oNewMarkupLabel.m_chaLabel, "%s", strObservationStatus.substr(0, sizeof(oNewMarkupLabel.m_chaLabel)).c_str() ); //Limit to size of the char array
     // Don't use status in this dataset.
 
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     m_voMarkupLabels.push_back(oNewMarkupLabel);
 }
-
-/* Marked for removal.
-void cSpectrometerHDF5OutputFile::motorTorqueAzMaster(int64_t i64Timestamp_us, double dAzMaster_mNm, const string &strStatus)
-{
-    cTimestampedDouble oNewMotorTorque;
-    oNewMotorTorque.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewMotorTorque.m_dValue = dAzMaster_mNm;
-    sprintf(oNewMotorTorque.m_chaStatus, "%s", strStatus.c_str());
-
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
-    m_voMotorTorquesAzMaster_mNm.push_back(oNewMotorTorque);
-}
-
-void cSpectrometerHDF5OutputFile::motorTorqueAzSlave(int64_t i64Timestamp_us, double dAzSlave_mNm, const string &strStatus)
-{
-    cTimestampedDouble oNewMotorTorque;
-    oNewMotorTorque.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewMotorTorque.m_dValue = dAzSlave_mNm;
-    sprintf(oNewMotorTorque.m_chaStatus, "%s", strStatus.c_str());
-
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
-    m_voMotorTorquesAzSlave_mNm.push_back(oNewMotorTorque);
-}
-
-void cSpectrometerHDF5OutputFile::motorTorqueElMaster(int64_t i64Timestamp_us, double dElMaster_mNm, const string &strStatus)
-{
-    cTimestampedDouble oNewMotorTorque;
-    oNewMotorTorque.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewMotorTorque.m_dValue = dElMaster_mNm;
-    sprintf(oNewMotorTorque.m_chaStatus, "%s", strStatus.c_str());
-
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
-    m_voMotorTorquesElMaster_mNm.push_back(oNewMotorTorque);
-}
-
-void cSpectrometerHDF5OutputFile::motorTorqueElSlave(int64_t i64Timestamp_us, double dElSlave_mNm, const string &strStatus)
-{
-    cTimestampedDouble oNewMotorTorque;
-    oNewMotorTorque.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewMotorTorque.m_dValue = dElSlave_mNm;
-    sprintf(oNewMotorTorque.m_chaStatus, "%s", strStatus.c_str());
-
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
-    m_voMotorTorquesElSlave_mNm.push_back(oNewMotorTorque);
-}
-*/
 
 void cSpectrometerHDF5OutputFile::setAntennaName(const string &strAntennaName)
 {
@@ -3182,142 +3116,129 @@ void cSpectrometerHDF5OutputFile::setAntennaDelayModel(const vector<double> &vdD
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     //This only a single set of values, not a history of values.
     //Update the current record whenever a new value is received
-
     m_vdDelayModelParams = vdDelayModelParams;
 }
 
 void cSpectrometerHDF5OutputFile::addNoiseDiode5GHzInputSource(int64_t i64Timestamp_us, const string &strNoiseDiodeInputSource, const string &strStatus)
 {
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     cNoiseDiodeSource oNewNoiseDiodeInputSource;
     oNewNoiseDiodeInputSource.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     sprintf(oNewNoiseDiodeInputSource.m_chaSource, "%s", strNoiseDiodeInputSource.c_str());
     sprintf(oNewNoiseDiodeInputSource.m_chaStatus, "%s", strStatus.c_str());
 
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     m_voNoiseDiode5GHzInputSource.push_back(oNewNoiseDiodeInputSource);
 }
 
 void cSpectrometerHDF5OutputFile::addNoiseDiode5GHzLevel(int64_t i64Timestamp_us, int32_t i32NoiseDiodeLevel, const string &strStatus)
 {
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     cTimestampedInt oNewNoiseDiodeSelect;
     oNewNoiseDiodeSelect.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewNoiseDiodeSelect.m_i32Value = i32NoiseDiodeLevel;
     sprintf(oNewNoiseDiodeSelect.m_chaStatus, "%s", strStatus.c_str());
 
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     m_voNoiseDiode5GHzLevel.push_back(oNewNoiseDiodeSelect);
 }
 
 void cSpectrometerHDF5OutputFile::addNoiseDiode5GHzPWMMark(int64_t i64Timestamp_us, int32_t i32NoiseDiodePWMMark, const string &strStatus)
 {
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     cTimestampedInt oNewNoiseDiodePWMMark;
     oNewNoiseDiodePWMMark.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewNoiseDiodePWMMark.m_i32Value = i32NoiseDiodePWMMark;
     sprintf(oNewNoiseDiodePWMMark.m_chaStatus, "%s", strStatus.c_str());
 
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     m_voNoiseDiode5GHzPWMMark.push_back(oNewNoiseDiodePWMMark);
 }
 
 void cSpectrometerHDF5OutputFile::addNoiseDiode5GHzPWMFrequency(int64_t i64Timestamp_us, double dNoiseDiodePWMFrequency, const string &strStatus)
 {
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     cTimestampedDouble oNewNoiseDiodePWMFrequency;
     oNewNoiseDiodePWMFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewNoiseDiodePWMFrequency.m_dValue = dNoiseDiodePWMFrequency;
     sprintf(oNewNoiseDiodePWMFrequency.m_chaStatus, "%s", strStatus.c_str());
 
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     m_voNoiseDiode5GHzPWMFrequency.push_back(oNewNoiseDiodePWMFrequency);
 }
 
 void cSpectrometerHDF5OutputFile::addNoiseDiode6_7GHzInputSource(int64_t i64Timestamp_us, const string &strNoiseDiodeInputSource, const string &strStatus)
 {
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     cNoiseDiodeSource oNewNoiseDiodeInputSource;
     oNewNoiseDiodeInputSource.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     sprintf(oNewNoiseDiodeInputSource.m_chaSource, "%s", strNoiseDiodeInputSource.c_str());
     sprintf(oNewNoiseDiodeInputSource.m_chaStatus, "%s", strStatus.c_str());
 
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     m_voNoiseDiode6_7GHzInputSource.push_back(oNewNoiseDiodeInputSource);
 }
 
 void cSpectrometerHDF5OutputFile::addNoiseDiode6_7GHzLevel(int64_t i64Timestamp_us, int32_t i32NoiseDiodeLevel, const string &strStatus)
 {
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     cTimestampedInt oNewNoiseDiodeSelect;
     oNewNoiseDiodeSelect.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewNoiseDiodeSelect.m_i32Value = i32NoiseDiodeLevel;
     sprintf(oNewNoiseDiodeSelect.m_chaStatus, "%s", strStatus.c_str());
 
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     m_voNoiseDiode6_7GHzLevel.push_back(oNewNoiseDiodeSelect);
 }
 
 void cSpectrometerHDF5OutputFile::addNoiseDiode6_7GHzPWMMark(int64_t i64Timestamp_us, int32_t i32NoiseDiodePWMMark, const string &strStatus)
 {
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     cTimestampedInt oNewNoiseDiodePWMMark;
     oNewNoiseDiodePWMMark.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewNoiseDiodePWMMark.m_i32Value = i32NoiseDiodePWMMark;
     sprintf(oNewNoiseDiodePWMMark.m_chaStatus, "%s", strStatus.c_str());
 
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     m_voNoiseDiode6_7GHzPWMMark.push_back(oNewNoiseDiodePWMMark);
 }
 
 void cSpectrometerHDF5OutputFile::addNoiseDiode6_7GHzPWMFrequency(int64_t i64Timestamp_us, double dNoiseDiodePWMFrequency, const string &strStatus)
 {
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     cTimestampedDouble oNewNoiseDiodePWMFrequency;
     oNewNoiseDiodePWMFrequency.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewNoiseDiodePWMFrequency.m_dValue = dNoiseDiodePWMFrequency;
     sprintf(oNewNoiseDiodePWMFrequency.m_chaStatus, "%s", strStatus.c_str());
 
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     m_voNoiseDiode6_7GHzPWMFrequency.push_back(oNewNoiseDiodePWMFrequency);
 }
 
 void cSpectrometerHDF5OutputFile::addSourceSelection(int64_t i64Timestamp_us, const string &strSourceName, const string &strStatus)
 {
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     cSourceSelection oNewSourceSelection;
-
     oNewSourceSelection.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     // TODO: Try to prevent this from writing past the length of the string.
     sprintf(oNewSourceSelection.m_chaSource, "%s", strSourceName.c_str() );
     sprintf(oNewSourceSelection.m_chaStatus, "%s", strStatus.c_str());
 
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     m_voSelectedSources.push_back(oNewSourceSelection);
 }
 
 // TODO: Think about whether to keep this as a char or as a bool. I have the noise diode enabled sensor as a bool.
 void cSpectrometerHDF5OutputFile::addBandSelectLcp(int64_t i64Timestamp_us, bool bBandSelectLcp, const string &strStatus)
 {
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     cTimestampedChar oNewBandSelect;
     oNewBandSelect.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     sprintf(oNewBandSelect.m_chaValue, "%s", (bBandSelectLcp)?"1":"0");
     sprintf(oNewBandSelect.m_chaStatus, "%s", strStatus.c_str());
 
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     m_voBandSelectLcp.push_back(oNewBandSelect);
 }
 
 void cSpectrometerHDF5OutputFile::addBandSelectRcp(int64_t i64Timestamp_us, bool bBandSelectRcp, const string &strStatus)
 {
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     cTimestampedChar oNewBandSelect;
     oNewBandSelect.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     sprintf(oNewBandSelect.m_chaValue, "%s", (bBandSelectRcp)?"1":"0");
     sprintf(oNewBandSelect.m_chaStatus, "%s", strStatus.c_str());
 
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     m_voBandSelectRcp.push_back(oNewBandSelect);
 }
 
@@ -3329,7 +3250,6 @@ void cSpectrometerHDF5OutputFile::addFrequencySky5GHz(int64_t i64Timestamp_us, d
     sprintf(oNewSkyFrequency.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     m_voFrequenciesSky5GHz_Hz.push_back(oNewSkyFrequency);
 }
 
@@ -3341,55 +3261,51 @@ void cSpectrometerHDF5OutputFile::addFrequencySky6_7GHz(int64_t i64Timestamp_us,
     sprintf(oNewSkyFrequency.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     m_voFrequenciesSky6_7GHz_Hz.push_back(oNewSkyFrequency);
 }
 
 void cSpectrometerHDF5OutputFile::addReceiverGain5GHzLcp(int64_t i64Timestamp_us, double dGain_dB, const string &strStatus)
 {
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
     cTimestampedDouble oNewGain;
     oNewGain.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewGain.m_dValue = dGain_dB;
     sprintf(oNewGain.m_chaStatus, "%s", strStatus.c_str());
 
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     m_voReceiverGain5GHzLcp_dB.push_back(oNewGain);
 }
 
 void cSpectrometerHDF5OutputFile::addReceiverGain5GHzRcp(int64_t i64Timestamp_us, double dGain_dB, const string &strStatus)
 {
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     cTimestampedDouble oNewGain;
     oNewGain.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewGain.m_dValue = dGain_dB;
     sprintf(oNewGain.m_chaStatus, "%s", strStatus.c_str());
 
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     m_voReceiverGain5GHzRcp_dB.push_back(oNewGain);
 }
 
 void cSpectrometerHDF5OutputFile::addReceiverGain6_7GHzLcp(int64_t i64Timestamp_us, double dGain_dB, const string &strStatus)
 {
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     cTimestampedDouble oNewGain;
     oNewGain.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewGain.m_dValue = dGain_dB;
     sprintf(oNewGain.m_chaStatus, "%s", strStatus.c_str());
 
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     m_voReceiverGain6_7GHzLcp_dB.push_back(oNewGain);
 }
 
 void cSpectrometerHDF5OutputFile::addReceiverGain6_7GHzRcp(int64_t i64Timestamp_us, double dGain_dB, const string &strStatus)
 {
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     cTimestampedDouble oNewGain;
     oNewGain.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewGain.m_dValue = dGain_dB;
     sprintf(oNewGain.m_chaStatus, "%s", strStatus.c_str());
 
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     m_voReceiverGain6_7GHzRcp_dB.push_back(oNewGain);
 }
 
@@ -3397,61 +3313,56 @@ void cSpectrometerHDF5OutputFile::addReceiverGain6_7GHzRcp(int64_t i64Timestamp_
 
 void cSpectrometerHDF5OutputFile::addWindSpeed(int64_t i64Timestamp_us, double dWindSpeed_mps, const string &strStatus)
 {
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     cTimestampedDouble oNewWindSpeed;
     oNewWindSpeed.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewWindSpeed.m_dValue = dWindSpeed_mps;
     sprintf(oNewWindSpeed.m_chaStatus, "%s", strStatus.c_str());
 
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     m_voWindSpeeds_mps.push_back(oNewWindSpeed);
 }
 
 void cSpectrometerHDF5OutputFile::addWindDirection(int64_t i64Timestamp_us, double dWindDirection_degrees, const string &strStatus)
 {
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     cTimestampedDouble oNewWindDirection;
     oNewWindDirection.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewWindDirection.m_dValue = dWindDirection_degrees;
     sprintf(oNewWindDirection.m_chaStatus, "%s", strStatus.c_str());
 
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     m_voWindDirections_degrees.push_back(oNewWindDirection);
 }
 
 void cSpectrometerHDF5OutputFile::addTemperature(int64_t i64Timestamp_us, double dTemperature_degreesC, const string &strStatus)
 {
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     cTimestampedDouble oNewTemperature;
     oNewTemperature.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewTemperature.m_dValue = dTemperature_degreesC;
     sprintf(oNewTemperature.m_chaStatus, "%s", strStatus.c_str());
 
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     m_voTemperatures_degreesC.push_back(oNewTemperature);
 }
 
 void cSpectrometerHDF5OutputFile::addAbsolutePressure(int64_t i64Timestamp_us, double dPressure_mbar, const string &strStatus)
 {
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     cTimestampedDouble oNewAbsolutePressure;
     oNewAbsolutePressure.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewAbsolutePressure.m_dValue = dPressure_mbar;
     sprintf(oNewAbsolutePressure.m_chaStatus, "%s", strStatus.c_str());
 
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     m_voAbsolutePressures_mbar.push_back(oNewAbsolutePressure);
 }
 
 void cSpectrometerHDF5OutputFile::addRelativeHumidity(int64_t i64Timestamp_us, double dHumidity_percent, const string &strStatus)
 {
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     cTimestampedDouble oNewHumidity;
     oNewHumidity.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewHumidity.m_dValue = dHumidity_percent;
     sprintf(oNewHumidity.m_chaStatus, "%s", strStatus.c_str());
 
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     m_voRelativeHumidities_percent.push_back(oNewHumidity);
 }
 
@@ -3459,20 +3370,17 @@ void cSpectrometerHDF5OutputFile::addRelativeHumidity(int64_t i64Timestamp_us, d
 
 void cSpectrometerHDF5OutputFile::addAccumulationLength(int64_t i64Timestamp_us, uint32_t u32NFrames)
 {
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     cTimestampedUnsignedInt oNewAccumulationLength;
     oNewAccumulationLength.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     oNewAccumulationLength.m_u32Value = u32NFrames;
     sprintf(oNewAccumulationLength.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
 
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     m_voROACHAccumulationLengths_nFrames.push_back(oNewAccumulationLength);
 }
 
 void cSpectrometerHDF5OutputFile::addCoarseChannelSelect(int64_t i64Timestamp_us, uint32_t u32ChannelNo)
 {
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     if (!m_voROACHNBChannelSelects.size() || u32ChannelNo != m_voROACHNBChannelSelects[m_voROACHNBChannelSelects.size() - 1].m_u32Value)
     {
         cTimestampedUnsignedInt oNewCoarseChannelSelection;
@@ -3480,6 +3388,7 @@ void cSpectrometerHDF5OutputFile::addCoarseChannelSelect(int64_t i64Timestamp_us
         oNewCoarseChannelSelection.m_u32Value = u32ChannelNo;
         sprintf(oNewCoarseChannelSelection.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
 
+        boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
         m_voROACHNBChannelSelects.push_back(oNewCoarseChannelSelection);
     }
 }
@@ -3487,27 +3396,21 @@ void cSpectrometerHDF5OutputFile::addCoarseChannelSelect(int64_t i64Timestamp_us
 void cSpectrometerHDF5OutputFile::setFrequencyFs(double dFrequencyFs_Hz)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     //This only a single value, not a history of values.
     //Update the current record whenever a new value is received
-
     m_dROACHFrequencyFs_Hz = dFrequencyFs_Hz;
 }
 
 void cSpectrometerHDF5OutputFile::setSizeOfCoarseFFT(uint32_t u32SizeOfCoarseFFT_nSamp)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     m_u32ROACHSizeOfCoarseFFT_nSamp = u32SizeOfCoarseFFT_nSamp;
-    //cout << "cSpectrometerHDF5OutputFile::setSizeOfCoarseFFT(): wrote size of coarse FFT " << u32SizeOfCoarseFFT_nSamp << endl;
 }
 
 void cSpectrometerHDF5OutputFile::setSizeOfFineFFT(uint32_t u32SizeOfFineFFT_nSamp)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
     m_u32ROACHSizeOfFineFFT_nSamp = u32SizeOfFineFFT_nSamp;
-    //cout << "cSpectrometerHDF5OutputFile::setSizeOfFineFFT(): wrote size of fine FFT " << u32SizeOfFineFFT_nSamp << endl;
 }
 
 void cSpectrometerHDF5OutputFile::addCoarseFFTShiftMask(int64_t i64Timestamp_us, uint32_t u32ShiftMask)
@@ -3520,7 +3423,6 @@ void cSpectrometerHDF5OutputFile::addCoarseFFTShiftMask(int64_t i64Timestamp_us,
         sprintf(oNewCoarseFFTShift.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
 
         boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
         m_voROACHCoarseFFTShiftMasks.push_back(oNewCoarseFFTShift);
     }
 }
@@ -3535,7 +3437,6 @@ void cSpectrometerHDF5OutputFile::addDspGain(int64_t i64Timestamp_us, double dDs
         sprintf(oNewDspGain.m_chaStatus, "nominal"); // Hardcoded at nominal for katdal compatibility.
 
         boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
         m_voROACHDspGains.push_back(oNewDspGain);
     }
 }
@@ -3550,7 +3451,6 @@ void cSpectrometerHDF5OutputFile::addAttenuationADCChan0(int64_t i64Timestamp_us
         sprintf(oNewAdcAttenuantion.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
 
         boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
         m_voROACHADCAttenuationsLcp_dB.push_back(oNewAdcAttenuantion);
     }
 }
@@ -3565,7 +3465,6 @@ void cSpectrometerHDF5OutputFile::addAttenuationADCChan1(int64_t i64Timestamp_us
         sprintf(oNewAdcAttenuantion.m_chaStatus, "nominal"); //This is hardcoded to always be nominal for now for compatability with KATDal. Adapt with available status data.
 
         boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-
         m_voROACHADCAttenuationsRcp_dB.push_back(oNewAdcAttenuantion);
     }
 }
