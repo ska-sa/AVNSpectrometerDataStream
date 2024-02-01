@@ -4,6 +4,10 @@
 #include <sstream>
 #include <complex>
 
+// File name includes
+#include <dirent.h>
+#include <sys/types.h>
+
 //Library includes
 extern "C" {
 #include <hdf5.h> //Note must be included before other HDF5 libraries
@@ -40,6 +44,7 @@ cSpectrometerHDF5OutputFile::cSpectrometerHDF5OutputFile(const std::string &strF
     m_iH5DataGroupHandle                            = H5Gcreate2(m_iH5FileHandle, "/Data", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     m_iH5MetaDataGroupHandle                        = H5Gcreate2(m_iH5FileHandle, "/MetaData", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     m_iH5MarkupGroupHandle                          = H5Gcreate2(m_iH5FileHandle, "/Markup", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    m_iH5NdGroupHandle                              = H5Gcreate2(m_iH5FileHandle, "/NoisediodeTables", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     //Level 2:
     m_iH5SensorsGroupHandle                         = H5Gcreate2(m_iH5MetaDataGroupHandle, "/MetaData/Sensors", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     m_iH5ConfigurationGroupHandle                   = H5Gcreate2(m_iH5MetaDataGroupHandle, "/MetaData/Configuration", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
@@ -102,14 +107,11 @@ cSpectrometerHDF5OutputFile::cSpectrometerHDF5OutputFile(const std::string &strF
     H5Pclose(datasetPropertiesVis);
     H5Pclose(datasetPropertiesStokes);
 
+    // Read noise diode data from csv files
+    const string stNdFilesPath = "../../NoiseDiode/";
+    addNoiseDiodeData(stNdFilesPath);
+
     //Read antenna config information from ini file
-    pt::ptree ObsInfo;
-    pt::ini_parser::read_ini("ObservatoryInfo.ini", ObsInfo);
-    setAntennaName(ObsInfo.get<string>("Antenna.name"));
-    setAntennaLatitude(ObsInfo.get<string>("Antenna.latitude"));
-    setAntennaLongitude(ObsInfo.get<string>("Antenna.longitude"));
-    setAntennaAltitude(ObsInfo.get<string>("Antenna.altitude"));
-    setAntennaDiameter(ObsInfo.get<string>("Antenna.diameter"));
     setAntennaBeamwidth(ObsInfo.get<string>("Antenna.beamwidth"));
 
     //Assume zero delay and pointing models. Maybe incorporate in config file in future?
@@ -188,6 +190,7 @@ cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
     H5Gclose(m_iH5SensorsGroupHandle);
     H5Gclose(m_iH5ConfigurationGroupHandle);
     //Level 1
+    H5Gclose(m_iH5NdGroupHandle);
     H5Gclose(m_iH5MarkupGroupHandle);
     H5Gclose(m_iH5MetaDataGroupHandle);
     H5Gclose(m_iH5DataGroupHandle);
@@ -1093,7 +1096,152 @@ void cSpectrometerHDF5OutputFile::writeAntennaConfiguration()
         }
     }
 
-    {
+// PJP
+        hsize_t dimension = 1;
+        hid_t stringTypeValue;
+        // ********** Antenna name **********
+        string strDatasetName("name");
+
+        herr_t err = H5LTmake_dataset_string(m_iH5ConfigurationAntennasAntenna1GroupHandle, strDatasetName.c_str(), (const char *)  &m_oAntennaConfiguration.m_chaAntennaName);
+   
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeAntennaConfiguration(): HDF5 make dataset error." << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeAntennaConfiguration(): Wrote antenna name: " << m_oAntennaConfiguration.m_chaAntennaName << " to dataset" << endl;
+        }
+
+        //Need to open the dataset again here for attribute as the H5LTmake_dataset used above does leave an open handle.
+        hid_t dataset_id = H5Dopen2(m_iH5ConfigurationAntennasAntenna1GroupHandle, strDatasetName.c_str(), H5P_DEFAULT);
+        addAttributeToDataSet(string("Antenna name"), strDatasetName, string("string"), string(""), dataset_id);
+
+        H5Dclose(dataset_id);
+
+        dimension = 1;
+        // ********** Antenna diameter **********
+        strDatasetName  =   "diameter";
+
+        H5LTmake_dataset(m_iH5ConfigurationAntennasAntenna1GroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_DOUBLE, &m_oAntennaConfiguration.m_dAntennaDiameter_m);
+   
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeAntennaConfiguration(): HDF5 make dataset error." << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeAntennaConfiguration(): Wrote antenna diameter: " << m_oAntennaConfiguration.m_dAntennaDiameter_m << " to dataset" << endl;
+        }
+
+        //Need to open the dataset again here for attribute as the H5LTmake_dataset used above does leave an open handle.
+        dataset_id = H5Dopen2(m_iH5ConfigurationAntennasAntenna1GroupHandle, strDatasetName.c_str(), H5P_DEFAULT);
+        addAttributeToDataSet(string("Antenna diameter"), strDatasetName, string("double"), string("m"), dataset_id);
+
+        H5Dclose(dataset_id);
+
+        // ********** Half Power beamwidth **********
+        strDatasetName = "beamwidth";
+
+        err = H5LTmake_dataset(m_iH5ConfigurationAntennasAntenna1GroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_DOUBLE, &m_oAntennaConfiguration.m_dAntennaBeamwidth_deg);
+   
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeAntennaConfiguration(): HDF5 make dataset error." << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeAntennaConfiguration(): Wrote half power beamwidth: " << m_oAntennaConfiguration.m_dAntennaBeamwidth_deg << " to dataset" << endl;
+        }
+
+        //Need to open the dataset again here for attribute as the H5LTmake_dataset used above does leave an open handle.
+        dataset_id = H5Dopen2(m_iH5ConfigurationAntennasAntenna1GroupHandle, strDatasetName.c_str(), H5P_DEFAULT);
+        addAttributeToDataSet(string("Half power beamwidth"), strDatasetName, string("double"), string("deg"), dataset_id);
+
+        H5Dclose(dataset_id);
+
+        // ********** Antenna longitude **********
+        strDatasetName = "longitude";
+
+        err = H5LTmake_dataset(m_iH5ConfigurationAntennasAntenna1GroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_DOUBLE, &m_oAntennaConfiguration.m_dAntennaLongitude_deg);
+   
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeAntennaConfiguration(): HDF5 make dataset error." << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeAntennaConfiguration(): Wrote antenna longitude: " << m_oAntennaConfiguration.m_dAntennaLongitude_deg << " to dataset" << endl;
+        }
+
+        //Need to open the dataset again here for attribute as the H5LTmake_dataset used above does leave an open handle.
+        dataset_id = H5Dopen2(m_iH5ConfigurationAntennasAntenna1GroupHandle, strDatasetName.c_str(), H5P_DEFAULT);
+        addAttributeToDataSet(string("Antenna longitude"), strDatasetName, string("double"), string("deg"), dataset_id);
+
+        H5Dclose(dataset_id);
+
+        // ********** Antenna latitude **********
+        strDatasetName = "latitude";
+
+        err = H5LTmake_dataset(m_iH5ConfigurationAntennasAntenna1GroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_DOUBLE, &m_oAntennaConfiguration.m_dAntennaLatitude_deg);
+   
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeAntennaConfiguration(): HDF5 make dataset error." << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeAntennaConfiguration(): Wrote antenna latitude: " << m_oAntennaConfiguration.m_dAntennaLatitude_deg << " to dataset" << endl;
+        }
+
+        //Need to open the dataset again here for attribute as the H5LTmake_dataset used above does leave an open handle.
+        dataset_id = H5Dopen2(m_iH5ConfigurationAntennasAntenna1GroupHandle, strDatasetName.c_str(), H5P_DEFAULT);
+        addAttributeToDataSet(string("Antenna latitude"), strDatasetName, string("double"), string("deg"), dataset_id);
+
+        H5Dclose(dataset_id);
+
+        // ********** Antenna latitude **********
+        strDatasetName = "altitude";
+
+        err = H5LTmake_dataset(m_iH5ConfigurationAntennasAntenna1GroupHandle, strDatasetName.c_str(), 1, &dimension, H5T_NATIVE_DOUBLE, &m_oAntennaConfiguration.m_dAntennaAltitude_m);
+   
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeAntennaConfiguration(): HDF5 make dataset error." << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeAntennaConfiguration(): Wrote antenna altitude: " << m_oAntennaConfiguration.m_dAntennaAltitude_m << " to dataset" << endl;
+        }
+
+        //Need to open the dataset again here for attribute as the H5LTmake_dataset used above does leave an open handle.
+        dataset_id = H5Dopen2(m_iH5ConfigurationAntennasAntenna1GroupHandle, strDatasetName.c_str(), H5P_DEFAULT);
+        addAttributeToDataSet(string("Antenna altitude"), strDatasetName, string("double"), string("m"), dataset_id);
+
+        H5Dclose(dataset_id);
+
+        // ********** Observer name **********
+        strDatasetName = "observer";
+
+        err = H5LTmake_dataset_string(m_iH5ConfigurationObservationGroupHandle, strDatasetName.c_str(), (const char *)  &m_oAntennaConfiguration.m_chaObserverName);
+        
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeAntennaConfiguration(): HDF5 make dataset error." << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeAntennaConfiguration(): Wrote observer name: " << m_oAntennaConfiguration.m_chaObserverName << " to dataset" << endl;
+        }
+
+        //Need to open the dataset again here for attribute as the H5LTmake_dataset used above does leave an open handle.
+        dataset_id = H5Dopen2(m_iH5ConfigurationObservationGroupHandle, strDatasetName.c_str(), H5P_DEFAULT);
+        addAttributeToDataSet(string("Observer name"), strDatasetName, string("char"), string(""), dataset_id);
+
+        H5Dclose(dataset_id);
+// PJP
+
+/*    {
         //Add the rest of the data as attributes to the group.
         hid_t variableLengthStringType;
         variableLengthStringType = H5Tcopy (H5T_C_S1);
@@ -1135,7 +1283,7 @@ void cSpectrometerHDF5OutputFile::writeAntennaConfiguration()
         H5Aclose(attrAntennaName);
         H5Tclose(variableLengthStringType);
         H5Sclose(attrDataspace);
-    }
+    }*/
 }
 
 void cSpectrometerHDF5OutputFile::writeNoiseDiodeSoftwareStates()
@@ -2414,6 +2562,131 @@ void cSpectrometerHDF5OutputFile::setAppliedPointingModel(const string &strModel
     sprintf(m_oAntennaConfiguration.m_chaPointModelName, strModelName.c_str());
 }
 
+ouble cSpectrometerHDF5OutputFile::DmsToDeg(string strDms)
+{
+    const string strColon       = ":";
+    const string strSpace       = "\\_";
+
+    size_t found = strDms.find(strColon);
+    if (string::npos != found)
+    {
+        string strDeg = strDms.substr(0, found);
+        size_t start = found + strColon.length();
+        found = strDms.find(strColon, start);
+        if (string::npos != 0)
+        {
+            string strMin = strDms.substr(start, found - start);
+            start = found + strColon.length();
+            found = strDms.length();
+            string strSec = strDms.substr(start, found - start);
+            double dDeg = (stod(strSec) / 60.0 + stoi(strMin)) / 60.0 + stoi(strDeg); 
+            return dDeg;
+        }
+    }
+    return 0.0;
+}
+
+void cSpectrometerHDF5OutputFile::setObservationInfo(const string &strObservationInformation)
+{
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+    // Antenna\_info:\_Latitude:\_05:45:02.4696\_Longitude:\_00:18:17.9172\_Altitude:\_116\_Diameter:\_32\_Name\_of\_observer:\_ATP_Operator
+    string strAntennaName           = "TDB";  // Must still be addes in SCS
+    string strObserver              = "TDB";  
+    double dDiameter                = 0.0;
+    double dLongitude               = 0.0;
+    double dLatitude                = 0.0;
+    double dAltitude                = 0.0;
+    const string strName            = "Name:\\_";
+    const string strLat             = "Latitude:\\_";
+    const string strLon             = "Longitude:\\_";
+    const string strAltitude        = "Altitude:\\_";
+    const string strDiameter        = "Diameter:\\_";
+    const string strObserverName    = "Name\\_of\\_observer:\\_";
+    const string strSpace           = "\\_";
+
+    // Name
+    size_t start = 0;
+    size_t found = strObservationInformation.find(strName);
+    if (string::npos != found)
+    {
+        start = found + strName.length();
+        found = strObservationInformation.find(strSpace, start);
+        if (string::npos != found)
+        {
+            strAntennaName = strObservationInformation.substr(start, found - start);
+        }
+    }
+    // Latitude
+    found = strObservationInformation.find(strLat);
+    if (string::npos != found)
+    {
+        start = found + strLat.length();
+        found = strObservationInformation.find(strSpace, start);
+        if (string::npos != found)
+        {
+            dLatitude = DmsToDeg(strObservationInformation.substr(start, found - start)); 
+        }
+    }
+    // Longitude
+    found = strObservationInformation.find(strLon);
+    if (string::npos != found)
+    {
+        start = found + strLon.length();
+        found = strObservationInformation.find(strSpace, start);
+        if (string::npos != found)
+        {
+            dLongitude = DmsToDeg(strObservationInformation.substr(start, found - start)); 
+        }
+    }
+    // Altitude
+    found = strObservationInformation.find(strAltitude);
+    if (string::npos != found)
+    {
+        start = found + strAltitude.length();
+        found = strObservationInformation.find(strSpace, start);
+        if (string::npos != found)
+        {
+            dAltitude = stod(strObservationInformation.substr(start, found - start));
+        }
+    }
+    // Diameter
+    found = strObservationInformation.find(strDiameter);
+    if (string::npos != found)
+    {
+        start = found + strDiameter.length();
+        found = strObservationInformation.find(strSpace, start);
+        if (string::npos != found)
+        {
+            dDiameter = stod(strObservationInformation.substr(start, found - start));
+        }
+    }
+    found = strObservationInformation.find(strObserverName);
+    if (string::npos != found)
+    {
+        start = found + strObserverName.length();
+        found = strObservationInformation.length();
+        //if (string::npos != 0)
+        {
+            strObserver = strObservationInformation.substr(start, found - start);
+        }
+    }
+
+    sprintf(m_oAntennaConfiguration.m_chaAntennaName, "%s", strAntennaName.c_str());
+    sprintf(m_oAntennaConfiguration.m_chaObserverName, "%s", strObserver.c_str());
+    m_oAntennaConfiguration.m_dAntennaLatitude_deg = dLatitude;
+    m_oAntennaConfiguration.m_dAntennaLongitude_deg = dLongitude;
+    m_oAntennaConfiguration.m_dAntennaAltitude_m = dAltitude;
+    m_oAntennaConfiguration.m_dAntennaDiameter_m = dDiameter;
+}
+
+void cSpectrometerHDF5OutputFile::setAntennaBeamwidth(const double &dAntennaBeamwidth_deg)
+{
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+    //Only a single set of values
+    m_oAntennaConfiguration.m_dAntennaBeamwidth_deg = dAntennaBeamwidth_deg;
+}
+
+/*
 void cSpectrometerHDF5OutputFile::setAntennaName(const string &strAntennaName)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
@@ -2455,7 +2728,7 @@ void cSpectrometerHDF5OutputFile::setAntennaAltitude(const string &strAntennAlti
     //Only a single set of values
     sprintf(m_oAntennaConfiguration.m_chaAntennaAltitude_m, strAntennAltitude_m.c_str());
 }
-
+*/
 void cSpectrometerHDF5OutputFile::setAntennaDelayModel(const vector<double> &vdDelayModelParams)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
@@ -2721,5 +2994,95 @@ void cSpectrometerHDF5OutputFile::addAttenuationADCChan1(int64_t i64Timestamp_us
         boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
 
         m_voROACHADCAttenuationsChan1_dB.push_back(oNewAdcAttenuantion);
+    }
+}
+
+void cSpectrometerHDF5OutputFile::addNoiseDiodeData(const std::string &strPath)
+{
+    string filePath;
+    string dataSetName;
+
+    vector<string> files;
+    struct dirent *entry;
+    DIR *dir = opendir(strPath.c_str());
+    if (nullptr == dir)
+    {
+        char buffer[PATH_MAX];
+        getcwd(buffer, sizeof(buffer));
+        cout << "Directory does not exist: " << strPath << " create directory and copy noisediode files into it! Current directory = " << buffer << "\n"; 
+    }
+    while (nullptr != (entry = readdir(dir)))
+    {
+        string fileName = entry->d_name;
+        if ((".." != fileName) && ("." != fileName))
+        {
+            files.push_back(fileName);
+        }
+    }
+    closedir(dir);
+
+    for (auto file: files)
+    {
+        string fileName = file;
+        int pos = fileName.find(".");
+        dataSetName = fileName.substr(0, pos);
+        filePath = strPath;
+        filePath.append(fileName);
+        writeCsv2Hdf(filePath, dataSetName);    // 4 - .csv
+    }
+}
+
+void cSpectrometerHDF5OutputFile::writeCsv2Hdf(const std::string &strPath, const string &strDataSetName)
+{
+    ifstream inFile(strPath);
+    if (!inFile)
+    {
+        cout << "File " << strPath << "does not exist - Copy noise diode tables into " << strPath << "\n";
+    }
+
+    // Get lines in file
+    int lineCount = 0;
+    vector<string> rows;
+    string line;
+    while (getline(inFile, line))
+    {
+        rows.push_back(line);
+        lineCount++;
+    }
+    string row;
+    const string seperator = ",";
+    //string item;
+    const int dimension = 2;
+    double data[lineCount][dimension];
+
+    int entries = 0;
+    //while (getline(inFile, row))
+    for (auto row: rows)
+    {
+        istringstream ss(row);
+        stringstream s;
+
+        size_t found = row.find("#");
+        if (string::npos == found)
+        {
+            // Replace '.' with ' '
+            replace(row.begin(), row.end(), ',', ' ');
+            s << row;
+            s >> data[entries][0] >> data[entries][1];
+            entries++;
+        }
+    }
+
+    inFile.close();
+
+    const hsize_t dims[dimension] = {(hsize_t) lineCount, 2};
+    herr_t status = H5LTmake_dataset(m_iH5NdGroupHandle, strDataSetName.c_str(), dimension, dims, H5T_NATIVE_DOUBLE, data); 
+    if(status < 0)
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeCsv2Hdf(): HDF5 make dataset error" << endl;
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeCsv2Hdf(): Wrote noise diode values to dataset." << endl;
     }
 }
