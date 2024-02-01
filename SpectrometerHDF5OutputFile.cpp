@@ -1240,50 +1240,6 @@ void cSpectrometerHDF5OutputFile::writeAntennaConfiguration()
 
         H5Dclose(dataset_id);
 // PJP
-
-/*    {
-        //Add the rest of the data as attributes to the group.
-        hid_t variableLengthStringType;
-        variableLengthStringType = H5Tcopy (H5T_C_S1);
-
-        H5Tset_size (variableLengthStringType, H5T_VARIABLE);
-
-        hid_t attrDataspace = H5Screate(H5S_SCALAR);
-        hid_t groupHandle = m_iH5ConfigurationAntennasAntenna1GroupHandle; // Just to keep the lines a bit shorter.
-
-        hid_t attrAntennaName = H5Acreate(groupHandle, "name", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
-        const char* pcAntennaName = m_oAntennaConfiguration.m_chaAntennaName;
-        H5Awrite(attrAntennaName, variableLengthStringType, &pcAntennaName);
-
-        hid_t attrAntennaDiameter = H5Acreate(groupHandle, "diameter", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
-        const char* pcAntennaDiameter_m = m_oAntennaConfiguration.m_chaAntennaDiameter_m;
-        H5Awrite(attrAntennaDiameter, variableLengthStringType, &pcAntennaDiameter_m);
-
-        hid_t attrAntennaBeamwidth = H5Acreate(groupHandle, "beamwidth", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
-        const char* pcAntennaBeamwidth_deg = m_oAntennaConfiguration.m_chaAntennaBeamwidth;
-        H5Awrite(attrAntennaBeamwidth, variableLengthStringType, &pcAntennaBeamwidth_deg);
-
-        hid_t attrAntennaLatitude = H5Acreate(groupHandle, "latitude", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
-        const char* pcAntennaLatitude_deg = m_oAntennaConfiguration.m_chaAntennaLatitude_deg;
-        H5Awrite(attrAntennaLatitude, variableLengthStringType, &pcAntennaLatitude_deg);
-
-        hid_t attrAntennaLongitude = H5Acreate(groupHandle, "longitude", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
-        const char* pcAntennaLongitude_deg = m_oAntennaConfiguration.m_chaAntennaLongitude_deg;
-        H5Awrite(attrAntennaLongitude, variableLengthStringType, &pcAntennaLongitude_deg);
-
-        hid_t attrAntennaAltitude = H5Acreate(groupHandle, "altitude", variableLengthStringType, attrDataspace, H5P_DEFAULT, H5P_DEFAULT);
-        const char* pcAntennaAltitude_m = m_oAntennaConfiguration.m_chaAntennaAltitude_m;
-        H5Awrite(attrAntennaAltitude, variableLengthStringType, &pcAntennaAltitude_m);
-
-        H5Aclose(attrAntennaAltitude);
-        H5Aclose(attrAntennaBeamwidth);
-        H5Aclose(attrAntennaDiameter);
-        H5Aclose(attrAntennaLatitude);
-        H5Aclose(attrAntennaLongitude);
-        H5Aclose(attrAntennaName);
-        H5Tclose(variableLengthStringType);
-        H5Sclose(attrDataspace);
-    }*/
 }
 
 void cSpectrometerHDF5OutputFile::writeNoiseDiodeSoftwareStates()
@@ -2562,7 +2518,7 @@ void cSpectrometerHDF5OutputFile::setAppliedPointingModel(const string &strModel
     sprintf(m_oAntennaConfiguration.m_chaPointModelName, strModelName.c_str());
 }
 
-ouble cSpectrometerHDF5OutputFile::DmsToDeg(string strDms)
+double cSpectrometerHDF5OutputFile::DmsToDeg(string strDms)
 {
     const string strColon       = ":";
     const string strSpace       = "\\_";
@@ -2686,49 +2642,6 @@ void cSpectrometerHDF5OutputFile::setAntennaBeamwidth(const double &dAntennaBeam
     m_oAntennaConfiguration.m_dAntennaBeamwidth_deg = dAntennaBeamwidth_deg;
 }
 
-/*
-void cSpectrometerHDF5OutputFile::setAntennaName(const string &strAntennaName)
-{
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-    //Only a single set of values
-    sprintf(m_oAntennaConfiguration.m_chaAntennaName, strAntennaName.c_str());
-}
-
-void cSpectrometerHDF5OutputFile::setAntennaDiameter(const string &strAntennaDiameter_m)
-{
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-    //Only a single set of values
-    sprintf(m_oAntennaConfiguration.m_chaAntennaDiameter_m, strAntennaDiameter_m.c_str());
-}
-
-void cSpectrometerHDF5OutputFile::setAntennaBeamwidth(const string &strAntennaBeamwidth_deg)
-{
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-    //Only a single set of values
-    sprintf(m_oAntennaConfiguration.m_chaAntennaBeamwidth, strAntennaBeamwidth_deg.c_str());
-}
-
-void cSpectrometerHDF5OutputFile::setAntennaLongitude(const string &strAntennaLongitude_deg)
-{
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-    //Only a single set of values
-    sprintf(m_oAntennaConfiguration.m_chaAntennaLongitude_deg, strAntennaLongitude_deg.c_str());
-}
-
-void cSpectrometerHDF5OutputFile::setAntennaLatitude(const string &strAntennaLatitude_deg)
-{
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-    //Only a single set of values
-    sprintf(m_oAntennaConfiguration.m_chaAntennaLatitude_deg, strAntennaLatitude_deg.c_str());
-}
-
-void cSpectrometerHDF5OutputFile::setAntennaAltitude(const string &strAntennAltitude_m)
-{
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-    //Only a single set of values
-    sprintf(m_oAntennaConfiguration.m_chaAntennaAltitude_m, strAntennAltitude_m.c_str());
-}
-*/
 void cSpectrometerHDF5OutputFile::setAntennaDelayModel(const vector<double> &vdDelayModelParams)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
