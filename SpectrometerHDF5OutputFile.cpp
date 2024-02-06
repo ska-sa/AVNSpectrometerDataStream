@@ -3201,8 +3201,8 @@ void cSpectrometerHDF5OutputFile::setObservationInfo(const string &strObservatio
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     // Antenna\_info:\_Latitude:\_05:45:02.4696\_Longitude:\_00:18:17.9172\_Altitude:\_116\_Diameter:\_32\_Name\_of\_observer:\_ATP_Operator
-    string strAntennaName           = "TDB";  // Must still be addes in SCS
-    string strObserver              = "TDB";  
+    string strAntennaName           = "";  
+    string strObserver              = "";  
     double dDiameter                = 0.0;
     double dLongitude               = 0.0;
     double dLatitude                = 0.0;
