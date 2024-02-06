@@ -3715,7 +3715,6 @@ void cSpectrometerHDF5OutputFile::writeCsv2Hdf(const std::string &strPath, const
     double data[lineCount][dimension];
 
     int entries = 0;
-    //while (getline(inFile, row))
     for (auto row: rows)
     {
         istringstream ss(row);
