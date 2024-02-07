@@ -50,36 +50,36 @@ class cSpectrometerHDF5OutputFile
     typedef struct cTimestampedChar
     {
         double              m_dTimestamp_s;
-        char                m_chaValue[1];
-        char                m_chaStatus[7];
+        char                m_chaValue[2];
+        char                m_chaStatus[8];
     } cTimestampedChar;
 
     typedef struct cTimestampedBool
     {
         double              m_dTimestamp_s;
         int32_t             m_i32Value;
-        char                m_chaStatus[7];
+        char                m_chaStatus[8];
     } cTimestampedBool;
 
     typedef struct cSourceSelection
     {
         double              m_dTimestamp_s;
         char                m_chaSource[128];
-        char                m_chaStatus[7];
+        char                m_chaStatus[8];
     } cSourceSelection;
 
     typedef struct cAntennaStatus
     {
         double              m_dTimestamp_s;
         char                m_chaAntennaStatus[16];
-        char                m_chaStatus[7];
+        char                m_chaStatus[8];
     } cAntennaStatus;
 
     typedef struct cNoiseDiodeSource
     {
         double              m_dTimestamp_s;
         char                m_chaSource[8];
-        char                m_chaStatus[7];
+        char                m_chaStatus[8];
     } cNoiseDiodeSource;
 
     //General structures
@@ -87,21 +87,21 @@ class cSpectrometerHDF5OutputFile
     {
         double              m_dTimestamp_s;
         int32_t             m_i32Value;
-        char                m_chaStatus[7];
+        char                m_chaStatus[8];
     } cTimestampedInt;
 
     typedef struct cTimestampedUnsignedInt
     {
         double              m_dTimestamp_s;
         uint32_t            m_u32Value;
-        char                m_chaStatus[7];
+        char                m_chaStatus[8];
     } cTimestampedUnsignedInt;
 
     typedef struct cTimestampedDouble
     {
         double              m_dTimestamp_s;
         double              m_dValue;
-        char                m_chaStatus[7];
+        char                m_chaStatus[8];
     } cTimestampedDouble;
 
     typedef struct cTimestampedDualDouble
@@ -109,17 +109,18 @@ class cSpectrometerHDF5OutputFile
         double              m_dTimestamp_s;
         double              m_dValue1;
         double              m_dValue2;
-        char                m_chaStatus[7];
+        char                m_chaStatus[8];
     } cTimestampedDualDouble;
 
     typedef struct cAntennaConfiguration
     {
         char                m_chaAntennaName[64];
-        char                m_chaAntennaDiameter_m[8];
-        char                m_chaAntennaBeamwidth[8];
-        char                m_chaAntennaLongitude_deg[16];
-        char                m_chaAntennaLatitude_deg[16];
-        char                m_chaAntennaAltitude_m[8];
+        char                m_chaObserverName[64];
+        double              m_dAntennaDiameter_m;
+        double              m_dAntennaBeamwidth_deg;
+        double              m_dAntennaLongitude_deg;
+        double              m_dAntennaLatitude_deg;
+        double              m_dAntennaAltitude_m;
     } cAntennaConfiguration;
 
 
@@ -132,6 +133,9 @@ public:
                                                      const cSpectrometerHeader &oHeader);
 
     void                                    addMarkupLabel(int64_t i64Timestamp_us, const std::string &strLabel);
+
+    // Noise diode tables
+    void                                    addNoiseDiodeData(const std::string &strPath);
 
     // Antenna-space values
     void                                    addAcsRequestedAz(int64_t i64Timestamp_us, double dAzimuth_deg, const std::string &strStatus);
@@ -191,12 +195,8 @@ public:
     void                                    addAttenuationADCChan0(int64_t i64Timestamp_us, double dADCAttenuationChan0_dB);
     void                                    addAttenuationADCChan1(int64_t i64Timestamp_us, double dADCAttenuationChan1_dB);
 
-    void                                    setAntennaName(const std::string &strAntennaName);
-    void                                    setAntennaBeamwidth(const std::string &strAntennaBeamwidth_deg);
-    void                                    setAntennaDiameter(const std::string &strAntennaDiameter_m);
-    void                                    setAntennaLatitude(const std::string &strAntennaLatitude_deg);
-    void                                    setAntennaAltitude(const std::string &strAntennaAltitude_m);
-    void                                    setAntennaLongitude(const std::string &strAntennaLongitude_deg);
+    void                                    setObservationInfo(const std::string &strObservationInfo);
+    void                                    setAntennaBeamwidth(const double &dAntennaBeamwidth_deg);
 
     void                                    setAntennaDelayModel(const std::vector<double> &vdDelayModelParams);
 
@@ -213,6 +213,7 @@ private:
 
     hid_t                                   m_iH5DataGroupHandle;
     hid_t                                   m_iH5MetaDataGroupHandle;
+    hid_t                                   m_iH5NdGroupHandle;
     hid_t                                   m_iH5MarkupGroupHandle;
     hid_t                                   m_iH5SensorsGroupHandle;
     hid_t                                   m_iH5SensorsAntennasGroupHandle;
@@ -368,6 +369,12 @@ private:
     void                                    writeROACHCoarseFFTShiftMask();
     void                                    writeROACHDspGains();
     void                                    writeROACHAdcAttentuations();
+
+    // Noise diode csv files
+    void                                    writeCsv2Hdf(const std::string &strPath, const std::string &strDataSetName);
+    
+// PJP
+    double                                  DmsToDeg(std::string strDms);
 
 };
 
