@@ -65,6 +65,8 @@ class cSpectrometerHDF5OutputFile
     {
         double              m_dTimestamp_s;
         char                m_chaSource[128];
+        char                m_chaRa[15];
+        char                m_chaDec[15];
         char                m_chaStatus[8];
     } cSourceSelection;
 

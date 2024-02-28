@@ -1710,9 +1710,17 @@ void cSpectrometerHDF5OutputFile::writeSelectedSources()
         H5Tinsert(compoundDataType, "timestamp", HOFFSET(cSourceSelection, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
 
         //Add to compound data type: the source name and ra/dec (c string)
-        hid_t stringTypeValue = H5Tcopy (H5T_C_S1);
-        H5Tset_size(stringTypeValue, sizeof(cSourceSelection::m_chaSource));
-        H5Tinsert(compoundDataType, "value", HOFFSET(cSourceSelection, m_chaSource), stringTypeValue);
+        hid_t stringTypeName = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeName, sizeof(cSourceSelection::m_chaSource));
+        H5Tinsert(compoundDataType, "name", HOFFSET(cSourceSelection, m_chaSource), stringTypeName);
+
+        hid_t stringTypeRa = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeRa, sizeof(cSourceSelection::m_chaRa));
+        H5Tinsert(compoundDataType, "ra", HOFFSET(cSourceSelection, m_chaRa), stringTypeRa);
+
+        hid_t stringTypeDec = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeDec, sizeof(cSourceSelection::m_chaDec));
+        H5Tinsert(compoundDataType, "dec", HOFFSET(cSourceSelection, m_chaDec), stringTypeDec);
 
         //Add to compound data type: the status of the sensor (string typically containing "nominal")
         hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
@@ -1735,7 +1743,9 @@ void cSpectrometerHDF5OutputFile::writeSelectedSources()
 
         addAttributeToDataSet(string("target"), strDatasetName, string("string"), string(""), dataset);
 
-        H5Tclose(stringTypeValue);
+        H5Tclose(stringTypeName);
+        H5Tclose(stringTypeRa);
+        H5Tclose(stringTypeDec);
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
         H5Sclose(dataspace);
@@ -3395,10 +3405,47 @@ void cSpectrometerHDF5OutputFile::addNoiseDiode6_7GHzPWMFrequency(int64_t i64Tim
 
 void cSpectrometerHDF5OutputFile::addSourceSelection(int64_t i64Timestamp_us, const string &strSourceName, const string &strStatus)
 {
+    // Example Source Name string: VIRGOA, radec, 12:30:49.400000, 12:23:28.000000
+    // Split:
+    vector<string> tokens;
+    string delimit = ",";
+    size_t pos = 0;
+    while (pos < strSourceName.length())
+    {
+        size_t next = strSourceName.find(delimit, pos);
+        if (string::npos == next)
+        {
+            next = strSourceName.length();
+        }
+        // Extract the token
+        string token = strSourceName.substr(pos, next - pos);
+        if (!token.empty())
+        {
+            tokens.push_back(token);
+        }
+        // Update position to start searching from next character
+        pos = next + delimit.length();
+    }
+
+    string name = "";
+    string ra = "";
+    string dec = "";
+    if (3 <= tokens.size())
+    {
+        // NAME
+        name = tokens.at(0);
+        // RA
+        ra = tokens.at(2);
+        //DEC
+        dec = tokens.at(3);
+    }
+ 
     cSourceSelection oNewSourceSelection;
     oNewSourceSelection.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     // TODO: Try to prevent this from writing past the length of the string.
-    sprintf(oNewSourceSelection.m_chaSource, "%s", strSourceName.c_str() );
+    sprintf(oNewSourceSelection.m_chaSource, "%s", name.c_str() );
+    sprintf(oNewSourceSelection.m_chaRa, "%s", ra.c_str() );
+    sprintf(oNewSourceSelection.m_chaDec, "%s", dec.c_str() );
     sprintf(oNewSourceSelection.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
