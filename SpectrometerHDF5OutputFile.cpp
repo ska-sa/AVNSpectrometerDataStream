@@ -109,7 +109,7 @@ cSpectrometerHDF5OutputFile::cSpectrometerHDF5OutputFile(const std::string &strF
     H5Pclose(datasetPropertiesStokes);
 
     // Read noise diode data from csv files
-    const string stNdFilesPath = "../../NoiseDiode/";
+    const string stNdFilesPath = "/etc/NoiseDiode/";
     addNoiseDiodeData(stNdFilesPath);
 }
 
