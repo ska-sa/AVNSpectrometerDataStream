@@ -65,8 +65,18 @@ class cSpectrometerHDF5OutputFile
     {
         double              m_dTimestamp_s;
         char                m_chaSource[128];
+        char                m_chaCoordSystem[80];
+        char                m_chaParam1[15];
+        char                m_chaParam2[15];
         char                m_chaStatus[8];
     } cSourceSelection;
+
+    typedef struct cOnSource
+    {
+        double              m_dTimestamp_s;
+        char                m_chaValue[2];
+        char                m_chaStatus[8];
+    } cOnSource;
 
     typedef struct cAntennaStatus
     {
@@ -167,8 +177,8 @@ public:
     void                                    addNoiseDiode6_7GHzPWMMark(int64_t i64Timestamp_us, int32_t i32NoiseDiodePWMMark, const std::string &strStatus);
     void                                    addNoiseDiode6_7GHzPWMFrequency(int64_t i64Timestamp_us, double dNoiseDiodePWMFrequency, const std::string &strStatus);
 
-
     void                                    addSourceSelection(int64_t i64Timestamp_us, const std::string &strSourceName, const std::string &strStatus);
+    void                                    addOnSource(int64_t i64Timestamp_us, const std::string &strValue, const std::string &strStatus);
 
     void                                    addBandSelectLcp(int64_t i64Timestamp_us, bool bBandSelectLcp, const std::string &strStatus);
     void                                    addBandSelectRcp(int64_t i64Timestamp_us, bool bBandSelectRcp, const std::string &strStatus);
@@ -270,6 +280,7 @@ private:
     std::vector<cTimestampedDouble>         m_voNoiseDiode6_7GHzPWMFrequency;
 
     std::vector<cSourceSelection>           m_voSelectedSources;
+    std::vector<cOnSource>                  m_voOnSources;
 
     std::vector<cTimestampedChar>           m_voBandSelectLcp;
     std::vector<cTimestampedChar>           m_voBandSelectRcp;
@@ -354,6 +365,8 @@ private:
     void                                    writeNoideDiodeCurrents();
 
     void                                    writeSelectedSources();
+
+    void                                    writeOnSources();
 
     void                                    writeRFBandSelects();
     void                                    writeSkyFrequencies();

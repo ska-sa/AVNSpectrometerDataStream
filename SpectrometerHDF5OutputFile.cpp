@@ -159,6 +159,8 @@ cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
 
     writeSelectedSources();
 
+    writeOnSources();
+
     writeRFBandSelects();
     writeSkyFrequencies();
     writeReceiverGains();
@@ -1710,9 +1712,21 @@ void cSpectrometerHDF5OutputFile::writeSelectedSources()
         H5Tinsert(compoundDataType, "timestamp", HOFFSET(cSourceSelection, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
 
         //Add to compound data type: the source name and ra/dec (c string)
-        hid_t stringTypeValue = H5Tcopy (H5T_C_S1);
-        H5Tset_size(stringTypeValue, sizeof(cSourceSelection::m_chaSource));
-        H5Tinsert(compoundDataType, "value", HOFFSET(cSourceSelection, m_chaSource), stringTypeValue);
+        hid_t stringTypeName = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeName, sizeof(cSourceSelection::m_chaSource));
+        H5Tinsert(compoundDataType, "name", HOFFSET(cSourceSelection, m_chaSource), stringTypeName);
+
+        hid_t stringTypeCoordSystem = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeCoordSystem, sizeof(cSourceSelection::m_chaCoordSystem));
+        H5Tinsert(compoundDataType, "coord system", HOFFSET(cSourceSelection, m_chaCoordSystem), stringTypeCoordSystem);
+
+        hid_t stringTypeRa = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeRa, sizeof(cSourceSelection::m_chaParam1));
+        H5Tinsert(compoundDataType, "param 1", HOFFSET(cSourceSelection, m_chaParam1), stringTypeRa);
+
+        hid_t stringTypeDec = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeDec, sizeof(cSourceSelection::m_chaParam2));
+        H5Tinsert(compoundDataType, "param 2", HOFFSET(cSourceSelection, m_chaParam2), stringTypeDec);
 
         //Add to compound data type: the status of the sensor (string typically containing "nominal")
         hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
@@ -1735,7 +1749,9 @@ void cSpectrometerHDF5OutputFile::writeSelectedSources()
 
         addAttributeToDataSet(string("target"), strDatasetName, string("string"), string(""), dataset);
 
-        H5Tclose(stringTypeValue);
+        H5Tclose(stringTypeName);
+        H5Tclose(stringTypeRa);
+        H5Tclose(stringTypeDec);
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
         H5Sclose(dataspace);
@@ -1744,6 +1760,59 @@ void cSpectrometerHDF5OutputFile::writeSelectedSources()
     else
     {
         cout << "cSpectrometerHDF5OutputFile::writeSelectedSources(): WARNING, vector m_voSelectedSources empty." << endl;
+    }
+}
+
+void cSpectrometerHDF5OutputFile::writeOnSources()
+{
+    if (m_voOnSources.size())
+    {
+        string strDatasetName("onSource");
+
+        //Create the data space
+        hsize_t dimension[] = { m_voOnSources.size() };
+        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
+
+        //Create a compound data type consisting of different native types per entry:
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cOnSource));
+
+        //Add to compound data type: a timestamp (double)
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cOnSource, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+
+        //Add to compound data type: the source name and ra/dec (c string)
+        hid_t stringTypeValue = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeValue, sizeof(cOnSource::m_chaValue));
+        H5Tinsert(compoundDataType, "value", HOFFSET(cOnSource, m_chaValue), stringTypeValue);
+
+        //Add to compound data type: the status of the sensor (string typically containing "nominal")
+        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeStatus, sizeof(cOnSource::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cOnSource, m_chaStatus), stringTypeStatus);
+
+        //Create the data set of of the new compound datatype
+        hid_t dataset = H5Dcreate1(m_iH5SensorsAntennasAntenna1GroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
+
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voOnSources.front());
+
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeOnSources(): HDF5 make dataset error" << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeOnSources(): Wrote " << m_voOnSources.size() << " astronomical sources to dataset." << endl;
+        }
+
+        addAttributeToDataSet(string("onSource"), strDatasetName, string("string"), string(""), dataset);
+
+        H5Tclose(stringTypeStatus);
+        H5Tclose(compoundDataType);
+        H5Sclose(dataspace);
+        H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeOnSources(): WARNING, vector m_voSelectedSources empty." << endl;
     }
 }
 
@@ -3395,14 +3464,73 @@ void cSpectrometerHDF5OutputFile::addNoiseDiode6_7GHzPWMFrequency(int64_t i64Tim
 
 void cSpectrometerHDF5OutputFile::addSourceSelection(int64_t i64Timestamp_us, const string &strSourceName, const string &strStatus)
 {
+    // Example Source Name string: VIRGOA, radec, 12:30:49.400000, 12:23:28.000000
+    // Split:
+    // If the source is not unknown - ie not tracking:
+    vector<string> tokens;
+    if ("unknown" != strStatus)
+    {
+        // Source selected
+        string delimit = ",";
+        size_t pos = 0;
+        while (pos < strSourceName.length())
+        {
+            size_t next = strSourceName.find(delimit, pos);
+            if (string::npos == next)
+            {
+                next = strSourceName.length();
+            }
+            // Extract the token
+            string token = strSourceName.substr(pos, next - pos);
+            if (!token.empty())
+            {
+                tokens.push_back(token);
+            }
+            // Update position to start searching from next character
+            pos = next + delimit.length();
+        }
+    }
+    string name = "No source";
+    string coordSystem = " ";
+    string param1 = " ";
+    string param2 = " ";
+    if ("unknown" != strStatus)
+    {
+        if (3 <= tokens.size())
+        {
+            // Name
+            name = tokens.at(0);
+            // Coordinate system
+            coordSystem = tokens.at(1);
+            // 1st parameter
+            param1 = tokens.at(2);
+            // 2nd parameter
+            param2 = tokens.at(3);
+        }
+    }
+ 
     cSourceSelection oNewSourceSelection;
     oNewSourceSelection.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     // TODO: Try to prevent this from writing past the length of the string.
-    sprintf(oNewSourceSelection.m_chaSource, "%s", strSourceName.c_str() );
+    sprintf(oNewSourceSelection.m_chaSource, "%s", name.c_str() );
+    sprintf(oNewSourceSelection.m_chaCoordSystem, "%s", coordSystem.c_str() );
+    sprintf(oNewSourceSelection.m_chaParam1, "%s", param1.c_str() );
+    sprintf(oNewSourceSelection.m_chaParam2, "%s", param2.c_str() );
     sprintf(oNewSourceSelection.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     m_voSelectedSources.push_back(oNewSourceSelection);
+}
+
+void cSpectrometerHDF5OutputFile::addOnSource(int64_t i64Timestamp_us, const string &strValue, const std::string &strStatus)
+{
+    cOnSource oNewOnSource;
+    oNewOnSource.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    sprintf(oNewOnSource.m_chaValue, "%s", strValue.c_str());
+    sprintf(oNewOnSource.m_chaStatus, "%s", strStatus.c_str());
+
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+    m_voOnSources.push_back(oNewOnSource);
 }
 
 // TODO: Think about whether to keep this as a char or as a bool. I have the noise diode enabled sensor as a bool.
