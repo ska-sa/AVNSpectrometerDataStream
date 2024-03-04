@@ -50,7 +50,7 @@ class cSpectrometerHDF5OutputFile
     typedef struct cTimestampedChar
     {
         double              m_dTimestamp_s;
-        char                m_chaValue[2];
+        char                m_chaValue[1];
         char                m_chaStatus[8];
     } cTimestampedChar;
 
