@@ -125,7 +125,6 @@ class cSpectrometerHDF5OutputFile
     typedef struct cAntennaConfiguration
     {
         char                m_chaAntennaName[64];
-        char                m_chaObserverName[64];
         double              m_dAntennaDiameter_m;
         double              m_dAntennaBeamwidth_deg;
         double              m_dAntennaLongitude_deg;
@@ -133,6 +132,19 @@ class cSpectrometerHDF5OutputFile
         double              m_dAntennaAltitude_m;
     } cAntennaConfiguration;
 
+    typedef struct cObservedMaserName
+    {
+        double              m_dTimestamp_s;
+        char                m_chaValue[128];
+        char                m_chaStatus[8];
+    } cObservedMaserName;
+
+    typedef struct cObservationInformation
+    {
+        char                m_chaObserverName[64];
+        cObservedMaserName  m_observedMaserName;
+        cTimestampedDouble  m_observedMaserVlsr;
+    } cObservationInformation;
 
 public:
     cSpectrometerHDF5OutputFile(const std::string &strFilename, AVN::Spectrometer::digitiserType eDigitiserType, uint32_t u32NFrequencyBins);
@@ -207,6 +219,8 @@ public:
 
     void                                    setObservationInfo(const std::string &strObservationInfo);
     void                                    setAntennaBeamwidth(const double &dAntennaBeamwidth_deg);
+    void                                    addObservedMaserName(int64_t i64Timestamp_us, const std::string &strObservedMaserName, const std::string &strStatus);
+    void                                    addObservedMaserVlsr(int64_t i64Timestamp_us, const double &dObservedMaserVlsr_km_s, const std::string &strStatus);
 
     void                                    setAntennaDelayModel(const std::vector<double> &vdDelayModelParams);
 
@@ -298,6 +312,7 @@ private:
     std::vector<cTimestampedDouble>         m_voRelativeHumidities_percent;
 
     cAntennaConfiguration                   m_oAntennaConfiguration;
+    cObservationInformation                 m_oObservationInformation;
     std::vector<double>                     m_vdDelayModelParams;
     double                                  m_adPointingModelParams[30]; //Only store most recent version
 

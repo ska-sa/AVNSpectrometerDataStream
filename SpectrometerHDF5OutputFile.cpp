@@ -1306,7 +1306,7 @@ void cSpectrometerHDF5OutputFile::writeAntennaConfiguration()
         // ********** Observer name **********
         strDatasetName = "observer";
 
-        err = H5LTmake_dataset_string(m_iH5ConfigurationObservationGroupHandle, strDatasetName.c_str(), (const char *)  &m_oAntennaConfiguration.m_chaObserverName);
+        err = H5LTmake_dataset_string(m_iH5ConfigurationObservationGroupHandle, strDatasetName.c_str(), (const char *)  &m_oObservationInformation.m_chaObserverName);
         
         if(err < 0)
         {
@@ -1314,7 +1314,7 @@ void cSpectrometerHDF5OutputFile::writeAntennaConfiguration()
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeAntennaConfiguration(): Wrote observer name: " << m_oAntennaConfiguration.m_chaObserverName << " to dataset" << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeAntennaConfiguration(): Wrote observer name: " << m_oObservationInformation.m_chaObserverName << " to dataset" << endl;
         }
 
         //Need to open the dataset again here for attribute as the H5LTmake_dataset used above does leave an open handle.
@@ -3265,7 +3265,6 @@ double cSpectrometerHDF5OutputFile::DmsToDeg(string strDms)
     return 0.0;
 }
 
-
 void cSpectrometerHDF5OutputFile::setObservationInfo(const string &strObservationInformation)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
@@ -3352,7 +3351,7 @@ void cSpectrometerHDF5OutputFile::setObservationInfo(const string &strObservatio
     }
 
     sprintf(m_oAntennaConfiguration.m_chaAntennaName, "%s", strAntennaName.c_str());
-    sprintf(m_oAntennaConfiguration.m_chaObserverName, "%s", strObserver.c_str());
+    sprintf(m_oObservationInformation.m_chaObserverName, "%s", strObserver.c_str());
     m_oAntennaConfiguration.m_dAntennaLatitude_deg = dLatitude;
     m_oAntennaConfiguration.m_dAntennaLongitude_deg = dLongitude;
     m_oAntennaConfiguration.m_dAntennaAltitude_m = dAltitude;
@@ -3364,6 +3363,28 @@ void cSpectrometerHDF5OutputFile::setAntennaBeamwidth(const double &dAntennaBeam
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
     //Only a single set of values
     m_oAntennaConfiguration.m_dAntennaBeamwidth_deg = dAntennaBeamwidth_deg;
+}
+
+void cSpectrometerHDF5OutputFile::addObservedMaserName(int64_t i64Timestamp_us, const string &strObservedMaserName, const string &strStatus)
+{
+    cObservedMaserName oNewObservedMaserName;
+    oNewObservedMaserName.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    sprintf( oNewObservedMaserName.m_observedMaserName, "%s", strObservedMaserName.substr(0, sizeof(oNewObservedMaserName.m_chaObservedMaserName)).c_str() ); //Limit to size of the char array
+    sprintf( oNewObservedMaserName.m_chaStatus, "%s", strStatus.c_str());
+
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+    m_oObservationInformation.m_observedMaserName.push_back(oNewObservedMaserName);
+}
+
+void cSpectrometerHDF5OutputFile::addObservedMaserVlsr(int64_t i64Timestamp_us, double dObservedMaserVlsr_km_s, const string &strStatus)
+{
+    cTimestampedDouble oNewObservedMaserVlsr;
+    oNewObservedMaserVlsr.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    oNewObservedMaserVlsr.m_dValue = dObservedMaserVlsr_km_s;
+    sprintf( oNewObservedMaserVlsr.m_chaStatus, "%s", strStatus.c_str());
+
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+    m_oObservationInformation.m_observedMaserVlsr.push_back(oNewObservedMaserVlsr);
 }
 
 void cSpectrometerHDF5OutputFile::setAntennaDelayModel(const vector<double> &vdDelayModelParams)
