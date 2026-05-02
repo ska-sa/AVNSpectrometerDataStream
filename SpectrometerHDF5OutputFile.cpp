@@ -153,8 +153,8 @@ cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
     /* Marked for removal.
     writeMotorTorques();
     */
-    writeAntennaConfiguration();
 
+    writeAntennaConfiguration();
     writeObservationInformation();
 
     writeNoiseDiodeInformation();
@@ -1314,9 +1314,6 @@ void cSpectrometerHDF5OutputFile::writeObservationInformation()
         // ********** Observer name **********
         string strDatasetName("observer");
 
-        //Need to open the dataset again here for attribute as the H5LTmake_dataset used above does leave an open handle.
-        hid_t dataset = H5Dopen2(m_iH5ConfigurationObservationGroupHandle, strDatasetName.c_str(), H5P_DEFAULT);
-
         herr_t err = H5LTmake_dataset_string(m_iH5ConfigurationObservationGroupHandle, strDatasetName.c_str(), (const char *)  &m_oObservationInformation.m_chaObserverName);
         
         if(err < 0)
@@ -1328,9 +1325,11 @@ void cSpectrometerHDF5OutputFile::writeObservationInformation()
             cout << "cSpectrometerHDF5OutputFile::writeAntennaConfiguration(): Wrote observer name: " << m_oObservationInformation.m_chaObserverName << " to dataset" << endl;
         }
 
-        addAttributeToDataSet(string("Observer name"), strDatasetName, string("char"), string(""), dataset);
+        //Need to open the dataset again here for attribute as the H5LTmake_dataset used above does leave an open handle.
+        hid_t dataset_id = H5Dopen2(m_iH5ConfigurationObservationGroupHandle, strDatasetName.c_str(), H5P_DEFAULT);
+        addAttributeToDataSet(string("Observer name"), strDatasetName, string("char"), string(""), dataset_id);
 
-        H5Dclose(dataset);
+        H5Dclose(dataset_id);
     }
 
     if (m_oObservationInformation.m_observedMaserName.size())
@@ -1338,11 +1337,11 @@ void cSpectrometerHDF5OutputFile::writeObservationInformation()
         string strDatasetName("observed-maser-name");
 
         //Create the data space
-        hsize_t dimension[] = { m_oObservationInformation.m_observedMaserName.size() };
+        hsize_t dimension[] = { cObservedMaserName.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
-        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cObservedMaserName::m_dTimestamp_s));
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cObservedMaserName));
         H5Tinsert(compoundDataType, "timestamp", HOFFSET(cObservedMaserName, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
         
         //Add to compound data type: the observed maser name (string)
@@ -1356,7 +1355,7 @@ void cSpectrometerHDF5OutputFile::writeObservationInformation()
         H5Tinsert(compoundDataType, "status", HOFFSET(cObservedMaserName, m_chaStatus), stringTypeStatus);
 
         //Create the data set of the new compound datatype
-        hid_t dataset = H5Dcreate1(m_iH5SensorsRFEGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
+        hid_t dataset = H5Dcreate1(m_iH5ConfigurationObservationGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
         herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_oObservationInformation.m_observedMaserName.front());
 
@@ -1369,7 +1368,7 @@ void cSpectrometerHDF5OutputFile::writeObservationInformation()
             cout << "cSpectrometerHDF5OutputFile::writeObservationInformation(): Wrote " << m_oObservationInformation.m_observedMaserName.size() << " observed maser name values to dataset." << endl;
         }
 
-        addAttributeToDataSet(string("observed maser name"), strDatasetName, string("string"), string(""), dataset);
+        addAttributeToDataSet(string("Observed maser name"), strDatasetName, string("string"), string(""), dataset);
 
         H5Tclose(stringTypeValue);
         H5Tclose(stringTypeStatus);
@@ -1379,7 +1378,7 @@ void cSpectrometerHDF5OutputFile::writeObservationInformation()
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeObservationInformation(): WARNING, vector m_oObservationInformation.m_observedMaserVlsr empty." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeObservationInformation(): WARNING, vector m_oObservationInformation.m_observedMaserName empty." << endl;
     }
 
     if (m_oObservationInformation.m_observedMaserVlsr.size())
@@ -1418,7 +1417,7 @@ void cSpectrometerHDF5OutputFile::writeObservationInformation()
             cout << "cSpectrometerHDF5OutputFile::writeObservationInformation(): Wrote " << m_oObservationInformation.m_observedMaserVlsr.size() << " observed maser VLSR values to dataset." << endl;
         }
 
-        addAttributeToDataSet(string("observed maser VLSR"), strDatasetName, string("double"), string("km/s"), dataset);
+        addAttributeToDataSet(string("Observed maser VLSR"), strDatasetName, string("double"), string("km/s"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
