@@ -141,9 +141,9 @@ class cSpectrometerHDF5OutputFile
 
     typedef struct cObservationInformation
     {
-        char                m_chaObserverName[64];
-        cObservedMaserName  m_observedMaserName;
-        cTimestampedDouble  m_observedMaserVlsr;
+        char                            m_chaObserverName[64];
+        std::vector<cObservedMaserName> m_observedMaserName;
+        std::vector<cTimestampedDouble> m_observedMaserVlsr;
     } cObservationInformation;
 
 public:
@@ -220,7 +220,7 @@ public:
     void                                    setObservationInfo(const std::string &strObservationInfo);
     void                                    setAntennaBeamwidth(const double &dAntennaBeamwidth_deg);
     void                                    addObservedMaserName(int64_t i64Timestamp_us, const std::string &strObservedMaserName, const std::string &strStatus);
-    void                                    addObservedMaserVlsr(int64_t i64Timestamp_us, double dObservedMaserVlsr_km_s, const string &strStatus);
+    void                                    addObservedMaserVlsr(int64_t i64Timestamp_us, double dObservedMaserVlsr_km_s, const std::string &strStatus);
 
     void                                    setAntennaDelayModel(const std::vector<double> &vdDelayModelParams);
 
