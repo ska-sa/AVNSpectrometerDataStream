@@ -1312,9 +1312,9 @@ void cSpectrometerHDF5OutputFile::writeObservationInformation()
 {
     {
         // ********** Observer name **********
-        strDatasetName = "observer";
+        string strDatasetName("observer");
 
-        err = H5LTmake_dataset_string(m_iH5ConfigurationObservationGroupHandle, strDatasetName.c_str(), (const char *)  &m_oObservationInformation.m_chaObserverName);
+        herr_t err = H5LTmake_dataset_string(m_iH5ConfigurationObservationGroupHandle, strDatasetName.c_str(), (const char *)  &m_oObservationInformation.m_chaObserverName);
         
         if(err < 0)
         {
@@ -1390,18 +1390,18 @@ void cSpectrometerHDF5OutputFile::writeObservationInformation()
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
-        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedUnsignedInt));
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
 
         //Add to compound data type: a timestamp (double)
-        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedUnsignedInt, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
 
         //Add to compound data type: the observed maser VLSR (double)
-        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedUnsignedInt, m_dValue), H5T_NATIVE_DOUBLE);
+        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
 
         //Add to compound data type: the status of the sensor (string typically containing "nominal")
         hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
-        H5Tset_size(stringTypeStatus, sizeof(cTimestampedUnsignedInt::m_chaStatus));
-        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedUnsignedInt, m_chaStatus), stringTypeStatus);
+        H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
 
         //Create the data set of of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5ConfigurationObservationGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
