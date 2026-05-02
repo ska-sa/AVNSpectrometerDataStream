@@ -1342,7 +1342,7 @@ void cSpectrometerHDF5OutputFile::writeObservationInformation()
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
-        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cObservedMaserName.m_dTimestamp_s));
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cObservedMaserName::m_dTimestamp_s));
         H5Tinsert(compoundDataType, "timestamp", HOFFSET(cObservedMaserName, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
         
         //Add to compound data type: the observed maser name (string)
