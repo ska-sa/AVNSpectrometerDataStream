@@ -3369,7 +3369,7 @@ void cSpectrometerHDF5OutputFile::addObservedMaserName(int64_t i64Timestamp_us, 
 {
     cObservedMaserName oNewObservedMaserName;
     oNewObservedMaserName.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    sprintf( oNewObservedMaserName.m_observedMaserName, "%s", strObservedMaserName.substr(0, sizeof(oNewObservedMaserName.m_chaObservedMaserName)).c_str() ); //Limit to size of the char array
+    sprintf( oNewObservedMaserName.m_chaValue, "%s", strObservedMaserName.substr(0, sizeof(oNewObservedMaserName.m_chaValue)).c_str() ); //Limit to size of the char array
     sprintf( oNewObservedMaserName.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
