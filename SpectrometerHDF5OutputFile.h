@@ -135,7 +135,7 @@ class cSpectrometerHDF5OutputFile
     typedef struct cObservedMaserName
     {
         double              m_dTimestamp_s;
-        char                m_chaValue[128];
+        char                m_chaName[128];
         char                m_chaStatus[8];
     } cObservedMaserName;
 
@@ -374,6 +374,7 @@ private:
     void                                    writeAntennaStatuses();
     void                                    writeMotorTorques();
     void                                    writeAntennaConfiguration();
+    void                                    writeObservationInformation();
 
     void                                    writeNoiseDiodeInformation();
     void                                    writeNoiseDiodeSources();
