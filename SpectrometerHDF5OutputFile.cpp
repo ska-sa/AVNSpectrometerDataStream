@@ -1104,7 +1104,7 @@ void cSpectrometerHDF5OutputFile::writeRequestedRaDecOffsets()
     //Right Ascension Offset
     if (m_voRequestedRaOffset_deg.size())
     {
-        string strDatasetName("pos.request-scan-ra-off");
+        string strDatasetName("pos.request-scan-ra-offset");
 
         //Create the data space
         hsize_t dimension[] = { m_voRequestedRaOffset_deg.size() };
@@ -1153,7 +1153,7 @@ void cSpectrometerHDF5OutputFile::writeRequestedRaDecOffsets()
     //Declination Offset
     if (m_voRequestedDecOffset_deg.size())
     {
-        string strDatasetName("pos.request-scan-dec-off");
+        string strDatasetName("pos.request-scan-dec-offset");
 
         //Create the data space
         hsize_t dimension[] = { m_voRequestedDecOffset_deg.size() };
@@ -1205,7 +1205,7 @@ void cSpectrometerHDF5OutputFile::writeRequestedAzElOffsets()
     //Azimuth Offset
     if (m_voRequestedAzOffset_deg.size())
     {
-        string strDatasetName("pos.request-scan-azim-off");
+        string strDatasetName("pos.request-scan-azim-offset");
 
         //Create the data space
         hsize_t dimension[] = { m_voRequestedAzOffset_deg.size() };
@@ -1254,7 +1254,7 @@ void cSpectrometerHDF5OutputFile::writeRequestedAzElOffsets()
     //Elevation Offset
     if (m_voRequestedElOffset_deg.size())
     {
-        string strDatasetName("pos.request-scan-dec-off");
+        string strDatasetName("pos.request-scan-elev-offset");
 
         //Create the data space
         hsize_t dimension[] = { m_voRequestedElOffset_deg.size() };
