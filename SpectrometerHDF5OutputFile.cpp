@@ -1773,7 +1773,7 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
 
     if (m_voNoiseDiode5GHzPWMFrequency.size())
     {
-        string strDatasetName("noise-diode.5GHz.pwm-frequency");
+        string strDatasetName("noise-diode.5ghz.pwm-frequency");
 
         //Create the data space
         hsize_t dimension[] = { m_voNoiseDiode5GHzPWMFrequency.size() };
@@ -1821,7 +1821,7 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
 
     if (m_voNoiseDiode6_7GHzInputSource.size())
     {
-        string strDatasetName("noise-diode.6-7GHz.control-source");
+        string strDatasetName("noise-diode.6-7ghz.control-source");
 
         //Create the data space
         hsize_t dimension[] = { m_voNoiseDiode6_7GHzInputSource.size() };
@@ -1868,7 +1868,7 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
 
     if (m_voNoiseDiode6_7GHzLevel.size())
     {
-        string strDatasetName("noise-diode.6-7GHz.level");
+        string strDatasetName("noise-diode.6-7ghz.level");
 
         //Create the data space
         hsize_t dimension[] = { m_voNoiseDiode6_7GHzLevel.size() };
@@ -1912,7 +1912,7 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
 
     if (m_voNoiseDiode6_7GHzPWMMark.size())
     {
-        string strDatasetName("noise-diode.6-7GHz.pwm-mark");
+        string strDatasetName("noise-diode.6-7ghz.pwm-mark");
 
         //Create the data space
         hsize_t dimension[] = { m_voNoiseDiode6_7GHzPWMMark.size() };
@@ -1956,7 +1956,7 @@ void cSpectrometerHDF5OutputFile::writeNoiseDiodeInformation()
 
     if (m_voNoiseDiode6_7GHzPWMFrequency.size())
     {
-        string strDatasetName("noise-diode.6-7GHz.pwm-frequency");
+        string strDatasetName("noise-diode.6-7ghz.pwm-frequency");
 
         //Create the data space
         hsize_t dimension[] = { m_voNoiseDiode6_7GHzPWMFrequency.size() };
