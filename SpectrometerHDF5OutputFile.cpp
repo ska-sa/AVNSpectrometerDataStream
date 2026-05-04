@@ -3524,6 +3524,49 @@ void cSpectrometerHDF5OutputFile::addPointingModelParameter(uint8_t ui8Parameter
     m_adPointingModelParams[ui8ParameterNumber] = dParameterValue;
 }
 
+void cSpectrometerHDF5OutputFile::addSkyRequestedRaOffset(int64_t i64Timestamp_us, double dRightAscensionOffset_deg, const string &strStatus)
+{
+    cTimestampedDouble oNewRequestedRaOffset;
+    oNewRequestedRaOffset.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    oNewRequestedRaOffset.m_dValue = dRightAscensionOffset_deg;
+    sprintf(oNewRequestedRaOffset.m_chaStatus, "%s", strStatus.c_str());
+
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+    m_voSkyRequestedAntennaAzs_deg.push_back(oNewRequestedRaOffset);
+}
+
+void cSpectrometerHDF5OutputFile::addSkyRequestedDecOffset(int64_t i64Timestamp_us, double dDeclinationOffset_deg, const string &strStatus)
+{
+    cTimestampedDouble oNewRequestedDecOffset;
+    oNewRequestedDecOffset.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    oNewRequestedDecOffset.m_dValue = dDeclinationOffset_deg;
+    sprintf(oNewRequestedDecOffset.m_chaStatus, "%s", strStatus.c_str());
+
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+    m_voSkyRequestedAntennaAzs_deg.push_back(oNewRequestedDecOffset);
+}
+
+void cSpectrometerHDF5OutputFile::addSkyRequestedAzOffset(int64_t i64Timestamp_us, double dAzimuthOffset_deg, const string &strStatus)
+{
+    cTimestampedDouble oNewRequestedDecOffset;
+    oNewRequestedDecOffset.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    oNewRequestedDecOffset.m_dValue = dAzimuthOffset_deg;
+    sprintf(oNewRequestedDecOffset.m_chaStatus, "%s", strStatus.c_str());
+
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+    m_voSkyRequestedAntennaAzs_deg.push_back(oNewRequestedDecOffset);
+}
+
+void cSpectrometerHDF5OutputFile::addSkyRequestedElOffset(int64_t i64Timestamp_us, double dElevationOffset_deg, const string &strStatus)
+{
+    cTimestampedDouble oNewRequestedElOffset;
+    oNewRequestedElOffset.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    oNewRequestedElOffset.m_dValue = dElevationOffset_deg;
+    sprintf(oNewRequestedElOffset.m_chaStatus, "%s", strStatus.c_str());
+
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+    m_voSkyRequestedAntennaAzs_deg.push_back(oNewRequestedElOffset);
+}
 
 void cSpectrometerHDF5OutputFile::addAntennaStatus(int64_t i64Timestamp_us, const string &strAntennaStatus, const string &strStatus)
 {
