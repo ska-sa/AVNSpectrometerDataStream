@@ -1099,15 +1099,15 @@ void cSpectrometerHDF5OutputFile::writeSkyActualAntennaAzEls()
     }
 }
 
-void cSpectrometerHDF5OutputFile::writeSkyRequestedRaDecOffsets()
+void cSpectrometerHDF5OutputFile::writeRequestedRaDecOffsets()
 {
     //Right Ascension Offset
-    if (m_voSkyRequestedRaOffset_deg.size())
+    if (m_voRequestedRaOffset_deg.size())
     {
         string strDatasetName("pos.request-scan-ra-off");
 
         //Create the data space
-        hsize_t dimension[] = { m_voSkyRequestedRaOffset_deg.size() };
+        hsize_t dimension[] = { m_voRequestedRaOffset_deg.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
@@ -1127,18 +1127,18 @@ void cSpectrometerHDF5OutputFile::writeSkyRequestedRaDecOffsets()
         //Create the data set of of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5SensorsAntennasAntenna1GroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voSkyRequestedRaOffset_deg.front());
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voRequestedRaOffset_deg.front());
 
         if(err < 0)
         {
-            cout << "cSpectrometerHDF5OutputFile::writeSkyRequestedRaDecOffsets(): HDF5 make dataset error" << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeRequestedRaDecOffsets(): HDF5 make dataset error" << endl;
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeSkyRequestedRaDecOffsets(): Wrote " << m_voSkyRequestedRaOffset_deg.size() << " requested sky RA offsets to dataset." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeRequestedRaDecOffsets(): Wrote " << m_voRequestedRaOffset_deg.size() << " requested RA offsets to dataset." << endl;
         }
 
-        addAttributeToDataSet(string("Requested sky-space RA offset"), strDatasetName, string("double"), string("deg"), dataset);
+        addAttributeToDataSet(string("Requested RA offset"), strDatasetName, string("double"), string("deg"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -1147,16 +1147,16 @@ void cSpectrometerHDF5OutputFile::writeSkyRequestedRaDecOffsets()
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeSkyRequestedRaDecOffsets(): WARNING, vector m_voSkyRequestedRaOffset_deg empty." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeRequestedRaDecOffsets(): WARNING, vector m_voRequestedRaOffset_deg empty." << endl;
     }
 
     //Declination Offset
-    if (m_voSkyRequestedDecOffset_deg.size())
+    if (m_voRequestedDecOffset_deg.size())
     {
         string strDatasetName("pos.request-scan-dec-off");
 
         //Create the data space
-        hsize_t dimension[] = { m_voSkyRequestedDecOffset_deg.size() };
+        hsize_t dimension[] = { m_voRequestedDecOffset_deg.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
@@ -1176,18 +1176,18 @@ void cSpectrometerHDF5OutputFile::writeSkyRequestedRaDecOffsets()
         //Create the data set of of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5SensorsAntennasAntenna1GroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voSkyRequestedDecOffset_deg.front());
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voRequestedDecOffset_deg.front());
 
         if(err < 0)
         {
-            cout << "cSpectrometerHDF5OutputFile::writeSkyRequestedRaDecOffsets(): HDF5 make dataset error" << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeRequestedRaDecOffsets(): HDF5 make dataset error" << endl;
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeSkyRequestedRaDecOffsets(): Wrote " << m_voSkyRequestedDecOffset_deg.size() << " requested sky Dec offsets to dataset." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeRequestedRaDecOffsets(): Wrote " << m_voRequestedDecOffset_deg.size() << " requested Dec offsets to dataset." << endl;
         }
 
-        addAttributeToDataSet(string("Requested sky-space Dec offset"), strDatasetName, string("double"), string("deg"), dataset);
+        addAttributeToDataSet(string("Requested Dec offset"), strDatasetName, string("double"), string("deg"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -1196,19 +1196,19 @@ void cSpectrometerHDF5OutputFile::writeSkyRequestedRaDecOffsets()
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeSkyRequestedRaDecOffsets(): WARNING, vector m_voSkyRequestedDecOffset_deg empty." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeRequestedRaDecOffsets(): WARNING, vector m_voRequestedDecOffset_deg empty." << endl;
     }
 }
 
-void cSpectrometerHDF5OutputFile::writeSkyRequestedAzElOffsets()
+void cSpectrometerHDF5OutputFile::writeRequestedAzElOffsets()
 {
     //Azimuth Offset
-    if (m_voSkyRequestedAzOffset_deg.size())
+    if (m_voRequestedAzOffset_deg.size())
     {
         string strDatasetName("pos.request-scan-azim-off");
 
         //Create the data space
-        hsize_t dimension[] = { m_voSkyRequestedAzOffset_deg.size() };
+        hsize_t dimension[] = { m_voRequestedAzOffset_deg.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
@@ -1228,18 +1228,18 @@ void cSpectrometerHDF5OutputFile::writeSkyRequestedAzElOffsets()
         //Create the data set of of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5SensorsAntennasAntenna1GroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voSkyRequestedAzOffset_deg.front());
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voRequestedAzOffset_deg.front());
 
         if(err < 0)
         {
-            cout << "cSpectrometerHDF5OutputFile::writeSkyRequestedAzElOffsets(): HDF5 make dataset error" << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeRequestedAzElOffsets(): HDF5 make dataset error" << endl;
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeSkyRequestedAzElOffsets(): Wrote " << m_voSkyRequestedAzOffset_deg.size() << " requested sky Azim offsets to dataset." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeRequestedAzElOffsets(): Wrote " << m_voRequestedAzOffset_deg.size() << " requested Azim offsets to dataset." << endl;
         }
 
-        addAttributeToDataSet(string("Requested sky-space Azim offset"), strDatasetName, string("double"), string("deg"), dataset);
+        addAttributeToDataSet(string("Requested Azim offset"), strDatasetName, string("double"), string("deg"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -1248,16 +1248,16 @@ void cSpectrometerHDF5OutputFile::writeSkyRequestedAzElOffsets()
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeSkyRequestedAzElOffsets(): WARNING, vector m_voSkyRequestedAzOffset_deg empty." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeRequestedAzElOffsets(): WARNING, vector m_voRequestedAzOffset_deg empty." << endl;
     }
 
     //Elevation Offset
-    if (m_voSkyRequestedElOffset_deg.size())
+    if (m_voRequestedElOffset_deg.size())
     {
         string strDatasetName("pos.request-scan-dec-off");
 
         //Create the data space
-        hsize_t dimension[] = { m_voSkyRequestedElOffset_deg.size() };
+        hsize_t dimension[] = { m_voRequestedElOffset_deg.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
@@ -1277,18 +1277,18 @@ void cSpectrometerHDF5OutputFile::writeSkyRequestedAzElOffsets()
         //Create the data set of of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5SensorsAntennasAntenna1GroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voSkyRequestedElOffset_deg.front());
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voRequestedElOffset_deg.front());
 
         if(err < 0)
         {
-            cout << "cSpectrometerHDF5OutputFile::writeSkyRequestedAzElOffsets(): HDF5 make dataset error" << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeRequestedAzElOffsets(): HDF5 make dataset error" << endl;
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeSkyRequestedAzElOffsets(): Wrote " << m_voSkyRequestedElOffset_deg.size() << " requested sky Elev offsets to dataset." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeRequestedAzElOffsets(): Wrote " << m_voRequestedElOffset_deg.size() << " requested Elev offsets to dataset." << endl;
         }
 
-        addAttributeToDataSet(string("Requested sky-space Elev offset"), strDatasetName, string("double"), string("deg"), dataset);
+        addAttributeToDataSet(string("Requested Elev offset"), strDatasetName, string("double"), string("deg"), dataset);
 
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
@@ -1297,7 +1297,7 @@ void cSpectrometerHDF5OutputFile::writeSkyRequestedAzElOffsets()
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeSkyRequestedAzElOffsets(): WARNING, vector m_voSkyRequestedElOffset_deg empty." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeRequestedAzElOffsets(): WARNING, vector m_voRequestedElOffset_deg empty." << endl;
     }
 }
 
@@ -3532,7 +3532,7 @@ void cSpectrometerHDF5OutputFile::addSkyRequestedRaOffset(int64_t i64Timestamp_u
     sprintf(oNewRequestedRaOffset.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-    m_voSkyRequestedAntennaAzs_deg.push_back(oNewRequestedRaOffset);
+    m_voRequestedRaOffset_deg.push_back(oNewRequestedRaOffset);
 }
 
 void cSpectrometerHDF5OutputFile::addSkyRequestedDecOffset(int64_t i64Timestamp_us, double dDeclinationOffset_deg, const string &strStatus)
@@ -3543,7 +3543,7 @@ void cSpectrometerHDF5OutputFile::addSkyRequestedDecOffset(int64_t i64Timestamp_
     sprintf(oNewRequestedDecOffset.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-    m_voSkyRequestedAntennaAzs_deg.push_back(oNewRequestedDecOffset);
+    m_voRequestedDecOffset_deg.push_back(oNewRequestedDecOffset);
 }
 
 void cSpectrometerHDF5OutputFile::addSkyRequestedAzOffset(int64_t i64Timestamp_us, double dAzimuthOffset_deg, const string &strStatus)
@@ -3554,7 +3554,7 @@ void cSpectrometerHDF5OutputFile::addSkyRequestedAzOffset(int64_t i64Timestamp_u
     sprintf(oNewRequestedDecOffset.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-    m_voSkyRequestedAntennaAzs_deg.push_back(oNewRequestedDecOffset);
+    m_voRequestedAzOffset_deg.push_back(oNewRequestedDecOffset);
 }
 
 void cSpectrometerHDF5OutputFile::addSkyRequestedElOffset(int64_t i64Timestamp_us, double dElevationOffset_deg, const string &strStatus)
@@ -3565,7 +3565,7 @@ void cSpectrometerHDF5OutputFile::addSkyRequestedElOffset(int64_t i64Timestamp_u
     sprintf(oNewRequestedElOffset.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-    m_voSkyRequestedAntennaAzs_deg.push_back(oNewRequestedElOffset);
+    m_voRequestedElOffset_deg.push_back(oNewRequestedElOffset);
 }
 
 void cSpectrometerHDF5OutputFile::addAntennaStatus(int64_t i64Timestamp_us, const string &strAntennaStatus, const string &strStatus)
