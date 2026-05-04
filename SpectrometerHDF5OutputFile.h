@@ -142,8 +142,8 @@ class cSpectrometerHDF5OutputFile
     typedef struct cObservationInformation
     {
         char                            m_chaObserverName[64];
-        std::vector<cObservedMaserName> m_observedMaserName;
-        std::vector<cTimestampedDouble> m_observedMaserVlsr;
+        std::vector<cObservedMaserName> m_vobservedMaserName;
+        std::vector<cTimestampedDouble> m_vobservedMaserVlsr;
     } cObservationInformation;
 
 public:
