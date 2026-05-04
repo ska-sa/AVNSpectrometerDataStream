@@ -177,6 +177,11 @@ public:
 
     void                                    addPointingModelParameter(uint8_t ui8ParameterNumber, double dParameterValue);
 
+    void                                    addSkyRequestedRaOffset(int64_t i64Timestamp_us, double dRightAscensionOffset_deg, const std::string &strStatus);
+    void                                    addSkyRequestedDecOffset(int64_t i64Timestamp_us, double dDeclinationOffset_deg, const std::string &strStatus);
+    void                                    addSkyRequestedAzOffset(int64_t i64Timestamp_us, double dAzimuthOffset_deg, const std::string &strStatus);
+    void                                    addSkyRequestedElOffset(int64_t i64Timestamp_us, double dElevationOffset_deg, const std::string &strStatus);
+
     void                                    addAntennaStatus(int64_t i64Timestamp_us, const std::string &strAntennaStatus, const std::string &strStatus);
     void                                    addObservationStatus(int64_t i64Timestamp_us, const std::string &strObservationStatus, const std::string &strStatus);
 
@@ -281,6 +286,11 @@ private:
     std::vector<cTimestampedDouble>         m_voSkyActualAntennaAzs_deg;
     std::vector<cTimestampedDouble>         m_voSkyActualAntennaEls_deg;
 
+    std::vector<cTimestampedDouble>         m_voSkyRequestedRaOffset_deg;
+    std::vector<cTimestampedDouble>         m_voSkyRequestedDecOffset_deg;
+    std::vector<cTimestampedDouble>         m_voSkyDesiredAzOffset_deg;
+    std::vector<cTimestampedDouble>         m_voSkyDesiredElOffset_deg;
+
     std::vector<cAntennaStatus>             m_voAntennaStatuses;
     std::vector<cAntennaStatus>             m_voObservationStatuses; // Same datatype as above.
 
@@ -370,6 +380,9 @@ private:
     void                                    writeActualSourceOffsetAzEls();
     void                                    writeActualAntennaRADecs();
     */
+
+    void                                    writeSkyRequestedRaDecOffsets();
+    void                                    writeSkyRequestedAzElOffsets();
 
     void                                    writeAntennaStatuses();
     void                                    writeMotorTorques();
