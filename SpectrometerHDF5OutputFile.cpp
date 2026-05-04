@@ -154,8 +154,8 @@ cSpectrometerHDF5OutputFile::~cSpectrometerHDF5OutputFile()
     writeMotorTorques();
     */
 
-    writeSkyRequestedRaDecOffsets();
-    writeSkyRequestedAzElOffsets();
+    writeRequestedRaDecOffsets();
+    writeRequestedAzElOffsets();
 
     writeAntennaConfiguration();
     writeObservationInformation();
@@ -3524,7 +3524,7 @@ void cSpectrometerHDF5OutputFile::addPointingModelParameter(uint8_t ui8Parameter
     m_adPointingModelParams[ui8ParameterNumber] = dParameterValue;
 }
 
-void cSpectrometerHDF5OutputFile::addSkyRequestedRaOffset(int64_t i64Timestamp_us, double dRightAscensionOffset_deg, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addRequestedRaOffset(int64_t i64Timestamp_us, double dRightAscensionOffset_deg, const string &strStatus)
 {
     cTimestampedDouble oNewRequestedRaOffset;
     oNewRequestedRaOffset.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
@@ -3535,7 +3535,7 @@ void cSpectrometerHDF5OutputFile::addSkyRequestedRaOffset(int64_t i64Timestamp_u
     m_voRequestedRaOffset_deg.push_back(oNewRequestedRaOffset);
 }
 
-void cSpectrometerHDF5OutputFile::addSkyRequestedDecOffset(int64_t i64Timestamp_us, double dDeclinationOffset_deg, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addRequestedDecOffset(int64_t i64Timestamp_us, double dDeclinationOffset_deg, const string &strStatus)
 {
     cTimestampedDouble oNewRequestedDecOffset;
     oNewRequestedDecOffset.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
@@ -3546,7 +3546,7 @@ void cSpectrometerHDF5OutputFile::addSkyRequestedDecOffset(int64_t i64Timestamp_
     m_voRequestedDecOffset_deg.push_back(oNewRequestedDecOffset);
 }
 
-void cSpectrometerHDF5OutputFile::addSkyRequestedAzOffset(int64_t i64Timestamp_us, double dAzimuthOffset_deg, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addRequestedAzOffset(int64_t i64Timestamp_us, double dAzimuthOffset_deg, const string &strStatus)
 {
     cTimestampedDouble oNewRequestedDecOffset;
     oNewRequestedDecOffset.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
@@ -3557,7 +3557,7 @@ void cSpectrometerHDF5OutputFile::addSkyRequestedAzOffset(int64_t i64Timestamp_u
     m_voRequestedAzOffset_deg.push_back(oNewRequestedDecOffset);
 }
 
-void cSpectrometerHDF5OutputFile::addSkyRequestedElOffset(int64_t i64Timestamp_us, double dElevationOffset_deg, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addRequestedElOffset(int64_t i64Timestamp_us, double dElevationOffset_deg, const string &strStatus)
 {
     cTimestampedDouble oNewRequestedElOffset;
     oNewRequestedElOffset.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;

@@ -287,9 +287,9 @@ private:
     std::vector<cTimestampedDouble>         m_voSkyActualAntennaEls_deg;
 
     std::vector<cTimestampedDouble>         m_voRequestedRaOffset_deg;
-    std::vector<cTimestampedDouble>         m_voSkyRequestedDecOffset_deg;
-    std::vector<cTimestampedDouble>         m_voSkyRequestedAzOffset_deg;
-    std::vector<cTimestampedDouble>         m_voSkyRequestedElOffset_deg;
+    std::vector<cTimestampedDouble>         m_voRequestedDecOffset_deg;
+    std::vector<cTimestampedDouble>         m_voRequestedAzOffset_deg;
+    std::vector<cTimestampedDouble>         m_voRequestedElOffset_deg;
 
     std::vector<cAntennaStatus>             m_voAntennaStatuses;
     std::vector<cAntennaStatus>             m_voObservationStatuses; // Same datatype as above.
