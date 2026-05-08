@@ -135,7 +135,7 @@ class cSpectrometerHDF5OutputFile
     typedef struct cObservedMaserName
     {
         double              m_dTimestamp_s;
-        char                m_chaName[128];
+        char                m_chaName[32];
         char                m_chaStatus[8];
     } cObservedMaserName;
 
@@ -222,7 +222,7 @@ public:
     void                                    addAttenuationADCChan0(int64_t i64Timestamp_us, double dADCAttenuationChan0_dB);
     void                                    addAttenuationADCChan1(int64_t i64Timestamp_us, double dADCAttenuationChan1_dB);
 
-    void                                    setObservationInfo(const std::string &strObservationInfo);
+    void                                    setAntennaInfo(const std::string &strAntennaInfo);
     void                                    setAntennaBeamwidth(const double &dAntennaBeamwidth_deg);
     void                                    addObservedMaserName(int64_t i64Timestamp_us, const std::string &strObservedMaserName, const std::string &strStatus);
     void                                    addObservedMaserVlsr(int64_t i64Timestamp_us, double dObservedMaserVlsr_km_s, const std::string &strStatus);

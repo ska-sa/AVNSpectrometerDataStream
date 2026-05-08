@@ -3570,7 +3570,6 @@ void cSpectrometerHDF5OutputFile::addRequestedElOffset(int64_t i64Timestamp_us, 
 
 void cSpectrometerHDF5OutputFile::addAntennaStatus(int64_t i64Timestamp_us, const string &strAntennaStatus, const string &strStatus)
 {
-
     cAntennaStatus oNewAntennaStatus;
     oNewAntennaStatus.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
     sprintf( oNewAntennaStatus.m_chaAntennaStatus, "%s", strAntennaStatus.substr(0, sizeof(oNewAntennaStatus.m_chaAntennaStatus)).c_str() ); //Limit to size of the char array
@@ -3616,12 +3615,11 @@ double cSpectrometerHDF5OutputFile::DmsToDeg(string strDms)
     return 0.0;
 }
 
-void cSpectrometerHDF5OutputFile::setObservationInfo(const string &strObservationInformation)
+void cSpectrometerHDF5OutputFile::setAntennaInfo(const string &strAntennaInfo)
 {
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-    // Antenna\_info:\_Latitude:\_05:45:02.4696\_Longitude:\_00:18:17.9172\_Altitude:\_116\_Diameter:\_32\_Name\_of\_observer:\_ATP_Operator
-    string strAntennaName           = "";  
-    string strObserver              = "";  
+    // Name:\_Kutunse\_Latitude:\_05:45:02.4696\_Longitude:\_00:18:17.9172\_Altitude:\_116\_Diameter:\_32
+    string strAntennaName           = "";
     double dDiameter                = 0.0;
     double dLongitude               = 0.0;
     double dLatitude                = 0.0;
@@ -3631,78 +3629,66 @@ void cSpectrometerHDF5OutputFile::setObservationInfo(const string &strObservatio
     const string strLon             = "Longitude:\\_";
     const string strAltitude        = "Altitude:\\_";
     const string strDiameter        = "Diameter:\\_";
-    const string strObserverName    = "Name\\_of\\_observer:\\_";
     const string strSpace           = "\\_";
 
     // Name
     size_t start = 0;
-    size_t found = strObservationInformation.find(strName);
+    size_t found = strAntennaInfo.find(strName);
     if (string::npos != found)
     {
         start = found + strName.length();
-        found = strObservationInformation.find(strSpace, start);
+        found = strAntennaInfo.find(strSpace, start);
         if (string::npos != found)
         {
-            strAntennaName = strObservationInformation.substr(start, found - start);
+            strAntennaName = strAntennaInfo.substr(start, found - start);
         }
     }
     // Latitude
-    found = strObservationInformation.find(strLat);
+    found = strAntennaInfo.find(strLat);
     if (string::npos != found)
     {
         start = found + strLat.length();
-        found = strObservationInformation.find(strSpace, start);
+        found = strAntennaInfo.find(strSpace, start);
         if (string::npos != found)
         {
-            dLatitude = DmsToDeg(strObservationInformation.substr(start, found - start)); 
+            dLatitude = DmsToDeg(strAntennaInfo.substr(start, found - start));
         }
     }
     // Longitude
-    found = strObservationInformation.find(strLon);
+    found = strAntennaInfo.find(strLon);
     if (string::npos != found)
     {
         start = found + strLon.length();
-        found = strObservationInformation.find(strSpace, start);
+        found = strAntennaInfo.find(strSpace, start);
         if (string::npos != found)
         {
-            dLongitude = DmsToDeg(strObservationInformation.substr(start, found - start)); 
+            dLongitude = DmsToDeg(strAntennaInfo.substr(start, found - start));
         }
     }
     // Altitude
-    found = strObservationInformation.find(strAltitude);
+    found = strAntennaInfo.find(strAltitude);
     if (string::npos != found)
     {
         start = found + strAltitude.length();
-        found = strObservationInformation.find(strSpace, start);
+        found = strAntennaInfo.find(strSpace, start);
         if (string::npos != found)
         {
-            dAltitude = stod(strObservationInformation.substr(start, found - start));
+            dAltitude = stod(strAntennaInfo.substr(start, found - start));
         }
     }
     // Diameter
-    found = strObservationInformation.find(strDiameter);
+    found = strAntennaInfo.find(strDiameter);
     if (string::npos != found)
     {
         start = found + strDiameter.length();
-        found = strObservationInformation.find(strSpace, start);
+        found = strAntennaInfo.find(strSpace, start);
         if (string::npos != found)
         {
-            dDiameter = stod(strObservationInformation.substr(start, found - start));
-        }
-    }
-    found = strObservationInformation.find(strObserverName);
-    if (string::npos != found)
-    {
-        start = found + strObserverName.length();
-        found = strObservationInformation.length();
-        //if (string::npos != 0)
-        {
-            strObserver = strObservationInformation.substr(start, found - start);
+            dDiameter = stod(strAntennaInfo.substr(start, found - start));
         }
     }
 
     sprintf(m_oAntennaConfiguration.m_chaAntennaName, "%s", strAntennaName.c_str());
-    sprintf(m_oObservationInformation.m_chaObserverName, "%s", strObserver.c_str());
     m_oAntennaConfiguration.m_dAntennaLatitude_deg = dLatitude;
     m_oAntennaConfiguration.m_dAntennaLongitude_deg = dLongitude;
     m_oAntennaConfiguration.m_dAntennaAltitude_m = dAltitude;
