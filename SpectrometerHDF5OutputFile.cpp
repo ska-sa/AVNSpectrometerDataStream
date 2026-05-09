@@ -1514,6 +1514,90 @@ void cSpectrometerHDF5OutputFile::writeAntennaConfiguration()
 
 void cSpectrometerHDF5OutputFile::writeObservationInformation()
 {
+    if (m_voObservationDetails.size())
+    {
+        string strDatasetName("observation-details");
+
+        //Create the data space
+        hsize_t dimension[] = { m_voObservationDetails.size() };
+        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
+
+        //Create a compound data type consisting of different native types per entry:
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cObservationDetails));
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cObservationDetails, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+        
+        //Add to compound data type: the observation details - datetime (c string)
+        hid_t stringTypeDatetime = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeDatetime, sizeof(cObservationDetails::m_chaDatetime));
+        H5Tinsert(compoundDataType, "datetime", HOFFSET(cObservationDetails, m_chaDatetime), stringTypeDatetime);
+
+        //Add to compound data type: the observation details - script name (c string)
+        hid_t stringTypeScript = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeScript, sizeof(cObservationDetails::m_chaScriptName));
+        H5Tinsert(compoundDataType, "script", HOFFSET(cObservationDetails, m_chaScriptName), stringTypeScript);
+
+        //Add to compound data type: the observation details - PI name (c string)
+        hid_t stringTypePi = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypePi, sizeof(cObservationDetails::m_chaPiName));
+        H5Tinsert(compoundDataType, "pi", HOFFSET(cObservationDetails, m_chaPiName), stringTypePi);
+
+        //Add to compound data type: the observation details - operator name (c string)
+        hid_t stringTypeOperator = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeOperator, sizeof(cObservationDetails::m_chaOperatorName));
+        H5Tinsert(compoundDataType, "operator", HOFFSET(cObservationDetails, m_chaOperatorName), stringTypeOperator);
+
+        //Add to compound data type: the observation details - PID (c string)
+        hid_t stringTypePid = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypePid, sizeof(cObservationDetails::m_chaPID));
+        H5Tinsert(compoundDataType, "pid", HOFFSET(cObservationDetails, m_chaPID), stringTypePid);
+
+        //Add to compound data type: the observation details - project title (c string)
+        hid_t stringTypeProjectTitle = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeProjectTitle, sizeof(cObservationDetails::m_chaProjectTitle));
+        H5Tinsert(compoundDataType, "project", HOFFSET(cObservationDetails, m_chaProjectTitle), stringTypeProjectTitle);
+
+        //Add to compound data type: the observation details - comment (c string)
+        hid_t stringTypeComment = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeComment, sizeof(cObservationDetails::m_chaComment));
+        H5Tinsert(compoundDataType, "comment", HOFFSET(cObservationDetails, m_chaComment), stringTypeComment);
+
+        //Add to compound data type: the status of the sensor (string typically containing "nominal")
+        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeStatus, sizeof(cObservationDetails::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cObservationDetails, m_chaStatus), stringTypeStatus);
+
+        //Create the data set of the new compound datatype
+        hid_t dataset = H5Dcreate1(m_iH5ConfigurationObservationGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
+
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voObservationDetails.front());
+
+        if(err < 0)
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeObservationInformation(): HDF5 make dataset error" << endl;
+        }
+        else
+        {
+            cout << "cSpectrometerHDF5OutputFile::writeObservationInformation(): Wrote " << m_voObservationDetails.size() << " observation details to dataset." << endl;
+        }
+
+        addAttributeToDataSet(string("Observation details"), strDatasetName, string("string"), string(""), dataset);
+
+        H5Tclose(stringTypeDatetime);
+        H5Tclose(stringTypeScript);
+        H5Tclose(stringTypePi);
+        H5Tclose(stringTypeOperator);
+        H5Tclose(stringTypePid);
+        H5Tclose(stringTypeProjectTitle);
+        H5Tclose(stringTypeComment);
+        H5Tclose(stringTypeStatus);
+        H5Tclose(compoundDataType);
+        H5Sclose(dataspace);
+        H5Dclose(dataset);
+    }
+    else
+    {
+        cout << "cSpectrometerHDF5OutputFile::writeObservationInformation(): WARNING, vector m_voObservationDetails empty." << endl;
+    }
 
     if (m_voObservedMaser.size())
     {
