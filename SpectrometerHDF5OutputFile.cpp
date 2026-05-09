@@ -1538,7 +1538,7 @@ void cSpectrometerHDF5OutputFile::writeObservationInformation()
 
     if (m_oObservationInformation.m_vobservedMaser.size())
     {
-        string strDatasetName("observed-maser-name");
+        string strDatasetName("observed-maser");
 
         //Create the data space
         hsize_t dimension[] = { m_oObservationInformation.m_vobservedMaser.size() };
@@ -3636,10 +3636,9 @@ void cSpectrometerHDF5OutputFile::setAntennaInfo(const string &strAntennaInfo)
     if (string::npos != found)
     {
         start = found + strDiameter.length();
-        found = strAntennaInfo.find(strSpace, start);
         if (string::npos != found)
         {
-            dDiameter = stod(strAntennaInfo.substr(start, found - start));
+            dDiameter = stod(strAntennaInfo.substr(start));
         }
     }
 
@@ -3683,14 +3682,11 @@ void cSpectrometerHDF5OutputFile::addObservedMaser(int64_t i64Timestamp_us, cons
     if (string::npos != found)
     {
         start = found + strVlsr.length();
-        found = strObservedMaser.find(strSpace, start);
         if (string::npos != found)
         {
-            dVlsr = stod(strObservedMaser.substr(start, found - start));
+            dVlsr = stod(strObservedMaser.substr(start));
         }
     }
-
-    cout << strObservedMaser << "   " << strMaserName << "   " << dVlsr << endl;
 
     cObservedMaser oNewObservedMaser;
     oNewObservedMaser.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
