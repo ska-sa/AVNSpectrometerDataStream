@@ -1536,32 +1536,35 @@ void cSpectrometerHDF5OutputFile::writeObservationInformation()
         H5Dclose(dataset_id);
     }
 
-    if (m_oObservationInformation.m_vobservedMaserName.size())
+    if (m_oObservationInformation.m_vobservedMaser.size())
     {
         string strDatasetName("observed-maser-name");
 
         //Create the data space
-        hsize_t dimension[] = { m_oObservationInformation.m_vobservedMaserName.size() };
+        hsize_t dimension[] = { m_oObservationInformation.m_vobservedMaser.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
-        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cObservedMaserName));
-        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cObservedMaserName, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
+        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cObservedMaser));
+        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cObservedMaser, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
         
         //Add to compound data type: the observed maser name (c string)
-        hid_t stringTypeValue = H5Tcopy (H5T_C_S1);
-        H5Tset_size(stringTypeValue, sizeof(cObservedMaserName::m_chaName));
-        H5Tinsert(compoundDataType, "value", HOFFSET(cObservedMaserName, m_chaName), stringTypeValue);
+        hid_t stringTypeName = H5Tcopy (H5T_C_S1);
+        H5Tset_size(stringTypeName, sizeof(cObservedMaser::m_chaName));
+        H5Tinsert(compoundDataType, "name", HOFFSET(cObservedMaser, m_chaName), stringTypeName);
+
+        //Add to compound data type: the VLSR (double).
+        H5Tinsert(compoundDataType, "vlsr", HOFFSET(cObservedMaser, m_dVlsr_km_s), H5T_NATIVE_DOUBLE);
 
         //Add to compound data type: the status of the sensor (string typically containing "nominal")
         hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
-        H5Tset_size(stringTypeStatus, sizeof(cObservedMaserName::m_chaStatus));
-        H5Tinsert(compoundDataType, "status", HOFFSET(cObservedMaserName, m_chaStatus), stringTypeStatus);
+        H5Tset_size(stringTypeStatus, sizeof(cObservedMaser::m_chaStatus));
+        H5Tinsert(compoundDataType, "status", HOFFSET(cObservedMaser, m_chaStatus), stringTypeStatus);
 
         //Create the data set of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5ConfigurationObservationGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_oObservationInformation.m_vobservedMaserName.front());
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_oObservationInformation.m_vobservedMaser.front());
 
         if(err < 0)
         {
@@ -1569,12 +1572,12 @@ void cSpectrometerHDF5OutputFile::writeObservationInformation()
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeObservationInformation(): Wrote " << m_oObservationInformation.m_vobservedMaserName.size() << " observed maser name values to dataset." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeObservationInformation(): Wrote " << m_oObservationInformation.m_vobservedMaser.size() << " observed maser name values to dataset." << endl;
         }
 
-        addAttributeToDataSet(string("Observed maser name"), strDatasetName, string("string"), string(""), dataset);
+        addAttributeToDataSet(string("Observed maser"), strDatasetName, string("string"), string(""), dataset);
 
-        H5Tclose(stringTypeValue);
+        H5Tclose(stringTypeName);
         H5Tclose(stringTypeStatus);
         H5Tclose(compoundDataType);
         H5Sclose(dataspace);
@@ -1582,55 +1585,7 @@ void cSpectrometerHDF5OutputFile::writeObservationInformation()
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeObservationInformation(): WARNING, vector m_oObservationInformation.m_vobservedMaserName empty." << endl;
-    }
-
-    if (m_oObservationInformation.m_vobservedMaserVlsr.size())
-    {
-        string strDatasetName("observed-maser-vlsr");
-
-        //Create the data space
-        hsize_t dimension[] = { m_oObservationInformation.m_vobservedMaserVlsr.size() };
-        hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
-
-        //Create a compound data type consisting of different native types per entry:
-        hid_t compoundDataType = H5Tcreate (H5T_COMPOUND, sizeof(cTimestampedDouble));
-
-        //Add to compound data type: a timestamp (double)
-        H5Tinsert(compoundDataType, "timestamp", HOFFSET(cTimestampedDouble, m_dTimestamp_s), H5T_NATIVE_DOUBLE);
-
-        //Add to compound data type: the observed maser VLSR (double)
-        H5Tinsert(compoundDataType, "value", HOFFSET(cTimestampedDouble, m_dValue), H5T_NATIVE_DOUBLE);
-
-        //Add to compound data type: the status of the sensor (string typically containing "nominal")
-        hid_t stringTypeStatus = H5Tcopy (H5T_C_S1);
-        H5Tset_size(stringTypeStatus, sizeof(cTimestampedDouble::m_chaStatus));
-        H5Tinsert(compoundDataType, "status", HOFFSET(cTimestampedDouble, m_chaStatus), stringTypeStatus);
-
-        //Create the data set of the new compound datatype
-        hid_t dataset = H5Dcreate1(m_iH5ConfigurationObservationGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
-
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_oObservationInformation.m_vobservedMaserVlsr.front());
-
-        if(err < 0)
-        {
-            cout << "cSpectrometerHDF5OutputFile::writeObservationInformation(): HDF5 make dataset error" << endl;
-        }
-        else
-        {
-            cout << "cSpectrometerHDF5OutputFile::writeObservationInformation(): Wrote " << m_oObservationInformation.m_vobservedMaserVlsr.size() << " observed maser VLSR values to dataset." << endl;
-        }
-
-        addAttributeToDataSet(string("Observed maser VLSR"), strDatasetName, string("double"), string("km/s"), dataset);
-
-        H5Tclose(stringTypeStatus);
-        H5Tclose(compoundDataType);
-        H5Sclose(dataspace);
-        H5Dclose(dataset);
-    }
-    else
-    {
-        cout << "cSpectrometerHDF5OutputFile::writeObservationInformation(): WARNING, vector m_oObservationInformation.m_vobservedMaserVlsr empty." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeObservationInformation(): WARNING, vector m_oObservationInformation.m_vobservedMaser empty." << endl;
     }
 }
 
@@ -3702,26 +3657,47 @@ void cSpectrometerHDF5OutputFile::setAntennaBeamwidth(const double &dAntennaBeam
     m_oAntennaConfiguration.m_dAntennaBeamwidth_deg = dAntennaBeamwidth_deg;
 }
 
-void cSpectrometerHDF5OutputFile::addObservedMaserName(int64_t i64Timestamp_us, const string &strObservedMaserName, const string &strStatus)
+void cSpectrometerHDF5OutputFile::addObservedMaser(int64_t i64Timestamp_us, const string &strObservedMaser, const string &strStatus)
 {
-    cObservedMaserName oNewObservedMaserName;
-    oNewObservedMaserName.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    sprintf( oNewObservedMaserName.m_chaName, "%s", strObservedMaserName.substr(0, sizeof(oNewObservedMaserName.m_chaName)).c_str() ); //Limit to size of the char array
-    sprintf( oNewObservedMaserName.m_chaStatus, "%s", strStatus.c_str());
+    // Name:\_G9.621+0.196\_VLSR:\_1.3
+    string strMaserName   = "";
+    double dVlsr          = 0.0;
+    const string strName  = "Name:\\_";
+    const string strLat   = "VLSR:\\_";
+    const string strSpace = "\\_";
+
+    // Name
+    size_t start = 0;
+    size_t found = strObservedMaser.find(strName);
+    if (string::npos != found)
+    {
+        start = found + strName.length();
+        found = strObservedMaser.find(strSpace, start);
+        if (string::npos != found)
+        {
+            strMaserName = strObservedMaser.substr(start, found - start);
+        }
+    }
+    // VLSR
+    found = strObservedMaser.find(strLat);
+    if (string::npos != found)
+    {
+        start = found + strLat.length();
+        found = strObservedMaser.find(strSpace, start);
+        if (string::npos != found)
+        {
+            dVlsr = stod(strObservedMaser.substr(start, found - start));
+        }
+    }
+
+    cObservedMaser oNewObservedMaser;
+    oNewObservedMaser.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    sprintf( oNewObservedMaser.m_chaName, "%s", strObservedMaser.substr(0, sizeof(oNewObservedMaser.m_chaName)).c_str() ); //Limit to size of the char array
+    oNewObservedMaser.m_dVlsr_km_s = dVlsr;
+    sprintf( oNewObservedMaser.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-    m_oObservationInformation.m_vobservedMaserName.push_back(oNewObservedMaserName);
-}
-
-void cSpectrometerHDF5OutputFile::addObservedMaserVlsr(int64_t i64Timestamp_us, double dObservedMaserVlsr_km_s, const string &strStatus)
-{
-    cTimestampedDouble oNewObservedMaserVlsr;
-    oNewObservedMaserVlsr.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    oNewObservedMaserVlsr.m_dValue = dObservedMaserVlsr_km_s;
-    sprintf( oNewObservedMaserVlsr.m_chaStatus, "%s", strStatus.c_str());
-
-    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-    m_oObservationInformation.m_vobservedMaserVlsr.push_back(oNewObservedMaserVlsr);
+    m_oObservationInformation.m_vobservedMaser.push_back(oNewObservedMaser);
 }
 
 void cSpectrometerHDF5OutputFile::setAntennaDelayModel(const vector<double> &vdDelayModelParams)
