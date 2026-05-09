@@ -3663,7 +3663,7 @@ void cSpectrometerHDF5OutputFile::addObservedMaser(int64_t i64Timestamp_us, cons
     string strMaserName   = "";
     double dVlsr          = 0.0;
     const string strName  = "Name:\\_";
-    const string strLat   = "VLSR:\\_";
+    const string strVlsr   = "VLSR:\\_";
     const string strSpace = "\\_";
 
     // Name
@@ -3679,10 +3679,10 @@ void cSpectrometerHDF5OutputFile::addObservedMaser(int64_t i64Timestamp_us, cons
         }
     }
     // VLSR
-    found = strObservedMaser.find(strLat);
+    found = strObservedMaser.find(strVlsr);
     if (string::npos != found)
     {
-        start = found + strLat.length();
+        start = found + strVlsr.length();
         found = strObservedMaser.find(strSpace, start);
         if (string::npos != found)
         {
@@ -3690,9 +3690,11 @@ void cSpectrometerHDF5OutputFile::addObservedMaser(int64_t i64Timestamp_us, cons
         }
     }
 
+    cout << strObservedMaser << "   " << strMaserName << "   " << dVlsr << endl;
+
     cObservedMaser oNewObservedMaser;
     oNewObservedMaser.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
-    sprintf( oNewObservedMaser.m_chaName, "%s", strObservedMaser.substr(0, sizeof(oNewObservedMaser.m_chaName)).c_str() ); //Limit to size of the char array
+    sprintf( oNewObservedMaser.m_chaName, "%s", strMaserName.substr(0, sizeof(oNewObservedMaser.m_chaName)).c_str() ); //Limit to size of the char array
     oNewObservedMaser.m_dVlsr_km_s = dVlsr;
     sprintf( oNewObservedMaser.m_chaStatus, "%s", strStatus.c_str());
 
