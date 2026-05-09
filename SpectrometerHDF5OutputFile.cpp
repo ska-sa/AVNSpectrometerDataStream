@@ -1514,34 +1514,13 @@ void cSpectrometerHDF5OutputFile::writeAntennaConfiguration()
 
 void cSpectrometerHDF5OutputFile::writeObservationInformation()
 {
-    {
-        // ********** Observer name **********
-        string strDatasetName("observer");
 
-        herr_t err = H5LTmake_dataset_string(m_iH5ConfigurationObservationGroupHandle, strDatasetName.c_str(), (const char *)  &m_oObservationInformation.m_chaObserverName);
-        
-        if(err < 0)
-        {
-            cout << "cSpectrometerHDF5OutputFile::writeAntennaConfiguration(): HDF5 make dataset error." << endl;
-        }
-        else
-        {
-            cout << "cSpectrometerHDF5OutputFile::writeAntennaConfiguration(): Wrote observer name: " << m_oObservationInformation.m_chaObserverName << " to dataset" << endl;
-        }
-
-        //Need to open the dataset again here for attribute as the H5LTmake_dataset used above does leave an open handle.
-        hid_t dataset_id = H5Dopen2(m_iH5ConfigurationObservationGroupHandle, strDatasetName.c_str(), H5P_DEFAULT);
-        addAttributeToDataSet(string("Observer name"), strDatasetName, string("char"), string(""), dataset_id);
-
-        H5Dclose(dataset_id);
-    }
-
-    if (m_oObservationInformation.m_vobservedMaser.size())
+    if (m_voObservedMaser.size())
     {
         string strDatasetName("observed-maser");
 
         //Create the data space
-        hsize_t dimension[] = { m_oObservationInformation.m_vobservedMaser.size() };
+        hsize_t dimension[] = { m_voObservedMaser.size() };
         hid_t dataspace = H5Screate_simple(1, dimension, NULL); // 1 = 1 dimensional
 
         //Create a compound data type consisting of different native types per entry:
@@ -1564,7 +1543,7 @@ void cSpectrometerHDF5OutputFile::writeObservationInformation()
         //Create the data set of the new compound datatype
         hid_t dataset = H5Dcreate1(m_iH5ConfigurationObservationGroupHandle, strDatasetName.c_str(), compoundDataType, dataspace, H5P_DEFAULT);
 
-        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_oObservationInformation.m_vobservedMaser.front());
+        herr_t err = H5Dwrite(dataset, compoundDataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &m_voObservedMaser.front());
 
         if(err < 0)
         {
@@ -1572,7 +1551,7 @@ void cSpectrometerHDF5OutputFile::writeObservationInformation()
         }
         else
         {
-            cout << "cSpectrometerHDF5OutputFile::writeObservationInformation(): Wrote " << m_oObservationInformation.m_vobservedMaser.size() << " observed maser name values to dataset." << endl;
+            cout << "cSpectrometerHDF5OutputFile::writeObservationInformation(): Wrote " << m_voObservedMaser.size() << " observed maser name values to dataset." << endl;
         }
 
         addAttributeToDataSet(string("Observed maser"), strDatasetName, string("string"), string(""), dataset);
@@ -1585,7 +1564,7 @@ void cSpectrometerHDF5OutputFile::writeObservationInformation()
     }
     else
     {
-        cout << "cSpectrometerHDF5OutputFile::writeObservationInformation(): WARNING, vector m_oObservationInformation.m_vobservedMaser empty." << endl;
+        cout << "cSpectrometerHDF5OutputFile::writeObservationInformation(): WARNING, vector m_voObservedMaser empty." << endl;
     }
 }
 
@@ -3695,7 +3674,102 @@ void cSpectrometerHDF5OutputFile::addObservedMaser(int64_t i64Timestamp_us, cons
     sprintf( oNewObservedMaser.m_chaStatus, "%s", strStatus.c_str());
 
     boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
-    m_oObservationInformation.m_vobservedMaser.push_back(oNewObservedMaser);
+    m_voObservedMaser.push_back(oNewObservedMaser);
+}
+
+void cSpectrometerHDF5OutputFile::addObservationDetails(int64_t i64Timestamp_us, const string &strObservationDetails, const string &strStatus)
+{
+    // Datetime:\_2026-05-07T12:34:50\_Script:\_some_script.py PI: Principal\_Investigator Operator: Operator\_OnDuty PID: SCI-20260506-RS-01 Project: Some\_Excellent\_Project\_Title Comment: This\_is\_a\_test\_observation
+    string strDatetime = "";
+    string strScript   = "";
+    string strPi       = "";
+    string strOperator = "";
+    string strPid      = "";
+    string strProject  = "";
+    string strComment  = "";
+
+    const string strDatetimeHeader = "Datetime";
+    const string strScriptHeader   = "Script";
+    const string strPiHeader       = "PI";
+    const string strOperatorHeader = "Operator";
+    const string strPidHeader      = "PID";
+    const string strProjectHeader  = "Project";
+    const string strCommentHeader  = "Comment";
+
+    std::vector<std::pair<std::string, std::string>> fields;
+    size_t pos = 0;
+    while (pos < strObservationDetails.size()) {
+        // Find the next ":\\_" which separates key and value
+        size_t colonPos = strObservationDetails.find(":\\_", pos);
+        if (colonPos == std::string::npos) break;
+
+        std::string key = strObservationDetails.substr(pos, colonPos - pos);
+
+        // Value starts after ":\\_"
+        size_t valueStart = colonPos + 3;
+
+        // Find next "_Key:" marker (look for ":\\_" again)
+        size_t nextKeyPos = strObservationDetails.find(":\\_", valueStart);
+
+        std::string value;
+        if (nextKeyPos == std::string::npos) {
+            // Last field → take until end
+            value = strObservationDetails.substr(valueStart);
+            pos = strObservationDetails.size();
+        } else {
+            // Take substring up to before next key marker
+            value = strObservationDetails.substr(valueStart, nextKeyPos - valueStart);
+            pos = nextKeyPos;
+        }
+
+        fields.push_back({key, value});
+    }
+
+    // Loop through fields
+    for (const auto& f : fields) {
+        if (f.first == strDatetimeHeader) {
+            strDatetime = f.second;
+            break;
+        }
+        if (f.first == strScriptHeader) {
+            strScript = f.second;
+            break;
+        }
+        if (f.first == strPiHeader) {
+            strPi = f.second;
+            break;
+        }
+        if (f.first == strOperatorHeader) {
+            strOperator = f.second;
+            break;
+        }
+        if (f.first == strPidHeader) {
+            strPid = f.second;
+            break;
+        }
+        if (f.first == strProjectHeader) {
+            strProject = f.second;
+            break;
+        }
+        if (f.first == strCommentHeader) {
+            strComment = f.second;
+            break;
+        }
+    }
+
+    cObservationDetails oNewObservationDetails;
+    oNewObservationDetails.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
+    sprintf( oNewObservationDetails.m_chaDatetime, "%s", strDatetime.substr(0, sizeof(oNewObservationDetails.m_chaDatetime)).c_str() ); //Limit to size of the char array
+    sprintf( oNewObservationDetails.m_chaScriptName, "%s", strScript.substr(0, sizeof(oNewObservationDetails.m_chaScriptName)).c_str() ); //Limit to size of the char array
+    sprintf( oNewObservationDetails.m_chaPiName, "%s", strPi.substr(0, sizeof(oNewObservationDetails.m_chaPiName)).c_str() ); //Limit to size of the char array
+    sprintf( oNewObservationDetails.m_chaOperatorName, "%s", strOperator.substr(0, sizeof(oNewObservationDetails.m_chaOperatorName)).c_str() ); //Limit to size of the char array
+    sprintf( oNewObservationDetails.m_chaPID, "%s", strPid.substr(0, sizeof(oNewObservationDetails.m_chaPID)).c_str() ); //Limit to size of the char array
+    sprintf( oNewObservationDetails.m_chaProjectTitle, "%s", strProject.substr(0, sizeof(oNewObservationDetails.m_chaProjectTitle)).c_str() ); //Limit to size of the char array
+    sprintf( oNewObservationDetails.m_chaComment, "%s", strComment.substr(0, sizeof(oNewObservationDetails.m_chaComment)).c_str() ); //Limit to size of the char array
+    sprintf( oNewObservationDetails.m_chaStatus, "%s", strStatus.c_str());
+
+    boost::shared_lock<boost::shared_mutex> oLock(m_oAppendDataMutex);
+    m_voObservationDetails.push_back(oNewObservationDetails);
 }
 
 void cSpectrometerHDF5OutputFile::setAntennaDelayModel(const vector<double> &vdDelayModelParams)
