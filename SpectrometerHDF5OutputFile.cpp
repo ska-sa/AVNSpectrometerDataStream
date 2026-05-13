@@ -3806,11 +3806,18 @@ void cSpectrometerHDF5OutputFile::addObservationDetails(int64_t i64Timestamp_us,
             pos = nextKeyPos;
         }
 
+        cout << "Key: " << key << ", Value: " << value << endl;
+
         fields.push_back({key, value});
     }
 
+    cout << "-------------------------" << endl;
+
     // Loop through fields
     for (const auto& f : fields) {
+        
+        cout << "Processing field: " << f.first << " = " << f.second << endl;
+        
         if (f.first == strDatetimeHeader) {
             strDatetime = f.second;
             break;
@@ -3840,6 +3847,15 @@ void cSpectrometerHDF5OutputFile::addObservationDetails(int64_t i64Timestamp_us,
             break;
         }
     }
+
+    cout << "-------------------------" << endl;
+    cout << "strDatetime: " << strDatetime << endl;
+    cout << "strScript: " << strScript << endl;
+    cout << "strPi: " << strPi << endl;
+    cout << "strOperator: " << strOperator << endl;
+    cout << "strPid: " << strPid << endl;
+    cout << "strProject: " << strProject << endl;
+    cout << "strComment: " << strComment << endl;
 
     cObservationDetails oNewObservationDetails;
     oNewObservationDetails.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
