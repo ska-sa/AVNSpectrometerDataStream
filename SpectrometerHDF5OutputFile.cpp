@@ -3803,7 +3803,8 @@ void cSpectrometerHDF5OutputFile::addObservationDetails(int64_t i64Timestamp_us,
     };
 
     // Iterate through tokens separated by the delimiter
-    while (end != std::string::npos) {
+    while (end != std::string::npos)
+    {
         std::string token = strObservationDetails.substr(start, end - start);
         
         if (!token.empty() && token.back() == ':')
@@ -3842,51 +3843,24 @@ void cSpectrometerHDF5OutputFile::addObservationDetails(int64_t i64Timestamp_us,
     // Save the very last pair
     savePair();
 
-    cout << "-------------------------" << endl;
-
     // Loop through fields
-    for (const auto& f : fields) {
-        
-        cout << "Processing field: " << f.first << " = " << f.second << endl;
-        
-        if (f.first == strDatetimeHeader) {
+    for (const auto& f : fields)
+    {
+        if (f.first == strDatetimeHeader)
             strDatetime = f.second;
-            break;
-        }
-        if (f.first == strScriptHeader) {
+        if (f.first == strScriptHeader)
             strScript = f.second;
-            break;
-        }
-        if (f.first == strPiHeader) {
+        if (f.first == strPiHeader)
             strPi = f.second;
-            break;
-        }
-        if (f.first == strOperatorHeader) {
+        if (f.first == strOperatorHeader)
             strOperator = f.second;
-            break;
-        }
-        if (f.first == strPidHeader) {
+        if (f.first == strPidHeader)
             strPid = f.second;
-            break;
-        }
-        if (f.first == strProjectHeader) {
+        if (f.first == strProjectHeader)
             strProject = f.second;
-            break;
-        }
-        if (f.first == strCommentHeader) {
+        if (f.first == strCommentHeader)
             strComment = f.second;
-            break;
-        }
     }
-
-    cout << "-------------------------" << endl;
-    cout << "strDatetime: " << strDatetime << endl;
-    cout << "strScript: " << strScript << endl;
-    cout << "strPi: " << strPi << endl;
-    cout << "strOperator: " << strOperator << endl;
-    cout << "strPid: " << strPid << endl;
-    cout << "strProject: " << strProject << endl;
-    cout << "strComment: " << strComment << endl;
 
     cObservationDetails oNewObservationDetails;
     oNewObservationDetails.m_dTimestamp_s = (double)i64Timestamp_us / 1e6;
