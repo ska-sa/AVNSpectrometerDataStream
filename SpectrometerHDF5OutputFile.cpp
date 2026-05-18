@@ -3763,7 +3763,8 @@ void cSpectrometerHDF5OutputFile::addObservedMaser(int64_t i64Timestamp_us, cons
 
 void cSpectrometerHDF5OutputFile::addObservationDetails(int64_t i64Timestamp_us, const string &strObservationDetails, const string &strStatus)
 {
-    // Datetime:\_2026-05-07T12:34:50\_Script:\_some_script.py PI: Principal\_Investigator Operator: Operator\_OnDuty PID: SCI-20260506-RS-01 Project: Some\_Excellent\_Project\_Title Comment: This\_is\_a\_test\_observation
+    //Datetime:\_2026-05-07T12:34:50\_Script:\_some_script.py\_PI:\_Principal\_Investigator\_Operator:\_Operator\_OnDuty\_PID:\_SCI-20260506-RS-01\_Project:\_Some\_Excellent\_Project\_Title\_Comment:\_This\_is\_a\_test\_observation
+    
     string strDatetime = "";
     string strScript   = "";
     string strPi       = "";
@@ -3779,37 +3780,67 @@ void cSpectrometerHDF5OutputFile::addObservationDetails(int64_t i64Timestamp_us,
     const string strPidHeader      = "PID";
     const string strProjectHeader  = "Project";
     const string strCommentHeader  = "Comment";
+    const string strSpace = "\\_";
 
+    size_t start = 0;
+    size_t end = strObservationDetails.find(strSpace);
+    std::string currentKey = "";
+    std::string currentValue = "";
     std::vector<std::pair<std::string, std::string>> fields;
-    size_t pos = 0;
-    while (pos < strObservationDetails.size()) {
-        // Find the next ":\\_" which separates key and value
-        size_t colonPos = strObservationDetails.find(":\\_", pos);
-        if (colonPos == std::string::npos) break;
 
-        std::string key = strObservationDetails.substr(pos, colonPos - pos);
-
-        // Value starts after ":\\_"
-        size_t valueStart = colonPos + 3;
-
-        // Find next "_Key:" marker (look for ":\\_" again)
-        size_t nextKeyPos = strObservationDetails.find(":\\_", valueStart);
-
-        std::string value;
-        if (nextKeyPos == std::string::npos) {
-            // Last field → take until end
-            value = strObservationDetails.substr(valueStart);
-            pos = strObservationDetails.size();
-        } else {
-            // Take substring up to before next key marker
-            value = strObservationDetails.substr(valueStart, nextKeyPos - valueStart);
-            pos = nextKeyPos;
+    // Helper lambda to save the accumulated key-value pair to the vector
+    auto savePair = [&]()
+    {
+        if (!currentKey.empty())
+        {
+            // Remove the trailing space from the accumulated value, if it exists
+            if (!currentValue.empty() && currentValue.back() == ' ')
+            {
+                currentValue.pop_back();
+            }
+            fields.push_back({currentKey, currentValue});
         }
+    };
 
-        cout << "Key: " << key << ", Value: " << value << endl;
-
-        fields.push_back({key, value});
+    // Iterate through tokens separated by the delimiter
+    while (end != std::string::npos) {
+        std::string token = strObservationDetails.substr(start, end - start);
+        
+        if (!token.empty() && token.back() == ':')
+        {
+            // Found a new key
+            savePair(); // Save the previous key-value pair before starting a new one
+            currentKey = token.substr(0, token.length() - 1); // Strip the colon
+            currentValue = ""; // Reset value for the new key
+        }
+        else if (!currentKey.empty())
+        {
+            // Found part of a value, accumulate it
+            currentValue += token + " "; 
+        }
+        
+        start = end + strSpace.length();
+        end = strObservationDetails.find(strSpace, start);
     }
+    
+    // Process the final token after the last delimiter
+    std::string finalToken = strObservationDetails.substr(start);
+    if (!finalToken.empty())
+    {
+        if (finalToken.back() == ':')
+        {
+            savePair();
+            currentKey = finalToken.substr(0, finalToken.length() - 1);
+            currentValue = "";
+        }
+        else if (!currentKey.empty())
+        {
+            currentValue += finalToken + " ";
+        }
+    }
+    
+    // Save the very last pair
+    savePair();
 
     cout << "-------------------------" << endl;
 
