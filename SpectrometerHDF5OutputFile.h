@@ -147,7 +147,7 @@ class cSpectrometerHDF5OutputFile
         char                m_chaScriptName[32];
         char                m_chaPiName[32];
         char                m_chaOperatorName[32];
-        char                m_chaPID[16];
+        char                m_chaPID[32];
         char                m_chaProjectTitle[128];
         char                m_chaComment[512];
         char                m_chaStatus[8];
